@@ -10,6 +10,8 @@ class CEditorControl : public CWnd
 protected:
     CEditorView &view;
 
+    bool selecting;
+
     afx_msg void OnSize (UINT nType, int cx, int cy);
     afx_msg void OnPaint();
     afx_msg void OnHScroll (UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
@@ -31,7 +33,7 @@ protected:
     DECLARE_MESSAGE_MAP ()
 
 public:
-    inline CEditorControl (CEditorView &view) : view (view) {}
+    inline CEditorControl (CEditorView &view) : view (view), selecting (false) {}
 
     virtual BOOL PreCreateWindow (CREATESTRUCT& cs);
     virtual void UpdateScrollBars ();

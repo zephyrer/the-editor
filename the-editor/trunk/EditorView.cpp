@@ -255,6 +255,8 @@ void CEditorControl::OnLButtonDown (UINT nFlags, CPoint point)
     SetCapture ();
 
     ValidateCursor ();
+
+    selecting = true;
 }
 
 void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
@@ -265,7 +267,7 @@ void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
     CTextLayout &layout = *view.layout;
     CTextCursor &cursor = *view.cursor;
 
-    if (nFlags & MK_LBUTTON)
+    if (nFlags & MK_LBUTTON && selecting)
     {
         point.Offset (GetScrollPos (SB_HORZ), GetScrollPos (SB_VERT));
 
@@ -312,6 +314,8 @@ void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
 void CEditorControl::OnLButtonUp (UINT nFlags, CPoint point)
 {
     ReleaseCapture ();
+
+    selecting = false;
 }
 
 BOOL CEditorControl::OnMouseWheel (UINT nFlags, short zDelta, CPoint pt)
