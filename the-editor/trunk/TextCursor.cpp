@@ -167,6 +167,29 @@ void CNormalTextCursor::MoveToLinePosition (unsigned int line, unsigned int posi
     UpdateSelection ();
 }
 
+unsigned int CNormalTextCursor::GetFirstNonBlankPosition (unsigned int line)
+{
+    ASSERT (line < layout.GetText ().GetLinesCount ());
+
+    TCHAR buffer [256];
+
+    unsigned int line_length = layout.GetText ().GetLineLength (line);
+    unsigned int position = 0;
+    while (position < line_length)
+    {
+        if (position % 256 == 0)
+            layout.GetText ().GetCharsRange (line, position, min (256, line_length - position), buffer);
+
+        TCHAR ch = buffer [position % 256];
+
+        if (!_istspace (ch)) return position;
+
+        position++;
+    }
+
+    return 0;
+}
+
 CNormalTextCursor::CNormalTextCursor (CTextLayout &layout, unsigned int row, unsigned int column) : CTextCursor (layout), selection (NULL)
 {
     unsigned int height = layout.GetHeight ();
@@ -229,12 +252,20 @@ void CNormalTextCursor::ResetDirtyRows ()
 
 void CNormalTextCursor::Click (unsigned int row, unsigned int column, bool selecting)
 {
-    MoveToRowColumn (row, column, selecting);
+    TEXTCELL tc;
+
+    layout.GetCellAt (row, column, tc);
+
+    MoveToLinePosition (tc.line, tc.position, selecting);
 }
 
 void CNormalTextCursor::Drag (unsigned int row, unsigned int column)
 {
-    MoveToRowColumn (row, column, true);
+    TEXTCELL tc;
+
+    layout.GetCellAt (row, column, tc);
+
+    MoveToLinePosition (tc.line, tc.position, true);
 }
 
 void CNormalTextCursor::Left (bool selecting)
@@ -288,16 +319,67 @@ void CNormalTextCursor::WordLeft (bool selecting) {}
 
 void CNormalTextCursor::WordRight (bool selecting) {}
 
-void CNormalTextCursor::PageUp (bool selecting) {}
+void CNormalTextCursor::PageUp (unsigned int page_rows, bool selecting)
+{
+    MoveToRowColumn (current_row >= page_rows ? current_row - page_rows : 0, current_column, selecting);
+}
 
-void CNormalTextCursor::PageDown (bool selecting) {}
+void CNormalTextCursor::PageDown (unsigned int page_rows, bool selecting)
+{
+    MoveToRowColumn (current_row + page_rows, current_column, selecting);
+}
 
-void CNormalTextCursor::Home (bool selecting) {}
+void CNormalTextCursor::Home (bool selecting)
+{
+    TEXTCELL row_start;
 
-void CNormalTextCursor::End (bool selecting) {}
+    layout.GetCellAt (cursor_row, 0, row_start);
 
-void CNormalTextCursor::TextBegin (bool selecting) {}
+    unsigned int position = GetFirstNonBlankPosition (current_line);
 
-void CNormalTextCursor::TextEnd (bool selecting) {}
+    if (current_position == 0)
+        MoveToLinePosition (current_line, position, selecting);
+    else
+    {
+        unsigned int p = 0;
+
+        if (row_start.position < current_position)
+            p = row_start.position;
+
+        if (position > p && position < current_position)
+            p = position;
+
+        MoveToLinePosition (current_line, p, selecting);
+    }
+}
+
+void CNormalTextCursor::End (bool selecting)
+{
+    TEXTCELL row_end;
+
+    layout.GetCellAt (cursor_row, layout.GetWidth (), row_end);
+
+    unsigned int line_length = layout.GetText ().GetLineLength (current_line);
+
+    unsigned int p = line_length;
+
+    if (row_end.position < p && row_end.position > current_position)
+        p = row_end.position;
+
+    MoveToLinePosition (current_line, p, selecting);
+}
+
+void CNormalTextCursor::TextBegin (bool selecting)
+{
+    MoveToLinePosition (0, 0, selecting);
+}
+
+void CNormalTextCursor::TextEnd (bool selecting)
+{
+    unsigned int line = layout.GetText ().GetLinesCount () - 1;
+    unsigned int position = layout.GetText ().GetLineLength (line);
+
+    MoveToLinePosition (line, position, selecting);
+}
 
 #pragma endregion

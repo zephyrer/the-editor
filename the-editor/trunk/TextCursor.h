@@ -28,8 +28,8 @@ public:
     virtual void Down (bool selecting) = 0;
     virtual void WordLeft (bool selecting) = 0;
     virtual void WordRight (bool selecting) = 0;
-    virtual void PageUp (bool selecting) = 0;
-    virtual void PageDown (bool selecting) = 0;
+    virtual void PageUp (unsigned int page_rows, bool selecting) = 0;
+    virtual void PageDown (unsigned int page_rows, bool selecting) = 0;
     virtual void Home (bool selecting) = 0;
     virtual void End (bool selecting) = 0;
     virtual void TextBegin (bool selecting) = 0;
@@ -50,8 +50,9 @@ protected:
     virtual void AddDirtyRowRange (unsigned int start_dirty_row, unsigned int dirty_row_count);
     virtual void AddDirtyLineRange (unsigned int start_dirty_line, unsigned int dirty_line_count);
     virtual void UpdateSelection ();
-    void MoveToRowColumn (unsigned int row, unsigned int column, bool selecting);
-    void MoveToLinePosition (unsigned int line, unsigned int position, bool selecting);
+    virtual void MoveToRowColumn (unsigned int row, unsigned int column, bool selecting);
+    virtual void MoveToLinePosition (unsigned int line, unsigned int position, bool selecting);
+    virtual unsigned int GetFirstNonBlankPosition (unsigned int line);
 
 public:
     inline CNormalTextCursor (CTextLayout &layout) : 
@@ -82,8 +83,8 @@ public:
     virtual void Down (bool selecting);
     virtual void WordLeft (bool selecting);
     virtual void WordRight (bool selecting);
-    virtual void PageUp (bool selecting);
-    virtual void PageDown (bool selecting);
+    virtual void PageUp (unsigned int page_rows, bool selecting);
+    virtual void PageDown (unsigned int page_rows, bool selecting);
     virtual void Home (bool selecting);
     virtual void End (bool selecting);
     virtual void TextBegin (bool selecting);

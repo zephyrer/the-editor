@@ -250,6 +250,8 @@ void CEditorControl::OnLButtonDown (UINT nFlags, CPoint point)
 
     cursor.Click (row, column, (nFlags & MK_SHIFT) != 0);
 
+    EnsureCaretVisible ();
+
     UpdateCaret ();
 
     SetCapture ();
@@ -283,29 +285,9 @@ void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
 
         cursor.Drag (row, column);
 
+        EnsureCaretVisible ();
+
         UpdateCaret ();
-
-        CRect r;
-
-        GetClientRect (&r);
-
-        r.OffsetRect (GetScrollPos (SB_HORZ), GetScrollPos (SB_VERT));
-
-        int dx = 0, dy = 0;
-
-        if (point.x < r.left)
-            dx = -view.cell_size.cx * 4;
-
-        if (point.x >= r.right)
-            dx = +view.cell_size.cx * 4;
-
-        if (point.y < r.top)
-            dy = -view.cell_size.cy;
-
-        if (point.y >= r.bottom)
-            dy = +view.cell_size.cy;
-
-        Scroll (dx, dy);
 
         ValidateCursor ();
     }
@@ -359,23 +341,63 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
     if (view.cursor == NULL) return;
     CTextCursor &cursor = *view.cursor;
 
+    CRect client_rect;
+    GetClientRect (&client_rect);
+
+    unsigned int page_rows = client_rect.Height () / view.cell_size.cy;
+
     for (unsigned int i = 0; i < nRepCnt; i++)
     {
         bool shift = GetKeyState (VK_SHIFT) & 0x80000;
+        bool ctrl = GetKeyState (VK_CONTROL) & 0x80000;
 
         switch (nChar)
         {
         case VK_LEFT:
-            cursor.Left (shift);
+            ctrl ? cursor.WordLeft (shift) : cursor.Left (shift);
+            EnsureCaretVisible ();
             break;
         case VK_RIGHT:
-            cursor.Right (shift);
+            ctrl ? cursor.WordRight (shift) : cursor.Right (shift);
+            EnsureCaretVisible ();
             break;
         case VK_UP:
-            cursor.Up (shift);
+            if (ctrl)
+            {
+                Scroll (0, -view.cell_size.cy);
+            }
+            else
+            {
+                cursor.Up (shift);
+                EnsureCaretVisible ();
+            }
             break;
         case VK_DOWN:
-            cursor.Down (shift);
+            if (ctrl)
+            {
+                Scroll (0, view.cell_size.cy);
+            }
+            else
+            {
+                cursor.Down (shift);
+                EnsureCaretVisible ();
+            }
+            break;
+        case VK_PRIOR:
+            cursor.PageUp (page_rows, shift);
+            EnsureCaretVisible ();
+            break;
+        case VK_NEXT:
+            cursor.PageDown (page_rows, shift);
+            EnsureCaretVisible ();
+            break;
+        case VK_HOME:
+            ctrl ? cursor.TextBegin (shift) : cursor.Home (shift);
+            EnsureCaretVisible ();
+            break;
+        case VK_END:
+            ctrl ? cursor.TextEnd (shift) : cursor.End (shift);
+            EnsureCaretVisible ();
             break;
         }
     }
@@ -483,6 +505,61 @@ void CEditorControl::Scroll (int dx, int dy)
     view.line_numbers_control.ScrollWindow (0, -deltaY);
 
     UpdateCaret ();
+}
+
+void CEditorControl::EnsureRectVisible (CRect &rect, CRect &margins)
+{
+    CRect client_rect;
+
+    GetClientRect (client_rect);
+
+    client_rect.OffsetRect (GetScrollPos (SB_HORZ), GetScrollPos (SB_VERT));
+
+    int dx = 0;
+    int dy = 0;
+
+    if (rect.right > client_rect.right)
+    {
+        dx = margins.right - client_rect.right;
+
+        if (client_rect.left + dx > rect.left)
+            dx = rect.left - client_rect.left;
+    }
+    else if (rect.left < client_rect.left)
+    {
+        dx = margins.left - client_rect.left;
+
+        if (client_rect.right + dx < rect.right)
+            dx = rect.right - client_rect.right;
+    }
+
+    if (rect.bottom > client_rect.bottom)
+    {
+        dy = margins.bottom - client_rect.bottom;
+
+        if (client_rect.top + dx > rect.top)
+            dy = rect.top - client_rect.top;
+    }
+    else if (rect.top < client_rect.top)
+    {
+        dy = margins.top - client_rect.top;
+
+        if (client_rect.bottom + dx < rect.bottom)
+            dx = rect.bottom - client_rect.bottom;
+    }
+
+    Scroll (dx, dy);
+}
+
+void CEditorControl::EnsureCaretVisible ()
+{
+    if (view.cursor == NULL) return;
+    CTextCursor &cursor = *view.cursor;
+
+    unsigned int x = view.padding_left + cursor.GetCursorColumn () * view.cell_size.cx;
+    unsigned int y = view.padding_top + cursor.GetCursorRow () * view.cell_size.cy;
+
+    EnsureRectVisible (CRect (x, y, x + view.cell_size.cx, y + view.cell_size.cy), CRect (x - view.cell_size.cx * 8, y, x + view.cell_size.cx * 9, y + view.cell_size.cy));
 }
 
 void CEditorControl::PaintCharsRange (CDC &DC, int row, int start_column, int count, bool selected, TEXTCELL *cells)
