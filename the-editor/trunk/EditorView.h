@@ -39,6 +39,8 @@ public:
     virtual void UpdateScrollBars ();
     virtual void UpdateCaret ();
     virtual void Scroll (int dx, int dy);
+    virtual void EnsureRectVisible (CRect &rect, CRect &margins);
+    virtual void EnsureCaretVisible ();
 };
 
 class CLineNumbersControl : public CWnd
