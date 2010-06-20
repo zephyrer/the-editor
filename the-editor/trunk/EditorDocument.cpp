@@ -42,7 +42,7 @@ END_INTERFACE_MAP()
 
 // CEditorDocument construction/destruction
 
-CEditorDocument::CEditorDocument()
+CEditorDocument::CEditorDocument() : undo_manager (), text (undo_manager)
 {
     EnableAutomation();
 

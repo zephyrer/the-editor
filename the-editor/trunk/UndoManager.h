@@ -22,6 +22,7 @@ public:
     inline CUndoManager () : current_transaction (NULL) {}
     virtual ~CUndoManager ();
 
+    virtual bool IsWithinTransaction ();
     virtual void StartTransaction ();
     virtual void FinishTransaction ();
     virtual void AddAction (CUndoableAction *action);

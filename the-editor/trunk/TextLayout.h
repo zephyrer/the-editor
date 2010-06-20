@@ -45,9 +45,15 @@ public:
     virtual void LinesRemoved (unsigned int start_line, unsigned int count) = 0;
 };
 
+class CLayoutChangedAction;
+
 class CAbstractTextLayout : public CTextLayout
 {
+    friend CLayoutChangedAction;
+
 protected:
+    CUndoManager &undo_manager;
+
     unsigned int width;
     vector <unsigned int> row_widths;
 
@@ -55,7 +61,7 @@ protected:
     virtual unsigned int CalculateRowWidth (unsigned int row) = 0;
 
 public:
-    inline CAbstractTextLayout (CText &text) : CTextLayout (text), width (0) {}
+    inline CAbstractTextLayout (CText &text, CUndoManager &undo_manager) : CTextLayout (text), undo_manager (undo_manager), width (0) {}
 
     virtual unsigned int GetWidth ();
     virtual void GetCellAt (unsigned int row, unsigned int column, TEXTCELL &text_cell);
@@ -70,7 +76,7 @@ protected:
     virtual void RenderRow (unsigned int row, unsigned int start_column, unsigned int count, TEXTCELL buffer []) = 0;
 
 public:
-    inline CAbstractNonWrappingTextLayout (CText &text) : CAbstractTextLayout (text) {}
+    inline CAbstractNonWrappingTextLayout (CText &text, CUndoManager &undo_manager) : CAbstractTextLayout (text, undo_manager) {}
 
     virtual unsigned int GetHeight ();
     virtual void GetCellsRange (unsigned int start_row, unsigned int start_column, unsigned int row_count, unsigned int column_count, TEXTCELL buffer []);
@@ -86,7 +92,7 @@ protected:
     virtual void RenderRow (unsigned int row, unsigned int start_column, unsigned int count, TEXTCELL buffer []);
 
 public:
-    inline CSimpleTextLayout (CText &text) : CAbstractNonWrappingTextLayout (text) {}
+    inline CSimpleTextLayout (CText &text, CUndoManager &undo_manager) : CAbstractNonWrappingTextLayout (text, undo_manager) {}
 
     virtual void GetCellByLinePosition (unsigned int line, unsigned int position, TEXTCELL &text_cell);
 };
@@ -100,8 +106,8 @@ protected:
     virtual void RenderRow (unsigned int row, unsigned int start_column, unsigned int count, TEXTCELL buffer []);
 
 public:
-    inline CTabbedTextLayout (CText &text) : CAbstractNonWrappingTextLayout (text), tab_size (8) {}
-    CTabbedTextLayout (CText &text, unsigned int tab_size);
+    inline CTabbedTextLayout (CText &text, CUndoManager &undo_manager) : CAbstractNonWrappingTextLayout (text, undo_manager), tab_size (8) {}
+    CTabbedTextLayout (CText &text, CUndoManager &undo_manager, unsigned int tab_size);
 
     inline unsigned int GetTabSize () { return tab_size; }
     virtual void SetTabSize (unsigned int tab_size);

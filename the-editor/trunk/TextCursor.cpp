@@ -11,19 +11,97 @@ CTextCursor::~CTextCursor ()
 
 #pragma region CNormalTextCursor
 
+class CNormalTextCursorAction : public CUndoableAction
+{
+protected:
+    CNormalTextCursor &cursor;
+
+public:
+    inline CNormalTextCursorAction (CNormalTextCursor &cursor) : cursor (cursor) {}
+};
+
+class CAddDirtyRowRangeAction : public CNormalTextCursorAction
+{
+protected:
+    unsigned int start_dirty_row;
+    unsigned int dirty_row_count;
+
+public:
+    inline CAddDirtyRowRangeAction (CNormalTextCursor &cursor, unsigned int start_dirty_row, unsigned int dirty_row_count) :
+        CNormalTextCursorAction (cursor), start_dirty_row (start_dirty_row), dirty_row_count (dirty_row_count)
+    {}
+    
+    virtual void Undo ()
+    {
+        cursor.AddDirtyRowRange (start_dirty_row, dirty_row_count);
+    }
+};
+
+class CMoveAction : public CNormalTextCursorAction
+{
+protected:
+    unsigned int anchor_line, anchor_position;
+    unsigned int current_line, current_position;
+    unsigned int current_row, current_column;
+    unsigned int cursor_row, cursor_column;
+
+public:
+    inline CMoveAction (
+        CNormalTextCursor &cursor, 
+        unsigned int anchor_line, unsigned int anchor_position, 
+        unsigned int current_line, unsigned int current_position,
+        unsigned int current_row, unsigned int current_column,
+        unsigned int cursor_row, unsigned int cursor_column) :
+        CNormalTextCursorAction (cursor),
+        anchor_line (anchor_line), anchor_position (anchor_position), 
+        current_line (current_line), current_position (current_position),
+        current_row (current_row), current_column (current_column),
+        cursor_row (cursor_row), cursor_column (cursor_column)
+    {}
+        
+    virtual void Undo ()
+    {
+        if (cursor.undo_manager.IsWithinTransaction ())
+            cursor.undo_manager.AddAction (
+                new CMoveAction (
+                    cursor,
+                    cursor.anchor_line, cursor.anchor_position,
+                    cursor.current_line, cursor.current_position,
+                    cursor.current_row, cursor.current_column,
+                    cursor.cursor_row, cursor.cursor_column));
+
+        cursor.anchor_line = anchor_line;
+        cursor.anchor_position = anchor_position;
+        cursor.current_line = current_line;
+        cursor.current_position = current_position;
+        cursor.current_row = current_row;
+        cursor.current_column = current_column;
+        cursor.cursor_row = cursor_row;
+        cursor.cursor_column = cursor_column;
+
+        cursor.UpdateSelection ();
+    }
+};
+
 void CNormalTextCursor::AddDirtyRowRange (unsigned int start_dirty_row, unsigned int dirty_row_count)
 {
-    if (CNormalTextCursor::dirty_row_count == 0)
+    if (dirty_row_count > 0)
     {
-        CNormalTextCursor::start_dirty_row = start_dirty_row;
-        CNormalTextCursor::dirty_row_count = dirty_row_count;
-    }
-    else if (dirty_row_count > 0)
-    {
-        unsigned int s = min (CNormalTextCursor::start_dirty_row, start_dirty_row);
-        unsigned int e = max (CNormalTextCursor::start_dirty_row + CNormalTextCursor::dirty_row_count, start_dirty_row + dirty_row_count);
-        CNormalTextCursor::start_dirty_row = s;
-        CNormalTextCursor::dirty_row_count = e - s;
+        if (CNormalTextCursor::dirty_row_count == 0)
+        {
+            CNormalTextCursor::start_dirty_row = start_dirty_row;
+            CNormalTextCursor::dirty_row_count = dirty_row_count;
+        }
+        else
+        {
+            unsigned int s = min (CNormalTextCursor::start_dirty_row, start_dirty_row);
+            unsigned int e = max (CNormalTextCursor::start_dirty_row + CNormalTextCursor::dirty_row_count, start_dirty_row + dirty_row_count);
+            CNormalTextCursor::start_dirty_row = s;
+            CNormalTextCursor::dirty_row_count = e - s;
+        }
+
+        if (undo_manager.IsWithinTransaction ())
+            undo_manager.AddAction (new CAddDirtyRowRangeAction (*this, start_dirty_row, dirty_row_count));
     }
 }
 
@@ -112,6 +190,15 @@ void CNormalTextCursor::UpdateSelection ()
 
 void CNormalTextCursor::MoveToRowColumn (unsigned int row, unsigned int column, bool selecting)
 {
+    if (undo_manager.IsWithinTransaction ())
+        undo_manager.AddAction (
+            new CMoveAction (
+                *this,
+                anchor_line, anchor_position,
+                current_line, current_position,
+                current_row, current_column,
+                cursor_row, cursor_column));
+
     unsigned int height = layout.GetHeight ();
     if (row >= height)
         row = height - 1;
@@ -156,6 +243,15 @@ void CNormalTextCursor::MoveToLinePosition (unsigned int line, unsigned int posi
     ASSERT (position <= layout.GetText ().GetLineLength (line));
     ASSERT (aline < layout.GetText ().GetLinesCount ());
     ASSERT (aposition <= layout.GetText ().GetLineLength (aline));
+
+    if (undo_manager.IsWithinTransaction ())
+        undo_manager.AddAction (
+            new CMoveAction (
+                *this,
+                anchor_line, anchor_position,
+                current_line, current_position,
+                current_row, current_column,
+                cursor_row, cursor_column));
 
     TEXTCELL tc;
 
@@ -355,7 +451,8 @@ void CNormalTextCursor::DeleteSelection ()
     }
 }
 
-CNormalTextCursor::CNormalTextCursor (CTextLayout &layout, unsigned int row, unsigned int column) : CTextCursor (layout), selection (NULL)
+CNormalTextCursor::CNormalTextCursor (CTextLayout &layout, unsigned int row, unsigned int column, CUndoManager &undo_manager) : 
+    CTextCursor (layout), selection (NULL), undo_manager (undo_manager)
 {
     unsigned int height = layout.GetHeight ();
     if (row >= height)
@@ -674,6 +771,8 @@ void CNormalTextCursor::TextEnd (bool selecting)
 
 void CNormalTextCursor::InsertChar (TCHAR ch)
 {
+    undo_manager.StartTransaction ();
+
     DeleteSelection ();
 
     layout.GetText ().InsertCharAt (current_line, current_position, ch);
@@ -681,10 +780,14 @@ void CNormalTextCursor::InsertChar (TCHAR ch)
 
     layout.LinesChanged (current_line, 1);
     AddDirtyLineRange (current_line, 1);
+
+    undo_manager.FinishTransaction ();
 }
 
 void CNormalTextCursor::Backspace ()
 {
+    undo_manager.StartTransaction ();
+
     if (selection != NULL) 
         DeleteSelection ();
     else
@@ -711,10 +814,14 @@ void CNormalTextCursor::Backspace ()
             }
         }
     }
+
+    undo_manager.FinishTransaction ();
 }
 
 void CNormalTextCursor::Del ()
 {
+    undo_manager.StartTransaction ();
+
     if (selection != NULL) 
         DeleteSelection ();
     else
@@ -738,10 +845,14 @@ void CNormalTextCursor::Del ()
             }
         }
     }
+
+    undo_manager.FinishTransaction ();
 }
 
 void CNormalTextCursor::WordBackspace ()
 {
+    undo_manager.StartTransaction ();
+
     if (selection != NULL) 
         DeleteSelection ();
     else
@@ -770,10 +881,14 @@ void CNormalTextCursor::WordBackspace ()
             }
         }
     }
+
+    undo_manager.FinishTransaction ();
 }
 
 void CNormalTextCursor::WordDel ()
 {
+    undo_manager.StartTransaction ();
+
     if (selection != NULL) 
         DeleteSelection ();
     else
@@ -797,10 +912,14 @@ void CNormalTextCursor::WordDel ()
             }
         }
     }
+
+    undo_manager.FinishTransaction ();
 }
 
 void CNormalTextCursor::NewLine ()
 {
+    undo_manager.StartTransaction ();
+
     DeleteSelection ();
 
     layout.GetText ().BreakLineAt (current_line, current_position);
@@ -808,6 +927,8 @@ void CNormalTextCursor::NewLine ()
     layout.LinesInserted (current_line + 1, 1);
     MoveToLinePosition (current_line + 1, 0, false);
     AddDirtyLineRange (current_line - 1, layout.GetText ().GetLinesCount () - current_line + 1);
+
+    undo_manager.FinishTransaction ();
 }
 
 #pragma endregion

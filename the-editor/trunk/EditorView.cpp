@@ -27,6 +27,8 @@ BEGIN_MESSAGE_MAP(CEditorControl, CWnd)
     ON_WM_MOUSEHWHEEL ()
     ON_WM_CHAR ()
     ON_WM_KEYDOWN ()
+
+
 END_MESSAGE_MAP()
 
 BOOL CEditorControl::PreCreateWindow (CREATESTRUCT& cs)
@@ -802,6 +804,10 @@ BEGIN_MESSAGE_MAP(CEditorView, CView)
 
     ON_UPDATE_COMMAND_UI (ID_VIEW_LINE_NUMBERS, &CEditorView::OnUpdateViewLineNumbersMenu)
     ON_COMMAND_EX (ID_VIEW_LINE_NUMBERS, &CEditorView::OnViewLineNumbersCheck)
+    ON_UPDATE_COMMAND_UI (ID_EDIT_UNDO, &CEditorView::OnUpdateUndoMenu)
+    ON_COMMAND_EX (ID_EDIT_UNDO, &CEditorView::OnUndo)
+    ON_UPDATE_COMMAND_UI (ID_EDIT_REDO, &CEditorView::OnUpdateRedoMenu)
+    ON_COMMAND_EX (ID_EDIT_REDO, &CEditorView::OnRedo)
 END_MESSAGE_MAP()
 
 CEditorView::CEditorView () : editor_control (*this), line_numbers_control (*this), layout (NULL), cursor (NULL)
@@ -852,8 +858,8 @@ BOOL CEditorView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CEditorView::OnInitialUpdate ()
 {
-    layout = new CTabbedTextLayout (GetDocument ()->GetText ());
-    cursor = new CNormalTextCursor (*layout);
+    layout = new CTabbedTextLayout (GetDocument ()->GetText (), GetDocument ()->GetUndoManager ());
+    cursor = new CNormalTextCursor (*layout, GetDocument ()->GetUndoManager ());
 
     CView::OnInitialUpdate ();
 }
@@ -998,6 +1004,42 @@ BOOL CEditorView::OnViewLineNumbersCheck (UINT nID)
 	SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | (line_numbers_control.GetStyle () & WS_VISIBLE ? SWP_HIDEWINDOW : SWP_SHOWWINDOW));
 
     UpdateLayout ();
+
+    return TRUE;
+}
+
+void CEditorView::OnUpdateUndoMenu (CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable (GetDocument () != NULL && GetDocument ()->GetUndoManager ().IsUndoAvailable ());
+}
+
+BOOL CEditorView::OnUndo (UINT nID)
+{
+    GetDocument ()->GetUndoManager ().Undo ();
+
+    editor_control.UpdateScrollBars ();
+    editor_control.ValidateCursor ();
+    editor_control.UpdateCaret ();
+    editor_control.UpdateWindow ();
+    line_numbers_control.UpdateWindow ();
+
+    return TRUE;
+}
+
+void CEditorView::OnUpdateRedoMenu (CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable (GetDocument () != NULL && GetDocument ()->GetUndoManager ().IsRedoAvailable ());
+}
+
+BOOL CEditorView::OnRedo (UINT nID)
+{
+    GetDocument ()->GetUndoManager ().Redo ();
+
+    editor_control.UpdateScrollBars ();
+    editor_control.ValidateCursor ();
+    editor_control.UpdateCaret ();
+    editor_control.UpdateWindow ();
+    line_numbers_control.UpdateWindow ();
 
     return TRUE;
 }
