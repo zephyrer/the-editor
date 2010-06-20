@@ -338,7 +338,7 @@ void CNormalTextCursor::DeleteSelection ()
             0, NULL);
         layout.LinesChanged (eline, 1);
 
-        for (int i = sline + 1; i < eline; i++)
+        for (unsigned int i = sline + 1; i < eline; i++)
             layout.GetText ().RemoveLineAt (sline + 1);
         layout.LinesRemoved (sline + 1, eline - sline - 1);
 
@@ -700,15 +700,55 @@ void CNormalTextCursor::Backspace ()
         {
             if (current_line > 0)
             {
+                unsigned int height = layout.GetHeight ();
+
                 unsigned int pll = layout.GetText ().GetLineLength (current_line - 1);
                 layout.GetText ().JoinLines (current_line - 1);
                 layout.LinesChanged (current_line - 1, 1);
                 layout.LinesRemoved (current_line, 1);
                 MoveToLinePosition (current_line - 1, pll, false);
-                AddDirtyLineRange (current_line, layout.GetText ().GetLinesCount () - current_line);
+                AddDirtyRowRange (0, height);
             }
         }
     }
+}
+
+void CNormalTextCursor::Del ()
+{
+    if (selection != NULL) 
+        DeleteSelection ();
+    else
+    {
+        if (current_position < layout.GetText ().GetLineLength (current_line))
+        {
+            layout.GetText ().RemoveCharAt (current_line, current_position);
+            layout.LinesChanged (current_line, 1);
+            AddDirtyLineRange (current_line, 1);
+        }
+        else
+        {
+            if (current_line < layout.GetText ().GetLinesCount () - 1)
+            {
+                unsigned int height = layout.GetHeight ();
+
+                layout.GetText ().JoinLines (current_line);
+                layout.LinesChanged (current_line, 1);
+                layout.LinesRemoved (current_line + 1, 1);
+                AddDirtyRowRange (0, height);
+            }
+        }
+    }
+}
+
+void CNormalTextCursor::NewLine ()
+{
+    DeleteSelection ();
+
+    layout.GetText ().BreakLineAt (current_line, current_position);
+    layout.LinesChanged (current_line, 1);
+    layout.LinesInserted (current_line + 1, 1);
+    MoveToLinePosition (current_line + 1, 0, false);
+    AddDirtyLineRange (current_line - 1, layout.GetText ().GetLinesCount () - current_line + 1);
 }
 
 #pragma endregion
