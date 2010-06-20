@@ -48,17 +48,7 @@ CEditorDocument::CEditorDocument() : undo_manager (), text (undo_manager)
 
     AfxOleLockApp();
 
-    text.InsertLineAt (0, 80, L"01234567012345670123456701234567012345670123456701234567012345670123456701234567");
-
-    for (int i = 0; i < 1000; i++)
-    {
-        TCHAR temp [1024];
-
-        _stprintf_s (temp, 1024, L"    \t\t\t           ==========================\t===============\t%d\t==============================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>%d-%d", i, i, i);
-//        _stprintf (temp, L">\t=\t==\t===", i);
-
-        text.InsertLineAt (i, _tcslen (temp), temp);
-    }
+    text.InsertLineAt (0, 0, NULL);
 }
 
 CEditorDocument::~CEditorDocument()
