@@ -47,8 +47,16 @@ public:
     virtual void NewLine () = 0;
 };
 
+class CNormalTextCursorAction;
+class CAddDirtyRowRangeAction;
+class CMoveAction;
+
 class CNormalTextCursor : public CTextCursor
 {
+    friend CNormalTextCursorAction;
+    friend CAddDirtyRowRangeAction;
+    friend CMoveAction;
+
 protected:
     unsigned int anchor_line, anchor_position;
     unsigned int current_line, current_position;
@@ -57,6 +65,8 @@ protected:
     unsigned int start_dirty_row, dirty_row_count;
 
     CContinuousTextSelection *selection;
+
+    CUndoManager &undo_manager;
 
     virtual void AddDirtyRowRange (unsigned int start_dirty_row, unsigned int dirty_row_count);
     virtual void AddDirtyLineRange (unsigned int start_dirty_line, unsigned int dirty_line_count);
@@ -72,18 +82,20 @@ protected:
     virtual void DeleteSelection ();
 
 public:
-    inline CNormalTextCursor (CTextLayout &layout) : 
+    inline CNormalTextCursor (CTextLayout &layout, CUndoManager &undo_manager) : 
         CTextCursor (layout), 
         anchor_line (0), anchor_position (0),
         current_line (0), current_position (0),
         current_row (0), current_column (0),
         cursor_row (0), cursor_column (0),
         start_dirty_row (0), dirty_row_count (0),
-        selection (NULL) {}
+        selection (NULL),
+        undo_manager (undo_manager)
+    {}
     
     virtual ~CNormalTextCursor ();
 
-    CNormalTextCursor (CTextLayout &layout, unsigned int row, unsigned int column);
+    CNormalTextCursor (CTextLayout &layout, unsigned int row, unsigned int column, CUndoManager &undo_manager);
 
     virtual unsigned int GetCursorRow ();
     virtual unsigned int GetCursorColumn ();

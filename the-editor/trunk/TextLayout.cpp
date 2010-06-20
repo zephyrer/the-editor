@@ -3,6 +3,67 @@
 
 #pragma region CAbstractTextLayout
 
+class CAbstractTextLayoutAction : public CUndoableAction
+{
+protected:
+    CAbstractTextLayout &layout;
+
+public:
+    inline CAbstractTextLayoutAction (CAbstractTextLayout &layout) : layout (layout)
+    {}
+};
+
+class CRowsInsertedAction : public CAbstractTextLayoutAction
+{
+protected:
+    unsigned int start_row;
+    unsigned int count;
+
+public:
+    inline CRowsInsertedAction (CAbstractTextLayout &layout, unsigned int start_row, unsigned int count) : 
+        CAbstractTextLayoutAction (layout), start_row (start_row), count (count)
+    {}
+
+    virtual void Undo ()
+    {
+        layout.RowsRemoved (start_row, count);
+    }
+};
+
+class CRowsChangedAction : public CAbstractTextLayoutAction
+{
+protected:
+    unsigned int start_row;
+    unsigned int count;
+
+public:
+    inline CRowsChangedAction (CAbstractTextLayout &layout, unsigned int start_row, unsigned int count) : 
+        CAbstractTextLayoutAction (layout), start_row (start_row), count (count)
+    {}
+
+    virtual void Undo ()
+    {
+        layout.RowsChanged (start_row, count);
+    }
+};
+
+class CRowsRemovedAction : public CAbstractTextLayoutAction
+{
+protected:
+    unsigned int start_row;
+    unsigned int count;
+
+public:
+    inline CRowsRemovedAction (CAbstractTextLayout &layout, unsigned int start_row, unsigned int count) : 
+        CAbstractTextLayoutAction (layout), start_row (start_row), count (count)
+    {}
+
+    virtual void Undo ()
+    {
+        layout.RowsInserted (start_row, count);
+    }
+};
+
 unsigned int CAbstractTextLayout::GetRowWidth (unsigned int row)
 {
     ASSERT (row < GetHeight ());
@@ -55,7 +116,10 @@ void CAbstractTextLayout::RowsChanged (unsigned int start_row, unsigned int coun
             row_widths [start_row + r] = 0;
 
         width = 0;
-    }
+
+        if (undo_manager.IsWithinTransaction ())
+            undo_manager.AddAction (new CRowsChangedAction (*this, start_row, count));
+   }
 }
 
 void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int count)
@@ -69,6 +133,9 @@ void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int cou
                 row_widths.insert (row_widths.begin () + start_row + r, 0);
 
         width = 0;
+
+        if (undo_manager.IsWithinTransaction ())
+            undo_manager.AddAction (new CRowsInsertedAction (*this, start_row, count));
     }
 }
 
@@ -89,6 +156,9 @@ void CAbstractTextLayout::RowsRemoved (unsigned int start_row, unsigned int coun
 
         if (width == mw)
             width = 0;
+
+        if (undo_manager.IsWithinTransaction ())
+            undo_manager.AddAction (new CRowsRemovedAction (*this, start_row, count));
     }
 }
 
@@ -356,7 +426,7 @@ void CTabbedTextLayout::RenderRow (unsigned int row, unsigned int start_column, 
     }
 }
 
-CTabbedTextLayout::CTabbedTextLayout (CText &text, unsigned int tab_size) : CAbstractNonWrappingTextLayout (text)
+CTabbedTextLayout::CTabbedTextLayout (CText &text, CUndoManager &undo_manager, unsigned int tab_size) : CAbstractNonWrappingTextLayout (text, undo_manager)
 {
     ASSERT (tab_size > 0);
 

@@ -18,9 +18,26 @@ CUndoManager::~CUndoManager ()
     ClearUndoHistory ();
 }
 
+bool CUndoManager::IsWithinTransaction ()
+{
+    return current_transaction != NULL;
+}
+
 void CUndoManager::StartTransaction ()
 {
     ASSERT (current_transaction == NULL);
+
+    for (unsigned int c = redo_history.size (), i = 0; i < c; i++)
+    {
+        vector <CUndoableAction *> *transaction = redo_history [i];
+
+        for (unsigned int cc = transaction->size (), j = 0; j < cc; j++)
+            delete (*transaction) [j];
+
+        delete transaction;
+    }
+
+    redo_history.clear ();
 
     current_transaction = new vector <CUndoableAction *> ();
 }
@@ -29,22 +46,32 @@ void CUndoManager::FinishTransaction ()
 {
     ASSERT (current_transaction != NULL);
 
-    undo_history.insert (undo_history.end (), current_transaction);
+    if (current_transaction->size () > 0)
+    {
+        undo_history.insert (undo_history.end (), current_transaction);
+    }
+    else
+    {
+        delete current_transaction;
+    }
+
     current_transaction = NULL;
 }
 
 void CUndoManager::AddAction (CUndoableAction *action)
 {
-    if (current_transaction != NULL)
-        current_transaction->insert (current_transaction->end (), action);
-    else delete action;
+    ASSERT (current_transaction != NULL);
+
+    current_transaction->insert (current_transaction->end (), action);
 }
 
 void CUndoManager::ClearUndoHistory ()
 {
+    ASSERT (current_transaction == NULL);
+
     for (unsigned int c = undo_history.size (), i = 0; i < c; i++)
     {
-        vector <CUndoableAction *> *transaction = undo_history [c];
+        vector <CUndoableAction *> *transaction = undo_history [i];
 
         for (unsigned int cc = transaction->size (), j = 0; j < cc; j++)
             delete (*transaction) [j];
@@ -56,7 +83,7 @@ void CUndoManager::ClearUndoHistory ()
 
     for (unsigned int c = redo_history.size (), i = 0; i < c; i++)
     {
-        vector <CUndoableAction *> *transaction = redo_history [c];
+        vector <CUndoableAction *> *transaction = redo_history [i];
 
         for (unsigned int cc = transaction->size (), j = 0; j < cc; j++)
             delete (*transaction) [j];
@@ -69,6 +96,8 @@ void CUndoManager::ClearUndoHistory ()
 
 bool CUndoManager::IsUndoAvailable ()
 {
+    ASSERT (current_transaction == NULL);
+
     return undo_history.size () > 0;
 }
 
@@ -84,7 +113,7 @@ void CUndoManager::Undo ()
 
     for (unsigned int c = transaction->size (), i = 0; i < c; i++)
     {
-        CUndoableAction *action = (*transaction) [i];
+        CUndoableAction *action = (*transaction) [c - i - 1];
 
         action->Undo ();
 
@@ -93,12 +122,18 @@ void CUndoManager::Undo ()
     delete transaction;
 
     ASSERT (current_transaction != NULL);
-    redo_history.insert (redo_history.end (), current_transaction);
+
+    if (current_transaction->size () > 0)
+        redo_history.insert (redo_history.end (), current_transaction);
+    else delete current_transaction;
+
     current_transaction = NULL;
 }
 
 bool CUndoManager::IsRedoAvailable ()
 {
+    ASSERT (current_transaction == NULL);
+
     return redo_history.size () > 0;
 }
 
@@ -114,7 +149,7 @@ void CUndoManager::Redo ()
 
     for (unsigned int c = transaction->size (), i = 0; i < c; i++)
     {
-        CUndoableAction *action = (*transaction) [i];
+        CUndoableAction *action = (*transaction) [c - i - 1];
 
         action->Undo ();
 
@@ -123,7 +158,11 @@ void CUndoManager::Redo ()
     delete transaction;
 
     ASSERT (current_transaction != NULL);
-    undo_history.insert (undo_history.end (), current_transaction);
+
+    if (current_transaction->size () > 0)
+        undo_history.insert (undo_history.end (), current_transaction);
+    else delete current_transaction;
+
     current_transaction = NULL;
 }
 

@@ -26,8 +26,6 @@ protected:
 
     virtual void PaintCharsRange (CDC &DC, int row, int start_column, int count, bool selected, TEXTCELL *cells = NULL);
 
-    virtual void ValidateCursor ();
-
     unsigned int click_counter;
     unsigned int last_click_time;
     CPoint last_click_point;
@@ -44,6 +42,7 @@ public:
     virtual void Scroll (int dx, int dy);
     virtual void EnsureRectVisible (CRect &rect, CRect &margins);
     virtual void EnsureCaretVisible ();
+    virtual void ValidateCursor ();
 };
 
 class CLineNumbersControl : public CWnd
@@ -120,8 +119,13 @@ protected:
     afx_msg void OnSize (UINT nType, int cx, int cy);
     afx_msg LRESULT OnSetFont (WPARAM, LPARAM);
     afx_msg LRESULT OnGetFont (WPARAM, LPARAM);
+
     afx_msg void OnUpdateViewLineNumbersMenu (CCmdUI* pCmdUI);
     afx_msg BOOL OnViewLineNumbersCheck (UINT nID);
+    afx_msg void OnUpdateUndoMenu (CCmdUI* pCmdUI);
+    afx_msg BOOL OnUndo (UINT nID);
+    afx_msg void OnUpdateRedoMenu (CCmdUI* pCmdUI);
+    afx_msg BOOL OnRedo (UINT nID);
 
 protected:
     DECLARE_MESSAGE_MAP ()
