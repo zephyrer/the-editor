@@ -38,7 +38,7 @@ BOOL CEditorControl::PreCreateWindow (CREATESTRUCT& cs)
     if (!CWnd::PreCreateWindow(cs))
         return FALSE;
 
-    cs.style |= WS_VSCROLL | WS_HSCROLL;
+    cs.style |= CS_HREDRAW | CS_VREDRAW;
 
     return TRUE;
 }
@@ -491,9 +491,12 @@ void CEditorControl::OnMouseHWheel (UINT nFlags, short zDelta, CPoint pt)
 void CEditorControl::UpdateScrollBars ()
 {
     if (view.layout == NULL) return;
+
     CTextLayout &layout = *view.layout;
 
     ShowScrollBar (SB_BOTH, TRUE);
+
+    view.UpdateLayout ();
 
     CRect client_rect;
 
@@ -715,7 +718,12 @@ BOOL CLineNumbersControl::PreCreateWindow (CREATESTRUCT& cs)
 {
     cs.lpszClass = AfxRegisterWndClass (0, ::LoadCursor(NULL, IDC_ARROW), NULL, NULL); 
 
-    return CWnd::PreCreateWindow(cs);
+    if (!CWnd::PreCreateWindow(cs))
+        return FALSE;
+
+    cs.style |= CS_HREDRAW | CS_VREDRAW;
+
+    return TRUE;
 }
 
 void CLineNumbersControl::OnPaint ()
@@ -876,13 +884,15 @@ void CEditorView::UpdateLayout ()
 
     if (line_numbers_control.GetStyle () & WS_VISIBLE)
     {
-        CEditorDocument* pDoc = GetDocument ();
-        ASSERT_VALID(pDoc);
+        unsigned int digits = 0;
+        unsigned int height = layout->GetHeight ();
+        while (height > 0)
+        {
+            digits++;
+            height /= 10;
+        }
 
-        int digits = line_numbers_minimal_digits;
-
-        if (pDoc != NULL)
-            digits = max (digits, _sntprintf_s (NULL, 0, 0, L"%d", pDoc->GetText ().GetLinesCount ()));
+        digits = max (digits, line_numbers_minimal_digits);
 
         int line_numbers_control_width = 
             line_numbers_padding_left +
@@ -892,14 +902,14 @@ void CEditorView::UpdateLayout ()
         int editor_left = line_numbers_control_width +
             line_numbers_border_width;
 
-        editor_control.SetWindowPos (
-            NULL, 
-            client_rect.left + editor_left, client_rect.top, 
-            client_rect.Width () - editor_left, client_rect.Height (), SWP_NOACTIVATE);
+        CRect nr = CRect (client_rect.left + editor_left, client_rect.top, client_rect.right, client_rect.bottom);
+        editor_control.SetWindowPos (NULL, nr.left, nr.top, nr.Width (), nr.Height (), SWP_NOACTIVATE | SWP_NOZORDER);
 
         editor_control.GetClientRect (&client_rect);
 
-        line_numbers_control.SetWindowPos (NULL, 0, client_rect.top, line_numbers_control_width, client_rect.Height (), SWP_NOACTIVATE);
+        nr = CRect (0, client_rect.top, line_numbers_control_width, client_rect.bottom);
+        line_numbers_control.SetWindowPos (NULL, nr.left, nr.top, nr.Width (), nr.Height (), SWP_NOACTIVATE | SWP_NOZORDER);
+            line_numbers_control.Invalidate ();
     }
     else
     {
