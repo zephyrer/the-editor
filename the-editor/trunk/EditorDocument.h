@@ -1,44 +1,17 @@
 #pragma once
 
 #include "Text.h"
+#include "UndoManager.h"
 
 class CEditorDocument : public CDocument
 {
 protected:
     CSimpleInMemoryText text;
+    CUndoManager undo_manager;
 
-protected: // create from serialization only
     CEditorDocument ();
     DECLARE_DYNCREATE (CEditorDocument)
 
-// Attributes
-public:
-    virtual CText & GetText ();
-
-// Operations
-public:
-
-// Overrides
-public:
-    virtual BOOL OnNewDocument();
-    virtual void Serialize(CArchive& ar);
-#ifdef SHARED_HANDLERS
-    virtual void InitializeSearchContent();
-    virtual void OnDrawThumbnail(CDC& dc, LPRECT lprcBounds);
-#endif // SHARED_HANDLERS
-
-// Implementation
-public:
-    virtual ~CEditorDocument();
-#ifdef _DEBUG
-    virtual void AssertValid() const;
-    virtual void Dump(CDumpContext& dc) const;
-#endif
-
-protected:
-
-// Generated message map functions
-protected:
     DECLARE_MESSAGE_MAP()
 
     // Generated OLE dispatch map functions
@@ -50,4 +23,20 @@ protected:
     // Helper function that sets search content for a Search Handler
     void SetSearchContent(const CString& value);
 #endif // SHARED_HANDLERS
+
+public:
+    virtual CText & GetText ();
+    virtual CUndoManager & GetUndoManager ();
+
+    virtual BOOL OnNewDocument();
+    virtual void Serialize(CArchive& ar);
+#ifdef SHARED_HANDLERS
+    virtual void InitializeSearchContent();
+    virtual void OnDrawThumbnail(CDC& dc, LPRECT lprcBounds);
+#endif // SHARED_HANDLERS
+    virtual ~CEditorDocument();
+#ifdef _DEBUG
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
+#endif
 };

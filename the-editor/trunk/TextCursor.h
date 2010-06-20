@@ -38,6 +38,9 @@ public:
     virtual void End (bool selecting) = 0;
     virtual void TextBegin (bool selecting) = 0;
     virtual void TextEnd (bool selecting) = 0;
+
+    virtual void InsertChar (TCHAR ch) = 0;
+    virtual void Backspace () = 0;
 };
 
 class CNormalTextCursor : public CTextCursor
@@ -61,6 +64,8 @@ protected:
     virtual bool IsWordBoundary (TCHAR ch1, TCHAR ch2);
     virtual unsigned int GetPreviousWordBoundary (unsigned int line, unsigned int start);
     virtual unsigned int GetNextWordBoundary (unsigned int line, unsigned int start);
+
+    virtual void DeleteSelection ();
 
 public:
     inline CNormalTextCursor (CTextLayout &layout) : 
@@ -101,4 +106,7 @@ public:
     virtual void End (bool selecting);
     virtual void TextBegin (bool selecting);
     virtual void TextEnd (bool selecting);
+
+    virtual void InsertChar (TCHAR ch);
+    virtual void Backspace ();
 };

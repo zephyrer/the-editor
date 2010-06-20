@@ -369,17 +369,30 @@ void CEditorControl::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
 
     for (unsigned int i = 0; i < nRepCnt; i++)
     {
-        bool shift = GetKeyState (VK_SHIFT) & 0x80000;
-
         switch (nChar)
         {
-        case VK_LEFT:
-            cursor.Left (shift);
+        case '\b':
+            cursor.Backspace ();
             break;
+        case '\r':
+            break;
+        case '\033':
+            break;
+        case '\t':
+            cursor.InsertChar (nChar);
+            break;
+        case '\n':
+            break;
+        default: 
+            cursor.InsertChar (nChar);
+            break; 
         }
     }
 
+    UpdateScrollBars ();
+    EnsureCaretVisible ();
     UpdateCaret ();
+    ValidateCursor ();
 
     CWnd::OnChar (nChar, nRepCnt, nFlags);
 }
@@ -660,16 +673,21 @@ void CEditorControl::ValidateCursor ()
 
     if (dirty_row_count == 0) return;
 
-    CRect r;
+    CRect r, r1;
 
     GetClientRect (&r);
+    view.line_numbers_control.GetClientRect (&r1);
 
     r.top = start_dirty_row * view.cell_size.cy + view.padding_top;
     r.bottom = r.top + dirty_row_count * view.cell_size.cy;
+    r1.top = start_dirty_row * view.cell_size.cy + view.padding_top;
+    r1.bottom = r.top + dirty_row_count * view.cell_size.cy;
 
     r.OffsetRect (0, -GetScrollPos (SB_VERT));
+    r1.OffsetRect (0, -GetScrollPos (SB_VERT));
 
     InvalidateRect (&r);
+    view.line_numbers_control.InvalidateRect (&r1);
 
     cursor.ResetDirtyRows ();
 }

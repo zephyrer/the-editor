@@ -295,6 +295,66 @@ unsigned int CNormalTextCursor::GetNextWordBoundary (unsigned int line, unsigned
     return line_length;
 }
 
+void CNormalTextCursor::DeleteSelection ()
+{
+    if (selection == NULL) return;
+
+    unsigned int sline = selection->GetStartLine ();
+    unsigned int sposition = selection->GetStartPosition ();
+    unsigned int eline = selection->GetEndLine ();
+    unsigned int eposition = selection->GetEndPosition ();
+
+    if (sline == eline)
+    {
+        layout.GetText ().ReplaceCharsRange (
+            sline,
+            sposition,
+            eposition - sposition,
+            0, NULL);
+
+        if (selection != NULL) delete selection;
+        selection = NULL;
+
+        MoveToLinePosition (sline, sposition, false);
+
+        layout.LinesChanged (sline, 1);
+        AddDirtyLineRange (sline, 1);
+    }
+    else
+    {
+        unsigned int height = layout.GetHeight ();
+
+        layout.GetText ().ReplaceCharsRange (
+            sline,
+            sposition,
+            layout.GetText ().GetLineLength (sline) - sposition,
+            0, NULL);
+        layout.LinesChanged (sline, 1);
+
+        layout.GetText ().ReplaceCharsRange (
+            eline,
+            0,
+            eposition,
+            0, NULL);
+        layout.LinesChanged (eline, 1);
+
+        for (int i = sline + 1; i < eline; i++)
+            layout.GetText ().RemoveLineAt (sline + 1);
+        layout.LinesRemoved (sline + 1, eline - sline - 1);
+
+        layout.GetText ().JoinLines (sline);
+        layout.LinesChanged (sline, 1);
+        layout.LinesRemoved (sline + 1, 1);
+
+        if (selection != NULL) delete selection;
+        selection = NULL;
+
+        MoveToLinePosition (sline, sposition, false);
+
+        AddDirtyRowRange (0, height);
+    }
+}
+
 CNormalTextCursor::CNormalTextCursor (CTextLayout &layout, unsigned int row, unsigned int column) : CTextCursor (layout), selection (NULL)
 {
     unsigned int height = layout.GetHeight ();
@@ -610,6 +670,45 @@ void CNormalTextCursor::TextEnd (bool selecting)
     unsigned int position = layout.GetText ().GetLineLength (line);
 
     MoveToLinePosition (line, position, selecting);
+}
+
+void CNormalTextCursor::InsertChar (TCHAR ch)
+{
+    DeleteSelection ();
+
+    layout.GetText ().InsertCharAt (current_line, current_position, ch);
+    MoveToLinePosition (current_line, current_position + 1, false);
+
+    layout.LinesChanged (current_line, 1);
+    AddDirtyLineRange (current_line, 1);
+}
+
+void CNormalTextCursor::Backspace ()
+{
+    if (selection != NULL) 
+        DeleteSelection ();
+    else
+    {
+        if (current_position > 0)
+        {
+            layout.GetText ().RemoveCharAt (current_line, current_position - 1);
+            layout.LinesChanged (current_line, 1);
+            MoveToLinePosition (current_line, current_position - 1, false);
+            AddDirtyLineRange (current_line, 1);
+        }
+        else
+        {
+            if (current_line > 0)
+            {
+                unsigned int pll = layout.GetText ().GetLineLength (current_line - 1);
+                layout.GetText ().JoinLines (current_line - 1);
+                layout.LinesChanged (current_line - 1, 1);
+                layout.LinesRemoved (current_line, 1);
+                MoveToLinePosition (current_line - 1, pll, false);
+                AddDirtyLineRange (current_line, layout.GetText ().GetLinesCount () - current_line);
+            }
+        }
+    }
 }
 
 #pragma endregion
