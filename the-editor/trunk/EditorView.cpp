@@ -1019,6 +1019,7 @@ BOOL CEditorView::OnUndo (UINT nID)
 
     editor_control.UpdateScrollBars ();
     editor_control.ValidateCursor ();
+    editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
     editor_control.UpdateWindow ();
     line_numbers_control.UpdateWindow ();
@@ -1037,6 +1038,7 @@ BOOL CEditorView::OnRedo (UINT nID)
 
     editor_control.UpdateScrollBars ();
     editor_control.ValidateCursor ();
+    editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
     editor_control.UpdateWindow ();
     line_numbers_control.UpdateWindow ();
