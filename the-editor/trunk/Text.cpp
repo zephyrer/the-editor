@@ -20,7 +20,7 @@ void CAbstractText::ReplaceCharsRange (unsigned int line, unsigned int start_pos
     ASSERT (line < GetLinesCount ());
     ASSERT (start_position <= GetLineLength (line));
     ASSERT (start_position + count <= GetLineLength (line));
-    ASSERT (replacement != NULL);
+    ASSERT (replacement_length == 0 || replacement != NULL);
 
     unsigned int overlap = min (count, replacement_length);
     for (unsigned int i = 0; i < overlap; i++)
@@ -29,12 +29,12 @@ void CAbstractText::ReplaceCharsRange (unsigned int line, unsigned int start_pos
     if (count > replacement_length)
     {
         for (unsigned int i = overlap; i < count; i++)
-            RemoveCharAt (line, overlap);
+            RemoveCharAt (line, start_position + overlap);
     }
     else
     {
         for (unsigned int i = overlap; i < replacement_length; i++)
-            InsertCharAt (line, i, replacement [i]);
+            InsertCharAt (line, start_position + i, replacement [i]);
     }
 }
 

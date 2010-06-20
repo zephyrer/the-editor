@@ -71,6 +71,11 @@ CText & CEditorDocument::GetText ()
     return text;
 }
 
+CUndoManager & CEditorDocument::GetUndoManager ()
+{
+    return undo_manager;
+}
+
 BOOL CEditorDocument::OnNewDocument()
 {
     if (!CDocument::OnNewDocument())
@@ -166,6 +171,3 @@ void CEditorDocument::Dump(CDumpContext& dc) const
     CDocument::Dump(dc);
 }
 #endif //_DEBUG
-
-
-// CEditorDocument commands

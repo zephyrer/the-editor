@@ -75,19 +75,16 @@ void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int cou
 void CAbstractTextLayout::RowsRemoved (unsigned int start_row, unsigned int count)
 {
     ASSERT (start_row <= GetHeight ());
-    ASSERT (start_row + count <= GetHeight ());
 
-    if (count > 0)
+    if (count > 0 && start_row < row_widths.size ())
     {
         unsigned int mw = 0;
-        unsigned int mc = min (count, row_widths.size ());
+        unsigned int mc = min (count, row_widths.size () - start_row);
         for (unsigned int r = 0; r < mc; r++)
         {
-            unsigned int row = start_row + r;
+            mw = max (mw, row_widths [start_row]);
 
-            mw = max (mw, row_widths [row]);
-
-            row_widths [row] = 0;
+            row_widths.erase (row_widths.begin () + start_row);
         }
 
         if (width == mw)
@@ -185,7 +182,6 @@ void CAbstractNonWrappingTextLayout::LinesInserted (unsigned int start_line, uns
 void CAbstractNonWrappingTextLayout::LinesRemoved (unsigned int start_line, unsigned int count)
 {
     ASSERT (start_line <= text.GetLinesCount ());
-    ASSERT (start_line + count <= text.GetLinesCount ());
 
     if (count > 0) RowsRemoved (start_line, count);
 }

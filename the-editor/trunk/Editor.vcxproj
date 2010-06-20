@@ -124,6 +124,7 @@
     <ClCompile Include="TextCursor.cpp" />
     <ClCompile Include="TextLayout.cpp" />
     <ClCompile Include="TextSelection.cpp" />
+    <ClCompile Include="UndoManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Editor.h" />
@@ -134,6 +135,7 @@
     <ClInclude Include="TextCursor.h" />
     <ClInclude Include="TextLayout.h" />
     <ClInclude Include="TextSelection.h" />
+    <ClInclude Include="UndoManager.h" />
     <CustomBuild Include="Resource.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating map file for help compiler...</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">echo // Generated Help Map file.  Used by Editor.HHP. &gt; "hlp\HTMLDefines.h"
