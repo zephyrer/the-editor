@@ -61,17 +61,22 @@ void CEditorControl::OnPaint ()
     CRect clip_rect;
     paintDC.GetClipBox (&clip_rect);
 
+    CRect client_rect;
+    GetClientRect (&client_rect);
+
+    client_rect.OffsetRect (GetScrollPos (SB_HORZ), GetScrollPos (SB_VERT));
+
     if (clip_rect.IsRectEmpty ()) return;
 
-//    CMemDC memDC (paintDC, clip_rect);
-//    CDC &DC = memDC.GetDC ();
     CDC &DC = paintDC;
 
     CBrush b;
     b.CreateSysColorBrush (COLOR_WINDOW);
-    DC.FillRect (&clip_rect, &b);
+
+    DC.FillRect (CRect (0, 0, client_rect.right, view.padding_top), &b);
+    DC.FillRect (CRect (0, view.padding_top, view.padding_left, client_rect.bottom), &b);
+
     DC.SelectObject (view.GetFont ());
-    DC.SetBkMode (TRANSPARENT);
 
     int left = clip_rect.left - view.padding_left;
     if (left < 0) left = 0;
@@ -655,24 +660,24 @@ void CLineNumbersControl::OnPaint ()
 
     if (clip_rect.IsRectEmpty ()) return;
 
-//    CMemDC memDC (paintDC, clip_rect);
-//    CDC &DC = memDC.GetDC ();
     CDC &DC = paintDC;
 
     CRect client_rect;
     GetClientRect (&client_rect);
 
+    client_rect.OffsetRect (0, view.editor_control.GetScrollPos (SB_VERT));
+
     CBrush b;
     b.CreateSysColorBrush (COLOR_WINDOW);
-    DC.FillRect (&clip_rect, &b);
+    DC.FillRect (&CRect (0, 0, client_rect.right, view.padding_top), &b);
+    DC.FillRect (&CRect (client_rect.right - view.line_numbers_padding_right, view.padding_top, client_rect.right, client_rect.bottom), &b);
 
     DC.SelectObject (view.GetFont ());
     DC.SetTextColor (view.line_numbers_color);
     DC.SetTextAlign (TA_RIGHT);
-    DC.SetBkMode (TRANSPARENT);
 
-    int begin = (clip_rect.top - view.padding_top) / view.cell_size.cy;
-    int end = min ((clip_rect.bottom - view.padding_top) / view.cell_size.cy + 1, layout.GetHeight () - 1);
+    int begin = clip_rect.top > view.padding_top ? (clip_rect.top - view.padding_top) / view.cell_size.cy : 0;
+    int end = clip_rect.bottom > view.padding_top ? (clip_rect.bottom - view.padding_top) / view.cell_size.cy : 0;
 
     TEXTCELL tc;
 
@@ -687,18 +692,20 @@ void CLineNumbersControl::OnPaint ()
     {
         layout.GetCellAt (i, 0, tc);
 
+        TCHAR temp [256];
+
         if (tc.line != prev_line)
-        {
-            TCHAR temp [256];
-
             _sntprintf_s (temp, 256, 255, L"%d", tc.line + 1);
+        else temp [0] = NULL;
 
-            DC.TextOut (
-                client_rect.right - view.line_numbers_padding_right,
-                i * view.cell_size.cy + view.padding_top,
-                temp,
-                _tcslen (temp));
-        }
+        DC.ExtTextOut (
+            client_rect.right - view.line_numbers_padding_right,
+            i * view.cell_size.cy + view.padding_top,
+            ETO_OPAQUE,
+            &CRect (0, i * view.cell_size.cy + view.padding_top, client_rect.right - view.line_numbers_padding_right + 1, (i + 1) * view.cell_size.cy + view.padding_top),
+            temp,
+            _tcslen (temp),
+            NULL);
 
         prev_line = tc.line;
     }
