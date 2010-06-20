@@ -740,6 +740,65 @@ void CNormalTextCursor::Del ()
     }
 }
 
+void CNormalTextCursor::WordBackspace ()
+{
+    if (selection != NULL) 
+        DeleteSelection ();
+    else
+    {
+        if (current_position > 0)
+        {
+            unsigned int to = GetPreviousWordBoundary (current_line, current_position - 1);
+
+            layout.GetText ().ReplaceCharsRange (current_line, to, current_position - to, 0, NULL);
+            layout.LinesChanged (current_line, 1);
+            MoveToLinePosition (current_line, to, false);
+            AddDirtyLineRange (current_line, 1);
+        }
+        else
+        {
+            if (current_line > 0)
+            {
+                unsigned int height = layout.GetHeight ();
+
+                unsigned int pll = layout.GetText ().GetLineLength (current_line - 1);
+                layout.GetText ().JoinLines (current_line - 1);
+                layout.LinesChanged (current_line - 1, 1);
+                layout.LinesRemoved (current_line, 1);
+                MoveToLinePosition (current_line - 1, pll, false);
+                AddDirtyRowRange (0, height);
+            }
+        }
+    }
+}
+
+void CNormalTextCursor::WordDel ()
+{
+    if (selection != NULL) 
+        DeleteSelection ();
+    else
+    {
+        if (current_position < layout.GetText ().GetLineLength (current_line))
+        {
+            layout.GetText ().ReplaceCharsRange (current_line, current_position, GetNextWordBoundary (current_line, current_position + 1) - current_position, 0, NULL);
+            layout.LinesChanged (current_line, 1);
+            AddDirtyLineRange (current_line, 1);
+        }
+        else
+        {
+            if (current_line < layout.GetText ().GetLinesCount () - 1)
+            {
+                unsigned int height = layout.GetHeight ();
+
+                layout.GetText ().JoinLines (current_line);
+                layout.LinesChanged (current_line, 1);
+                layout.LinesRemoved (current_line + 1, 1);
+                AddDirtyRowRange (0, height);
+            }
+        }
+    }
+}
+
 void CNormalTextCursor::NewLine ()
 {
     DeleteSelection ();
