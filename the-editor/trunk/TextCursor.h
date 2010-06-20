@@ -53,6 +53,9 @@ protected:
     virtual void MoveToRowColumn (unsigned int row, unsigned int column, bool selecting);
     virtual void MoveToLinePosition (unsigned int line, unsigned int position, bool selecting);
     virtual unsigned int GetFirstNonBlankPosition (unsigned int line);
+    virtual bool IsWordBoundary (TCHAR ch1, TCHAR ch2);
+    virtual unsigned int GetPreviousWordBoundary (unsigned int line, unsigned int start);
+    virtual unsigned int GetNextWordBoundary (unsigned int line, unsigned int start);
 
 public:
     inline CNormalTextCursor (CTextLayout &layout) : 
