@@ -21,7 +21,11 @@ public:
     virtual void ResetDirtyRows () = 0;
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting) = 0;
+    virtual void WordClick (unsigned int row, unsigned int column) = 0;
+    virtual void LineClick (unsigned int row, unsigned int column) = 0;
     virtual void Drag (unsigned int row, unsigned int column) = 0;
+    virtual void WordDrag (unsigned int row, unsigned int column) = 0;
+    virtual void LineDrag (unsigned int row, unsigned int column) = 0;
     virtual void Left (bool selecting) = 0;
     virtual void Right (bool selecting) = 0;
     virtual void Up (bool selecting) = 0;
@@ -52,6 +56,7 @@ protected:
     virtual void UpdateSelection ();
     virtual void MoveToRowColumn (unsigned int row, unsigned int column, bool selecting);
     virtual void MoveToLinePosition (unsigned int line, unsigned int position, bool selecting);
+    virtual void MoveToLinePosition (unsigned int line, unsigned int position, unsigned int aline, unsigned int aposition);
     virtual unsigned int GetFirstNonBlankPosition (unsigned int line);
     virtual bool IsWordBoundary (TCHAR ch1, TCHAR ch2);
     virtual unsigned int GetPreviousWordBoundary (unsigned int line, unsigned int start);
@@ -79,7 +84,11 @@ public:
     virtual void ResetDirtyRows ();
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting);
+    virtual void WordClick (unsigned int row, unsigned int column);
+    virtual void LineClick (unsigned int row, unsigned int column);
     virtual void Drag (unsigned int row, unsigned int column);
+    virtual void WordDrag (unsigned int row, unsigned int column);
+    virtual void LineDrag (unsigned int row, unsigned int column);
     virtual void Left (bool selecting);
     virtual void Right (bool selecting);
     virtual void Up (bool selecting);

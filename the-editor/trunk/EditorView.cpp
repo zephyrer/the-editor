@@ -239,6 +239,18 @@ void CEditorControl::OnLButtonDown (UINT nFlags, CPoint point)
     CTextLayout &layout = *view.layout;
     CTextCursor &cursor = *view.cursor;
 
+    unsigned int tc = GetTickCount ();
+    if (click_counter > 0 && 
+        click_counter < 3 &&
+        tc - last_click_time <= GetDoubleClickTime () &&
+        abs (point.x - last_click_point.x) <= GetSystemMetrics (SM_CXDOUBLECLK) &&
+        abs (point.y - last_click_point.y) <= GetSystemMetrics (SM_CYDOUBLECLK))
+        click_counter++;
+    else click_counter = 1;
+
+    last_click_time = tc;
+    last_click_point = point;
+
     SetFocus ();
 
     point.Offset (GetScrollPos (SB_HORZ), GetScrollPos (SB_VERT));
@@ -251,9 +263,31 @@ void CEditorControl::OnLButtonDown (UINT nFlags, CPoint point)
     unsigned int column = 0;
     
     if (point.x >= 0 && (unsigned int)point.x >= view.padding_left)
-        column = (point.x - view.padding_left + view.cell_size.cx / 2 + 2) / view.cell_size.cx;
+        column = (point.x - view.padding_left + 2) / view.cell_size.cx;
 
-    cursor.Click (row, column, (nFlags & MK_SHIFT) != 0);
+    if (click_counter == 1)
+    {
+        if ((nFlags & MK_CONTROL) != 0)
+        {
+            cursor.WordClick (row, column);
+            drag_type = 2;
+        }
+        else
+        {
+            cursor.Click (row, column, (nFlags & MK_SHIFT) != 0);
+            drag_type = 1;
+        }
+    }
+    else if (click_counter == 2)
+    {
+        cursor.WordClick (row, column);
+        drag_type = 2;
+    }
+    else if (click_counter == 3)
+    {
+        cursor.LineClick (row, column);
+        drag_type = 3;
+    }
 
     EnsureCaretVisible ();
 
@@ -262,8 +296,6 @@ void CEditorControl::OnLButtonDown (UINT nFlags, CPoint point)
     SetCapture ();
 
     ValidateCursor ();
-
-    selecting = true;
 }
 
 void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
@@ -274,7 +306,7 @@ void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
     CTextLayout &layout = *view.layout;
     CTextCursor &cursor = *view.cursor;
 
-    if (nFlags & MK_LBUTTON && selecting)
+    if (nFlags & MK_LBUTTON && drag_type != 0)
     {
         point.Offset (GetScrollPos (SB_HORZ), GetScrollPos (SB_VERT));
 
@@ -286,9 +318,20 @@ void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
         unsigned int column = 0;
     
         if (point.x >= 0 && (unsigned int)point.x >= view.padding_left)
-            column = (point.x - view.padding_left + view.cell_size.cx / 2 + 2) / view.cell_size.cx;
+            column = (point.x - view.padding_left + 2) / view.cell_size.cx;
 
-        cursor.Drag (row, column);
+        switch (drag_type)
+        {
+        case 1:
+            cursor.Drag (row, column);
+            break;
+        case 2:
+            cursor.WordDrag (row, column);
+            break;
+        case 3:
+            cursor.LineDrag (row, column);
+            break;
+        }
 
         EnsureCaretVisible ();
 
@@ -302,7 +345,7 @@ void CEditorControl::OnLButtonUp (UINT nFlags, CPoint point)
 {
     ReleaseCapture ();
 
-    selecting = false;
+    drag_type = 0;
 }
 
 BOOL CEditorControl::OnMouseWheel (UINT nFlags, short zDelta, CPoint pt)
@@ -461,7 +504,7 @@ void CEditorControl::UpdateCaret ()
 
     SetCaretPos (
         CPoint (
-            view.padding_left + cursor.GetCursorColumn () * view.cell_size.cx - GetScrollPos (SB_HORZ),
+            view.padding_left + cursor.GetCursorColumn () * view.cell_size.cx - GetScrollPos (SB_HORZ) - 1,
             view.padding_top + cursor.GetCursorRow () * view.cell_size.cy - GetScrollPos (SB_VERT)));
 }
 

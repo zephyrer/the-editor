@@ -145,6 +145,18 @@ void CNormalTextCursor::MoveToLinePosition (unsigned int line, unsigned int posi
     ASSERT (line < layout.GetText ().GetLinesCount ());
     ASSERT (position <= layout.GetText ().GetLineLength (line));
 
+    if (selecting)
+        MoveToLinePosition (line, position, anchor_line, anchor_position);
+    else MoveToLinePosition (line, position, line, position);
+}
+
+void CNormalTextCursor::MoveToLinePosition (unsigned int line, unsigned int position, unsigned int aline, unsigned int aposition)
+{
+    ASSERT (line < layout.GetText ().GetLinesCount ());
+    ASSERT (position <= layout.GetText ().GetLineLength (line));
+    ASSERT (aline < layout.GetText ().GetLinesCount ());
+    ASSERT (aposition <= layout.GetText ().GetLineLength (aline));
+
     TEXTCELL tc;
 
     layout.GetCellByLinePosition (line, position, tc);
@@ -152,14 +164,11 @@ void CNormalTextCursor::MoveToLinePosition (unsigned int line, unsigned int posi
     current_row = tc.row;
     current_column = tc.column;
 
-    if (!selecting)
-    {
-        anchor_line = tc.line;
-        anchor_position = tc.position;
-    }
+    anchor_line = aline;
+    anchor_position = aposition;
 
-    current_line = tc.line;
-    current_position = tc.position;
+    current_line = line;
+    current_position = position;
 
     cursor_row = tc.row;
     cursor_column = tc.column;
@@ -204,6 +213,8 @@ bool CNormalTextCursor::IsWordBoundary (TCHAR ch1, TCHAR ch2)
         if (_istspace (ch2)) return false;
         return true;
     }
+
+    return true;
 }
 
 unsigned int CNormalTextCursor::GetPreviousWordBoundary (unsigned int line, unsigned int start)
@@ -211,12 +222,16 @@ unsigned int CNormalTextCursor::GetPreviousWordBoundary (unsigned int line, unsi
     ASSERT (line < layout.GetText ().GetLinesCount ());
     ASSERT (start <= layout.GetText ().GetLineLength (line));
 
+    if (start == 0) return start;
+    unsigned int line_length = layout.GetText ().GetLineLength (line);
+    if (start == line_length) return line_length;
+
     TCHAR buffer [256];
     TCHAR pch;
 
-    for (unsigned int i = 0; i < start; i++)
+    for (unsigned int i = 0; i <= start; i++)
     {
-        unsigned int position = start - i - 1;
+        unsigned int position = start - i;
 
         if (i % 256 == 0)
         {
@@ -245,16 +260,18 @@ unsigned int CNormalTextCursor::GetNextWordBoundary (unsigned int line, unsigned
     ASSERT (line < layout.GetText ().GetLinesCount ());
     ASSERT (start <= layout.GetText ().GetLineLength (line));
 
+    if (start == 0) return start;
     unsigned int line_length = layout.GetText ().GetLineLength (line);
+    if (start == line_length) return line_length;
 
     TCHAR buffer [256];
     TCHAR pch;
 
     unsigned int c = line_length - start;
 
-    for (unsigned int i = 0; i < c; i++)
+    for (unsigned int i = 0; i <= c; i++)
     {
-        unsigned int position = start + i;
+        unsigned int position = start + i - 1;
 
         if (i % 256 == 0)
         {
@@ -347,6 +364,36 @@ void CNormalTextCursor::Click (unsigned int row, unsigned int column, bool selec
     MoveToLinePosition (tc.line, tc.position, selecting);
 }
 
+void CNormalTextCursor::WordClick (unsigned int row, unsigned int column)
+{
+    TEXTCELL tc;
+
+    layout.GetCellAt (row, column, tc);
+
+    if (tc.position == layout.GetText ().GetLineLength (tc.line))
+    {
+        if (tc.position > 0)
+            MoveToLinePosition (tc.line, GetNextWordBoundary (tc.line, tc.position), tc.line, GetPreviousWordBoundary (tc.line, tc.position - 1));
+        else 
+            MoveToLinePosition (tc.line, tc.position, false);
+    }
+    else
+    {
+        MoveToLinePosition (tc.line, GetNextWordBoundary (tc.line, tc.position + 1), tc.line, GetPreviousWordBoundary (tc.line, tc.position));
+    }
+}
+
+void CNormalTextCursor::LineClick (unsigned int row, unsigned int column)
+{
+    TEXTCELL tc;
+
+    layout.GetCellAt (row, column, tc);
+
+    if (tc.line < layout.GetText ().GetLinesCount () - 1)
+        MoveToLinePosition (tc.line + 1, 0, tc.line, 0);
+    else MoveToLinePosition (tc.line, layout.GetText ().GetLineLength (tc.line), tc.line, 0);
+}
+
 void CNormalTextCursor::Drag (unsigned int row, unsigned int column)
 {
     TEXTCELL tc;
@@ -354,6 +401,83 @@ void CNormalTextCursor::Drag (unsigned int row, unsigned int column)
     layout.GetCellAt (row, column, tc);
 
     MoveToLinePosition (tc.line, tc.position, true);
+}
+
+void CNormalTextCursor::WordDrag (unsigned int row, unsigned int column)
+{
+    TEXTCELL tc;
+
+    layout.GetCellAt (row, column, tc);
+
+    if (tc.line < anchor_line || (tc.line == anchor_line && tc.position < anchor_position))
+    {
+        if (current_line < anchor_line || (current_line == anchor_line && current_position < anchor_position))
+        {
+            MoveToLinePosition (tc.line, GetPreviousWordBoundary (tc.line, tc.position), true);
+        }
+        else
+        {
+            MoveToLinePosition (
+                tc.line, GetPreviousWordBoundary (tc.line, tc.position), 
+                anchor_line, GetNextWordBoundary (anchor_line, anchor_position < layout.GetText ().GetLineLength (anchor_line) ? anchor_position + 1 : anchor_position));
+        }
+    }
+    else
+    {
+        if (current_line < anchor_line || (current_line == anchor_line && current_position < anchor_position))
+        {
+            MoveToLinePosition (
+                tc.line, GetNextWordBoundary (tc.line, tc.position), 
+                anchor_line, GetPreviousWordBoundary (anchor_line, anchor_position > 0 ? anchor_position - 1 : anchor_position));
+        }
+        else
+        {
+            MoveToLinePosition (tc.line, GetNextWordBoundary (tc.line, tc.position), true);
+        }
+    }
+}
+
+void CNormalTextCursor::LineDrag (unsigned int row, unsigned int column)
+{
+    TEXTCELL tc;
+
+    layout.GetCellAt (row, column, tc);
+
+    if (tc.line < anchor_line || (tc.line == anchor_line && tc.position < anchor_position))
+    {
+        if (current_line < anchor_line || (current_line == anchor_line && current_position < anchor_position))
+        {
+            MoveToLinePosition (tc.line, 0, true);
+        }
+        else
+        {
+            MoveToLinePosition (tc.line, 0, current_line, current_position);
+        }
+    }
+    else
+    {
+        unsigned int dl, dp;
+
+        if (tc.line < layout.GetText ().GetLinesCount () - 1)
+        {
+            dl = tc.line + 1;
+            dp = 0;
+        }
+        else
+        {
+            dl = tc.line;
+            dp = layout.GetText ().GetLineLength (tc.line);
+        }
+
+        if (current_line < anchor_line || (current_line == anchor_line && current_position < anchor_position))
+        {
+            MoveToLinePosition (dl, dp, current_line, current_position);
+        }
+        else
+        {
+            MoveToLinePosition (dl, dp, true);
+        }
+    }
 }
 
 void CNormalTextCursor::Left (bool selecting)
@@ -411,7 +535,7 @@ void CNormalTextCursor::WordLeft (bool selecting)
             MoveToLinePosition (current_line - 1, layout.GetText ().GetLineLength (current_line - 1), selecting);
     }
     else
-        MoveToLinePosition (current_line, GetPreviousWordBoundary (current_line, current_position), selecting);
+        MoveToLinePosition (current_line, GetPreviousWordBoundary (current_line, current_position - 1), selecting);
 }
 
 void CNormalTextCursor::WordRight (bool selecting)
@@ -422,7 +546,7 @@ void CNormalTextCursor::WordRight (bool selecting)
             MoveToLinePosition (current_line + 1, 0, selecting);
     }
     else
-        MoveToLinePosition (current_line, GetNextWordBoundary (current_line, current_position), selecting);
+        MoveToLinePosition (current_line, GetNextWordBoundary (current_line, current_position + 1), selecting);
 }
 
 void CNormalTextCursor::PageUp (unsigned int page_rows, bool selecting)
