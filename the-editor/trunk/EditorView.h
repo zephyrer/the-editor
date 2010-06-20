@@ -10,8 +10,6 @@ class CEditorControl : public CWnd
 protected:
     CEditorView &view;
 
-    bool selecting;
-
     afx_msg void OnSize (UINT nType, int cx, int cy);
     afx_msg void OnPaint();
     afx_msg void OnHScroll (UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
@@ -30,10 +28,15 @@ protected:
 
     virtual void ValidateCursor ();
 
+    unsigned int click_counter;
+    unsigned int last_click_time;
+    CPoint last_click_point;
+    unsigned int drag_type;
+
     DECLARE_MESSAGE_MAP ()
 
 public:
-    inline CEditorControl (CEditorView &view) : view (view), selecting (false) {}
+    inline CEditorControl (CEditorView &view) : view (view), click_counter (0), last_click_time (0), drag_type (0) {}
 
     virtual BOOL PreCreateWindow (CREATESTRUCT& cs);
     virtual void UpdateScrollBars ();
