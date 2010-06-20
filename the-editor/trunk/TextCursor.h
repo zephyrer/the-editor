@@ -41,6 +41,8 @@ public:
 
     virtual void InsertChar (TCHAR ch) = 0;
     virtual void Backspace () = 0;
+    virtual void Del () = 0;
+    virtual void NewLine () = 0;
 };
 
 class CNormalTextCursor : public CTextCursor
@@ -109,4 +111,6 @@ public:
 
     virtual void InsertChar (TCHAR ch);
     virtual void Backspace ();
+    virtual void Del ();
+    virtual void NewLine ();
 };

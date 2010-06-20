@@ -375,6 +375,7 @@ void CEditorControl::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
             cursor.Backspace ();
             break;
         case '\r':
+            cursor.NewLine ();
             break;
         case '\033':
             break;
@@ -382,6 +383,7 @@ void CEditorControl::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
             cursor.InsertChar (nChar);
             break;
         case '\n':
+            cursor.NewLine ();
             break;
         default: 
             cursor.InsertChar (nChar);
@@ -460,11 +462,15 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
             ctrl ? cursor.TextEnd (shift) : cursor.End (shift);
             EnsureCaretVisible ();
             break;
+        case VK_DELETE:
+            cursor.Del ();
+            UpdateScrollBars ();
+            EnsureCaretVisible ();
+            break;
         }
     }
 
     UpdateCaret ();
-
     ValidateCursor ();
 
     CWnd::OnChar (nChar, nRepCnt, nFlags);
