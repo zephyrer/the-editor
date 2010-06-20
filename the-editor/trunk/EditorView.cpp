@@ -385,6 +385,9 @@ void CEditorControl::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
         case '\n':
             cursor.NewLine ();
             break;
+        case '\177':
+            cursor.WordBackspace ();
+            break;
         default: 
             cursor.InsertChar (nChar);
             break; 
@@ -411,8 +414,8 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
 
     for (unsigned int i = 0; i < nRepCnt; i++)
     {
-        bool shift = GetKeyState (VK_SHIFT) & 0x80000;
-        bool ctrl = GetKeyState (VK_CONTROL) & 0x80000;
+        bool shift = (GetKeyState (VK_SHIFT) & 0x80000) != 0;
+        bool ctrl = (GetKeyState (VK_CONTROL) & 0x80000) != 0;
 
         switch (nChar)
         {
@@ -463,7 +466,7 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
             EnsureCaretVisible ();
             break;
         case VK_DELETE:
-            cursor.Del ();
+            ctrl ? cursor.WordDel () : cursor.Del ();
             UpdateScrollBars ();
             EnsureCaretVisible ();
             break;
@@ -473,7 +476,7 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
     UpdateCaret ();
     ValidateCursor ();
 
-    CWnd::OnChar (nChar, nRepCnt, nFlags);
+    CWnd::OnKeyDown (nChar, nRepCnt, nFlags);
 }
 
 void CEditorControl::OnMouseHWheel (UINT nFlags, short zDelta, CPoint pt)
@@ -743,8 +746,8 @@ void CLineNumbersControl::OnPaint ()
     DC.SetTextColor (view.line_numbers_color);
     DC.SetTextAlign (TA_RIGHT);
 
-    int begin = clip_rect.top > view.padding_top ? (clip_rect.top - view.padding_top) / view.cell_size.cy : 0;
-    int end = clip_rect.bottom > view.padding_top ? (clip_rect.bottom - view.padding_top) / view.cell_size.cy : 0;
+    unsigned int begin = client_rect.top > 0 && (unsigned int)clip_rect.top > view.padding_top ? ((unsigned int)clip_rect.top - view.padding_top) / view.cell_size.cy : 0;
+    unsigned int end = client_rect.bottom > 0 && (unsigned int)clip_rect.bottom > view.padding_top ? ((unsigned int)clip_rect.bottom - view.padding_top) / view.cell_size.cy : 0;
 
     TEXTCELL tc;
 
@@ -755,7 +758,7 @@ void CLineNumbersControl::OnPaint ()
         prev_line = tc.line;
     }
 
-    for (int i = begin; i <= end; i++)
+    for (unsigned int i = begin; i <= end; i++)
     {
         layout.GetCellAt (i, 0, tc);
 

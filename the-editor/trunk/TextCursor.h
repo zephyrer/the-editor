@@ -42,6 +42,8 @@ public:
     virtual void InsertChar (TCHAR ch) = 0;
     virtual void Backspace () = 0;
     virtual void Del () = 0;
+    virtual void WordBackspace () = 0;
+    virtual void WordDel () = 0;
     virtual void NewLine () = 0;
 };
 
@@ -112,5 +114,7 @@ public:
     virtual void InsertChar (TCHAR ch);
     virtual void Backspace ();
     virtual void Del ();
+    virtual void WordBackspace ();
+    virtual void WordDel ();
     virtual void NewLine ();
 };
