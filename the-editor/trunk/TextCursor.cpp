@@ -766,6 +766,15 @@ void CNormalTextCursor::TextEnd (bool selecting)
     MoveToLinePosition (line, position, selecting);
 }
 
+void CNormalTextCursor::SelectAll ()
+{
+    anchor_line = 0;
+    anchor_position = 0;
+
+    unsigned int l = layout.GetText ().GetLinesCount () - 1;
+    MoveToLinePosition (l, layout.GetText ().GetLineLength (l), true);
+}
+
 void CNormalTextCursor::InsertChar (TCHAR ch)
 {
     undo_manager.StartTransaction ();

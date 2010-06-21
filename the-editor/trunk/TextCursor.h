@@ -40,6 +40,8 @@ public:
     virtual void TextBegin (bool selecting) = 0;
     virtual void TextEnd (bool selecting) = 0;
 
+    virtual void SelectAll () = 0;
+
     virtual void InsertChar (TCHAR ch) = 0;
     virtual void OverwriteChar (TCHAR ch) = 0;
     virtual void Backspace () = 0;
@@ -125,6 +127,8 @@ public:
     virtual void End (bool selecting);
     virtual void TextBegin (bool selecting);
     virtual void TextEnd (bool selecting);
+
+    virtual void SelectAll ();
 
     virtual void InsertChar (TCHAR ch);
     virtual void OverwriteChar (TCHAR ch);
