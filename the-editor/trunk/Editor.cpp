@@ -3,7 +3,6 @@
 //
 
 #include "stdafx.h"
-#include "afxwinappex.h"
 #include "Editor.h"
 #include "MainFrame.h"
 
