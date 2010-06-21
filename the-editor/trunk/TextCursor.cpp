@@ -79,7 +79,7 @@ public:
         cursor.cursor_row = cursor_row;
         cursor.cursor_column = cursor_column;
 
-        cursor.UpdateSelection ();
+        cursor.UpdateSelection (true);
     }
 };
 
@@ -127,7 +127,7 @@ void CNormalTextCursor::AddDirtyLineRange (unsigned int start_dirty_line, unsign
     AddDirtyRowRange (start_row, end_row - start_row + 1);
 }
 
-void CNormalTextCursor::UpdateSelection ()
+void CNormalTextCursor::UpdateSelection (bool from_undo)
 {
     CContinuousTextSelection *new_selection;
 
@@ -147,7 +147,7 @@ void CNormalTextCursor::UpdateSelection ()
         unsigned int start_line = selection->GetStartLine ();
         unsigned int end_line = selection->GetEndLine ();
 
-        AddDirtyLineRange (start_line, end_line - start_line + 1);
+        if (!from_undo) AddDirtyLineRange (start_line, end_line - start_line + 1);
     }
     else
     {
@@ -156,7 +156,7 @@ void CNormalTextCursor::UpdateSelection ()
             unsigned int start_line = new_selection->GetStartLine ();
             unsigned int end_line = new_selection->GetEndLine ();
 
-            AddDirtyLineRange (start_line, end_line - start_line + 1);
+            if (!from_undo) AddDirtyLineRange (start_line, end_line - start_line + 1);
         }
         else
         {
@@ -178,7 +178,7 @@ void CNormalTextCursor::UpdateSelection ()
             }
 
             if (s <= e)
-                AddDirtyLineRange (s, e - s + 1);
+                if (!from_undo) AddDirtyLineRange (s, e - s + 1);
         }
     }
 
