@@ -514,6 +514,31 @@ bool CNormalTextCursor::CanCopy ()
     return selection != NULL;
 }
 
+bool CNormalTextCursor::CanPaste (CWnd &owner)
+{
+    if (!owner.OpenClipboard ())
+    {
+        AfxMessageBox (_T ("Cannot open the Clipboard"));
+        return false;
+    }
+
+    bool found = false;
+
+    UINT format = 0;
+    while ((format = EnumClipboardFormats (format)) != NULL)
+    {
+        if (format == CF_UNICODETEXT || format == CF_TEXT)
+        {
+            found = true;
+            break;
+        }
+    }
+
+    CloseClipboard();
+
+    return found;
+}
+
 void CNormalTextCursor::Click (unsigned int row, unsigned int column, bool selecting)
 {
     TEXTCELL tc;
@@ -1054,26 +1079,19 @@ void CNormalTextCursor::Paste (CWnd &owner)
 
     DeleteSelection ();
 
-    layout.GetText ().BreakLineAt (current_line, current_position);
-    layout.LinesChanged (current_line, 1);
-    layout.LinesInserted (current_line + 1, 1);
-    MoveToLinePosition (current_line + 1, 0, false);
-    AddDirtyLineRange (current_line - 1, layout.GetText ().GetLinesCount () - current_line + 1);
+
 
     undo_manager.FinishTransaction ();
 }
 
 void CNormalTextCursor::Cut (CWnd &owner)
 {
+    if (selection == NULL) return;
+
     undo_manager.StartTransaction ();
 
+    Copy (owner);
     DeleteSelection ();
-
-    layout.GetText ().BreakLineAt (current_line, current_position);
-    layout.LinesChanged (current_line, 1);
-    layout.LinesInserted (current_line + 1, 1);
-    MoveToLinePosition (current_line + 1, 0, false);
-    AddDirtyLineRange (current_line - 1, layout.GetText ().GetLinesCount () - current_line + 1);
 
     undo_manager.FinishTransaction ();
 }
