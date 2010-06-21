@@ -78,8 +78,38 @@ public:
         cursor.current_column = current_column;
         cursor.cursor_row = cursor_row;
         cursor.cursor_column = cursor_column;
+    }
+};
 
-        cursor.UpdateSelection (true);
+class CUpdateSelectionAction : public CNormalTextCursorAction
+{
+protected:
+    CContinuousTextSelection *selection;
+
+public:
+    inline CUpdateSelectionAction (CNormalTextCursor &cursor, CContinuousTextSelection *selection) :
+        CNormalTextCursorAction (cursor), selection (selection == NULL ? NULL : new CContinuousTextSelection (*selection))
+    {}
+
+    virtual ~CUpdateSelectionAction ()
+    {
+        if (selection != NULL)
+            delete selection;
+    }
+
+    virtual void Undo ()
+    {
+        if (cursor.undo_manager.IsWithinTransaction ())
+            cursor.undo_manager.AddAction (new CUpdateSelectionAction (cursor, cursor.selection));
+
+        if (cursor.selection != NULL)
+        {
+            cursor.AddDirtyRowRange (0, cursor.layout.GetHeight ());
+
+            delete cursor.selection;
+        }
+
+        cursor.selection = selection == NULL ? NULL : new CContinuousTextSelection (*selection);
     }
 };
 
@@ -127,7 +157,7 @@ void CNormalTextCursor::AddDirtyLineRange (unsigned int start_dirty_line, unsign
     AddDirtyRowRange (start_row, end_row - start_row + 1);
 }
 
-void CNormalTextCursor::UpdateSelection (bool from_undo)
+void CNormalTextCursor::UpdateSelection ()
 {
     CContinuousTextSelection *new_selection;
 
@@ -147,7 +177,7 @@ void CNormalTextCursor::UpdateSelection (bool from_undo)
         unsigned int start_line = selection->GetStartLine ();
         unsigned int end_line = selection->GetEndLine ();
 
-        if (!from_undo) AddDirtyLineRange (start_line, end_line - start_line + 1);
+        AddDirtyLineRange (start_line, end_line - start_line + 1);
     }
     else
     {
@@ -156,7 +186,7 @@ void CNormalTextCursor::UpdateSelection (bool from_undo)
             unsigned int start_line = new_selection->GetStartLine ();
             unsigned int end_line = new_selection->GetEndLine ();
 
-            if (!from_undo) AddDirtyLineRange (start_line, end_line - start_line + 1);
+            AddDirtyLineRange (start_line, end_line - start_line + 1);
         }
         else
         {
@@ -178,9 +208,12 @@ void CNormalTextCursor::UpdateSelection (bool from_undo)
             }
 
             if (s <= e)
-                if (!from_undo) AddDirtyLineRange (s, e - s + 1);
+                AddDirtyLineRange (s, e - s + 1);
         }
     }
+
+    if (undo_manager.IsWithinTransaction ())
+        undo_manager.AddAction (new CUpdateSelectionAction (*this, selection));
 
     if (selection != NULL)
         delete selection;
@@ -393,7 +426,13 @@ unsigned int CNormalTextCursor::GetNextWordBoundary (unsigned int line, unsigned
 
 void CNormalTextCursor::DeleteSelection ()
 {
-    if (selection == NULL) return;
+    if (selection == NULL)
+    {
+        if (undo_manager.IsWithinTransaction ())
+            undo_manager.AddAction (new CUpdateSelectionAction (*this, selection));
+
+        return;
+    }
 
     unsigned int sline = selection->GetStartLine ();
     unsigned int sposition = selection->GetStartPosition ();
@@ -408,7 +447,11 @@ void CNormalTextCursor::DeleteSelection ()
             eposition - sposition,
             0, NULL);
 
-        if (selection != NULL) delete selection;
+        if (undo_manager.IsWithinTransaction ())
+            undo_manager.AddAction (new CUpdateSelectionAction (*this, selection));
+
+        if (selection != NULL)
+            delete selection;
         selection = NULL;
 
         MoveToLinePosition (sline, sposition, false);
@@ -442,7 +485,11 @@ void CNormalTextCursor::DeleteSelection ()
         layout.LinesChanged (sline, 1);
         layout.LinesRemoved (sline + 1, 1);
 
-        if (selection != NULL) delete selection;
+        if (undo_manager.IsWithinTransaction ())
+            undo_manager.AddAction (new CUpdateSelectionAction (*this, selection));
+
+        if (selection != NULL)
+            delete selection;
         selection = NULL;
 
         MoveToLinePosition (sline, sposition, false);
