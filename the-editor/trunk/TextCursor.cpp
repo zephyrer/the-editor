@@ -509,6 +509,11 @@ bool CNormalTextCursor::CanOverwrite ()
     return current_position < layout.GetText ().GetLineLength (current_line);
 }
 
+bool CNormalTextCursor::CanCopy ()
+{
+    return selection != NULL;
+}
+
 void CNormalTextCursor::Click (unsigned int row, unsigned int column, bool selecting)
 {
     TEXTCELL tc;
@@ -940,6 +945,125 @@ void CNormalTextCursor::WordDel ()
 }
 
 void CNormalTextCursor::NewLine ()
+{
+    undo_manager.StartTransaction ();
+
+    DeleteSelection ();
+
+    layout.GetText ().BreakLineAt (current_line, current_position);
+    layout.LinesChanged (current_line, 1);
+    layout.LinesInserted (current_line + 1, 1);
+    MoveToLinePosition (current_line + 1, 0, false);
+    AddDirtyLineRange (current_line - 1, layout.GetText ().GetLinesCount () - current_line + 1);
+
+    undo_manager.FinishTransaction ();
+}
+
+void CNormalTextCursor::Copy (CWnd &owner)
+{
+    if (selection == NULL) return;
+
+    unsigned int sline = selection->GetStartLine ();
+    unsigned int sposition = selection->GetStartPosition ();
+    unsigned int eline = selection->GetEndLine ();
+    unsigned int eposition = selection->GetEndPosition ();
+
+    unsigned int length = 0;
+
+    TCHAR *unicodetext;
+
+    if (sline == eline)
+    {
+        length = eposition - sposition;
+
+        unicodetext = (TCHAR *)GlobalAlloc (GMEM_FIXED, (length + 1) * sizeof (TCHAR));
+        layout.GetText ().GetCharsRange (sline, sposition, length, unicodetext);
+        unicodetext [length] = 0;
+    }
+    else
+    {
+        length = layout.GetText ().GetLineLength (sline) - sposition + eposition + 1;
+        for (unsigned int i = sline + 1; i < eline; i++)
+            length += layout.GetText ().GetLineLength (i) + 1;
+
+        unicodetext = (TCHAR *)GlobalAlloc (GMEM_FIXED, (length + 1) * sizeof (TCHAR));
+
+        unsigned int n = 0;
+        layout.GetText ().GetCharsRange (sline, sposition, layout.GetText ().GetLineLength (sline) - sposition, &unicodetext [n]);
+        n += layout.GetText ().GetLineLength (sline) - sposition;
+        unicodetext [n] = L'\n';
+        n++;
+
+        for (unsigned int i = sline + 1; i < eline; i++)
+        {
+            layout.GetText ().GetCharsRange (i, 0, layout.GetText ().GetLineLength (i), &unicodetext [n]);
+            n += layout.GetText ().GetLineLength (i);
+            unicodetext [n] = L'\n';
+            n++;
+        }
+
+        layout.GetText ().GetCharsRange (eline, 0, eposition, &unicodetext [n]);
+
+        unicodetext [length] = 0;
+    }
+
+    char *text = (char *)GlobalAlloc (GMEM_FIXED, (length + 1) * sizeof (char));
+    WideCharToMultiByte (CP_ACP, 0, unicodetext, length, text, length + 1, "?", NULL);
+    text [length] = 0;
+
+    if (!owner.OpenClipboard ())
+    {
+        AfxMessageBox (_T ("Cannot open the Clipboard"));
+        return;
+    }
+
+    if (!EmptyClipboard ())
+    {
+        AfxMessageBox (_T ("Cannot empty the Clipboard"));
+        return;
+    }
+
+    if (::SetClipboardData (CF_TEXT, text) == NULL)
+    {
+        CString msg;
+        msg.Format (_T ("Unable to set Clipboard data, error: %d"), GetLastError ());
+        AfxMessageBox (msg);
+        CloseClipboard ();
+        GlobalFree (text);
+        GlobalFree (unicodetext);
+        return;
+    }
+
+    if (::SetClipboardData (CF_UNICODETEXT, unicodetext) == NULL)
+    {
+        CString msg;
+        msg.Format (_T ("Unable to set Clipboard data, error: %d"), GetLastError ());
+        AfxMessageBox (msg);
+        CloseClipboard ();
+        GlobalFree (text);
+        GlobalFree (unicodetext);
+        return;
+    }
+
+    CloseClipboard();
+}
+
+void CNormalTextCursor::Paste (CWnd &owner)
+{
+    undo_manager.StartTransaction ();
+
+    DeleteSelection ();
+
+    layout.GetText ().BreakLineAt (current_line, current_position);
+    layout.LinesChanged (current_line, 1);
+    layout.LinesInserted (current_line + 1, 1);
+    MoveToLinePosition (current_line + 1, 0, false);
+    AddDirtyLineRange (current_line - 1, layout.GetText ().GetLinesCount () - current_line + 1);
+
+    undo_manager.FinishTransaction ();
+}
+
+void CNormalTextCursor::Cut (CWnd &owner)
 {
     undo_manager.StartTransaction ();
 

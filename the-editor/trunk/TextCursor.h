@@ -20,6 +20,7 @@ public:
     virtual unsigned int GetDirtyRowCount () = 0;
     virtual void ResetDirtyRows () = 0;
     virtual bool CanOverwrite () = 0;
+    virtual bool CanCopy () = 0;
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting) = 0;
     virtual void WordClick (unsigned int row, unsigned int column) = 0;
@@ -49,6 +50,10 @@ public:
     virtual void WordBackspace () = 0;
     virtual void WordDel () = 0;
     virtual void NewLine () = 0;
+
+    virtual void Copy (CWnd &owner) = 0;
+    virtual void Paste (CWnd &owner) = 0;
+    virtual void Cut (CWnd &owner) = 0;
 };
 
 class CNormalTextCursorAction;
@@ -108,6 +113,7 @@ public:
     virtual unsigned int GetDirtyRowCount ();
     virtual void ResetDirtyRows ();
     virtual bool CanOverwrite ();
+    virtual bool CanCopy ();
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting);
     virtual void WordClick (unsigned int row, unsigned int column);
@@ -137,4 +143,8 @@ public:
     virtual void WordBackspace ();
     virtual void WordDel ();
     virtual void NewLine ();
+
+    virtual void Copy (CWnd &owner);
+    virtual void Paste (CWnd &owner);
+    virtual void Cut (CWnd &owner);
 };
