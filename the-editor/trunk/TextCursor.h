@@ -19,6 +19,7 @@ public:
     virtual unsigned int GetStartDirtyRow () = 0;
     virtual unsigned int GetDirtyRowCount () = 0;
     virtual void ResetDirtyRows () = 0;
+    virtual bool CanOverwrite () = 0;
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting) = 0;
     virtual void WordClick (unsigned int row, unsigned int column) = 0;
@@ -40,6 +41,7 @@ public:
     virtual void TextEnd (bool selecting) = 0;
 
     virtual void InsertChar (TCHAR ch) = 0;
+    virtual void OverwriteChar (TCHAR ch) = 0;
     virtual void Backspace () = 0;
     virtual void Del () = 0;
     virtual void WordBackspace () = 0;
@@ -103,6 +105,7 @@ public:
     virtual unsigned int GetStartDirtyRow ();
     virtual unsigned int GetDirtyRowCount ();
     virtual void ResetDirtyRows ();
+    virtual bool CanOverwrite ();
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting);
     virtual void WordClick (unsigned int row, unsigned int column);
@@ -124,6 +127,7 @@ public:
     virtual void TextEnd (bool selecting);
 
     virtual void InsertChar (TCHAR ch);
+    virtual void OverwriteChar (TCHAR ch);
     virtual void Backspace ();
     virtual void Del ();
     virtual void WordBackspace ();

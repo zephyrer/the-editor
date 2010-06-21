@@ -222,9 +222,6 @@ void CEditorControl::OnVScroll (UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
 void CEditorControl::OnSetFocus (CWnd* pOldWnd)
 {
-    CreateSolidCaret (GetSystemMetrics (SM_CXBORDER), view.cell_size.cy);
-    ShowCaret ();
-
     UpdateCaret ();
 }
 
@@ -391,7 +388,9 @@ void CEditorControl::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
             cursor.WordBackspace ();
             break;
         default: 
-            cursor.InsertChar (nChar);
+            if (overwrite_mode && cursor.CanOverwrite ())
+                cursor.OverwriteChar (nChar);
+            else cursor.InsertChar (nChar);
             break; 
         }
     }
@@ -472,6 +471,10 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
             UpdateScrollBars ();
             EnsureCaretVisible ();
             break;
+        case VK_INSERT:
+            overwrite_mode = !overwrite_mode;
+            UpdateCaret ();
+            break;
         }
     }
 
@@ -526,13 +529,27 @@ void CEditorControl::UpdateScrollBars ()
 
 void CEditorControl::UpdateCaret ()
 {
+    if (GetFocus () != this) return;
+
     if (view.cursor == NULL) return;
     CTextCursor &cursor = *view.cursor;
 
+    int w = GetSystemMetrics (SM_CXBORDER);
+    int h = view.cell_size.cy;
+
+    if (overwrite_mode && cursor.CanOverwrite ())
+    {
+        w = view.cell_size.cx;
+    }
+
+    CreateSolidCaret (w, h);
+    
     SetCaretPos (
         CPoint (
-            view.padding_left + cursor.GetCursorColumn () * view.cell_size.cx - GetScrollPos (SB_HORZ) - 1,
+            view.padding_left + cursor.GetCursorColumn () * view.cell_size.cx - GetScrollPos (SB_HORZ),
             view.padding_top + cursor.GetCursorRow () * view.cell_size.cy - GetScrollPos (SB_VERT)));
+
+    ShowCaret ();
 }
 
 void CEditorControl::Scroll (int dx, int dy)
@@ -659,8 +676,11 @@ void CEditorControl::PaintCharsRange (CDC &DC, int row, int start_column, int co
         widths [i] = view.cell_size.cx;
     }
 
+    int x = view.padding_left + start_column * view.cell_size.cx;
+    int y = view.padding_top + row * view.cell_size.cy;
+
     CRect rect (
-        CPoint (view.padding_left + start_column * view.cell_size.cx, view.padding_top + row * view.cell_size.cy),
+        CPoint (x, y),
         CSize (count * view.cell_size.cx, view.cell_size.cy));
 
     if (selected)
@@ -674,7 +694,9 @@ void CEditorControl::PaintCharsRange (CDC &DC, int row, int start_column, int co
         DC.SetBkColor (GetSysColor (COLOR_WINDOW));
     }
 
-    DC.ExtTextOut (rect.left, rect.top, ETO_OPAQUE, &rect, chars, count, widths);
+    DC.SetBkMode (TRANSPARENT);
+
+    DC.ExtTextOut (x, y, ETO_OPAQUE, &rect, chars, count, widths);
 }
 
 void CEditorControl::ValidateCursor ()

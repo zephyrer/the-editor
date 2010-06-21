@@ -31,10 +31,12 @@ protected:
     CPoint last_click_point;
     unsigned int drag_type;
 
+    bool overwrite_mode;
+
     DECLARE_MESSAGE_MAP ()
 
 public:
-    inline CEditorControl (CEditorView &view) : view (view), click_counter (0), last_click_time (0), drag_type (0) {}
+    inline CEditorControl (CEditorView &view) : view (view), click_counter (0), last_click_time (0), drag_type (0), overwrite_mode (false) {}
 
     virtual BOOL PreCreateWindow (CREATESTRUCT& cs);
     virtual void UpdateScrollBars ();
