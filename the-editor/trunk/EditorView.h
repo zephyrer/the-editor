@@ -128,6 +128,8 @@ protected:
     afx_msg BOOL OnUndo (UINT nID);
     afx_msg void OnUpdateRedoMenu (CCmdUI* pCmdUI);
     afx_msg BOOL OnRedo (UINT nID);
+    afx_msg BOOL OnSelectAll (UINT nID);
+    afx_msg BOOL OnClear (UINT nID);
 
 protected:
     DECLARE_MESSAGE_MAP ()

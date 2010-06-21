@@ -27,8 +27,6 @@ BEGIN_MESSAGE_MAP(CEditorControl, CWnd)
     ON_WM_MOUSEHWHEEL ()
     ON_WM_CHAR ()
     ON_WM_KEYDOWN ()
-
-
 END_MESSAGE_MAP()
 
 BOOL CEditorControl::PreCreateWindow (CREATESTRUCT& cs)
@@ -838,6 +836,9 @@ BEGIN_MESSAGE_MAP(CEditorView, CView)
     ON_COMMAND_EX (ID_EDIT_UNDO, &CEditorView::OnUndo)
     ON_UPDATE_COMMAND_UI (ID_EDIT_REDO, &CEditorView::OnUpdateRedoMenu)
     ON_COMMAND_EX (ID_EDIT_REDO, &CEditorView::OnRedo)
+
+    ON_COMMAND_EX (ID_EDIT_SELECT_ALL, &CEditorView::OnSelectAll)
+    ON_COMMAND_EX (ID_EDIT_CLEAR, &CEditorView::OnClear)
 END_MESSAGE_MAP()
 
 CEditorView::CEditorView () : editor_control (*this), line_numbers_control (*this), layout (NULL), cursor (NULL)
@@ -1074,6 +1075,28 @@ BOOL CEditorView::OnRedo (UINT nID)
     editor_control.UpdateCaret ();
     editor_control.UpdateWindow ();
     line_numbers_control.UpdateWindow ();
+
+    return TRUE;
+}
+
+BOOL CEditorView::OnSelectAll (UINT nID)
+{
+    cursor->SelectAll ();
+    editor_control.UpdateScrollBars ();
+    editor_control.EnsureCaretVisible ();
+    editor_control.UpdateCaret ();
+    editor_control.ValidateCursor ();
+
+    return TRUE;
+}
+
+BOOL CEditorView::OnClear (UINT nID)
+{
+    cursor->Del ();
+    editor_control.UpdateScrollBars ();
+    editor_control.EnsureCaretVisible ();
+    editor_control.UpdateCaret ();
+    editor_control.ValidateCursor ();
 
     return TRUE;
 }
