@@ -111,11 +111,14 @@ void CAbstractTextLayout::RowsChanged (unsigned int start_row, unsigned int coun
 
     if (count > 0)
     {
-        unsigned int mc = min (count, row_widths.size ());
-        for (unsigned int r = 0; r < mc; r++)
-            row_widths [start_row + r] = 0;
+        if (start_row < row_widths.size ())
+        {
+            unsigned int mc = min (count, row_widths.size () - start_row);
+            for (unsigned int r = 0; r < mc; r++)
+                row_widths [start_row + r] = 0;
 
-        width = 0;
+            width = 0;
+        }
 
         if (undo_manager.IsWithinTransaction ())
             undo_manager.AddAction (new CRowsChangedAction (*this, start_row, count));
@@ -129,10 +132,12 @@ void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int cou
     if (count > 0)
     {
         if (start_row < row_widths.size ())
+        {
             for (unsigned int r = 0; r < count; r++)
                 row_widths.insert (row_widths.begin () + start_row + r, 0);
 
-        width = 0;
+            width = 0;
+        }
 
         if (undo_manager.IsWithinTransaction ())
             undo_manager.AddAction (new CRowsInsertedAction (*this, start_row, count));
@@ -143,19 +148,22 @@ void CAbstractTextLayout::RowsRemoved (unsigned int start_row, unsigned int coun
 {
     ASSERT (start_row <= GetHeight ());
 
-    if (count > 0 && start_row < row_widths.size ())
+    if (count > 0)
     {
-        unsigned int mw = 0;
-        unsigned int mc = min (count, row_widths.size () - start_row);
-        for (unsigned int r = 0; r < mc; r++)
+        if (start_row < row_widths.size ())
         {
-            mw = max (mw, row_widths [start_row]);
+            unsigned int mw = 0;
+            unsigned int mc = min (count, row_widths.size () - start_row);
+            for (unsigned int r = 0; r < mc; r++)
+            {
+                mw = max (mw, row_widths [start_row]);
 
-            row_widths.erase (row_widths.begin () + start_row);
+                row_widths.erase (row_widths.begin () + start_row);
+            }
+
+            if (width == mw)
+                width = 0;
         }
-
-        if (width == mw)
-            width = 0;
 
         if (undo_manager.IsWithinTransaction ())
             undo_manager.AddAction (new CRowsRemovedAction (*this, start_row, count));

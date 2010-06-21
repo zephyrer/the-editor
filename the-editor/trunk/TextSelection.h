@@ -24,6 +24,10 @@ protected:
 public:
     CContinuousTextSelection (CTextLayout &layout, unsigned int start_line, unsigned int start_position, unsigned int end_line, unsigned int end_position);
 
+    inline CContinuousTextSelection (CContinuousTextSelection &selection) :
+        CTextSelection (selection.layout), start_line (selection.start_line), start_position (selection.start_position), end_line (selection.end_line), end_position (selection.end_position)
+    {}
+
     virtual unsigned int GetStartLine ();
     virtual unsigned int GetStartPosition ();
     virtual unsigned int GetEndLine ();

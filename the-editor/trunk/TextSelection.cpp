@@ -6,6 +6,12 @@
 CContinuousTextSelection::CContinuousTextSelection (CTextLayout &layout, unsigned int start_line, unsigned int start_position, unsigned int end_line, unsigned int end_position) :
     CTextSelection (layout)
 {
+    ASSERT (start_line < layout.GetText ().GetLinesCount ());
+    ASSERT (start_position <= layout.GetText ().GetLineLength (start_line));
+    ASSERT (end_line < layout.GetText ().GetLinesCount ());
+    ASSERT (end_position <= layout.GetText ().GetLineLength (end_line));
+    ASSERT (start_line < end_line || (start_line == end_line && start_position <= end_position));
+
     CContinuousTextSelection::start_line = start_line;
     CContinuousTextSelection::start_position = start_position;
     CContinuousTextSelection::end_line = end_line;
