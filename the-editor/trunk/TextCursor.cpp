@@ -512,6 +512,11 @@ void CNormalTextCursor::ResetDirtyRows ()
     dirty_row_count = 0;
 }
 
+bool CNormalTextCursor::CanOverwrite ()
+{
+    return current_position < layout.GetText ().GetLineLength (current_line);
+}
+
 void CNormalTextCursor::Click (unsigned int row, unsigned int column, bool selecting)
 {
     TEXTCELL tc;
@@ -776,6 +781,22 @@ void CNormalTextCursor::InsertChar (TCHAR ch)
     DeleteSelection ();
 
     layout.GetText ().InsertCharAt (current_line, current_position, ch);
+    MoveToLinePosition (current_line, current_position + 1, false);
+
+    layout.LinesChanged (current_line, 1);
+    AddDirtyLineRange (current_line, 1);
+
+    undo_manager.FinishTransaction ();
+}
+
+void CNormalTextCursor::OverwriteChar (TCHAR ch)
+{
+    if (current_position == layout.GetText ().GetLineLength (current_line))
+        return;
+
+    undo_manager.StartTransaction ();
+
+    layout.GetText ().SetCharAt (current_line, current_position, ch);
     MoveToLinePosition (current_line, current_position + 1, false);
 
     layout.LinesChanged (current_line, 1);
