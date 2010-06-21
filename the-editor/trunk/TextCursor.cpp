@@ -78,38 +78,8 @@ public:
         cursor.current_column = current_column;
         cursor.cursor_row = cursor_row;
         cursor.cursor_column = cursor_column;
-    }
-};
 
-class CUpdateSelectionAction : public CNormalTextCursorAction
-{
-protected:
-    CContinuousTextSelection *selection;
-
-public:
-    inline CUpdateSelectionAction (CNormalTextCursor &cursor, CContinuousTextSelection *selection) :
-        CNormalTextCursorAction (cursor), selection (selection == NULL ? NULL : new CContinuousTextSelection (*selection))
-    {}
-
-    virtual ~CUpdateSelectionAction ()
-    {
-        if (selection != NULL)
-            delete selection;
-    }
-
-    virtual void Undo ()
-    {
-        if (cursor.undo_manager.IsWithinTransaction ())
-            cursor.undo_manager.AddAction (new CUpdateSelectionAction (cursor, cursor.selection));
-
-        if (cursor.selection != NULL)
-        {
-            cursor.AddDirtyRowRange (0, cursor.layout.GetHeight ());
-
-            delete cursor.selection;
-        }
-
-        cursor.selection = selection == NULL ? NULL : new CContinuousTextSelection (*selection);
+		cursor.UpdateSelection ();
     }
 };
 
@@ -211,9 +181,6 @@ void CNormalTextCursor::UpdateSelection ()
                 AddDirtyLineRange (s, e - s + 1);
         }
     }
-
-    if (undo_manager.IsWithinTransaction ())
-        undo_manager.AddAction (new CUpdateSelectionAction (*this, selection));
 
     if (selection != NULL)
         delete selection;
@@ -426,18 +393,14 @@ unsigned int CNormalTextCursor::GetNextWordBoundary (unsigned int line, unsigned
 
 void CNormalTextCursor::DeleteSelection ()
 {
-    if (selection == NULL)
-    {
-        if (undo_manager.IsWithinTransaction ())
-            undo_manager.AddAction (new CUpdateSelectionAction (*this, selection));
+    if (selection == NULL) return;
 
-        return;
-    }
+	unsigned int sline = selection->GetStartLine ();
+	unsigned int sposition = selection->GetStartPosition ();
+	unsigned int eline = selection->GetEndLine ();
+	unsigned int eposition = selection->GetEndPosition ();
 
-    unsigned int sline = selection->GetStartLine ();
-    unsigned int sposition = selection->GetStartPosition ();
-    unsigned int eline = selection->GetEndLine ();
-    unsigned int eposition = selection->GetEndPosition ();
+	MoveToLinePosition (sline, sposition, false);
 
     if (sline == eline)
     {
@@ -446,15 +409,6 @@ void CNormalTextCursor::DeleteSelection ()
             sposition,
             eposition - sposition,
             0, NULL);
-
-        if (undo_manager.IsWithinTransaction ())
-            undo_manager.AddAction (new CUpdateSelectionAction (*this, selection));
-
-        if (selection != NULL)
-            delete selection;
-        selection = NULL;
-
-        MoveToLinePosition (sline, sposition, false);
 
         layout.LinesChanged (sline, 1);
         AddDirtyLineRange (sline, 1);
@@ -484,15 +438,6 @@ void CNormalTextCursor::DeleteSelection ()
         layout.GetText ().JoinLines (sline);
         layout.LinesChanged (sline, 1);
         layout.LinesRemoved (sline + 1, 1);
-
-        if (undo_manager.IsWithinTransaction ())
-            undo_manager.AddAction (new CUpdateSelectionAction (*this, selection));
-
-        if (selection != NULL)
-            delete selection;
-        selection = NULL;
-
-        MoveToLinePosition (sline, sposition, false);
 
         AddDirtyRowRange (0, height);
     }
@@ -828,9 +773,9 @@ void CNormalTextCursor::InsertChar (TCHAR ch)
     DeleteSelection ();
 
     layout.GetText ().InsertCharAt (current_line, current_position, ch);
-    MoveToLinePosition (current_line, current_position + 1, false);
-
     layout.LinesChanged (current_line, 1);
+
+    MoveToLinePosition (current_line, current_position + 1, false);
     AddDirtyLineRange (current_line, 1);
 
     undo_manager.FinishTransaction ();
@@ -844,9 +789,9 @@ void CNormalTextCursor::OverwriteChar (TCHAR ch)
     undo_manager.StartTransaction ();
 
     layout.GetText ().SetCharAt (current_line, current_position, ch);
-    MoveToLinePosition (current_line, current_position + 1, false);
-
     layout.LinesChanged (current_line, 1);
+
+    MoveToLinePosition (current_line, current_position + 1, false);
     AddDirtyLineRange (current_line, 1);
 
     undo_manager.FinishTransaction ();
@@ -862,9 +807,9 @@ void CNormalTextCursor::Backspace ()
     {
         if (current_position > 0)
         {
-            layout.GetText ().RemoveCharAt (current_line, current_position - 1);
-            layout.LinesChanged (current_line, 1);
             MoveToLinePosition (current_line, current_position - 1, false);
+            layout.GetText ().RemoveCharAt (current_line, current_position);
+            layout.LinesChanged (current_line, 1);
             AddDirtyLineRange (current_line, 1);
         }
         else
@@ -874,10 +819,10 @@ void CNormalTextCursor::Backspace ()
                 unsigned int height = layout.GetHeight ();
 
                 unsigned int pll = layout.GetText ().GetLineLength (current_line - 1);
-                layout.GetText ().JoinLines (current_line - 1);
-                layout.LinesChanged (current_line - 1, 1);
-                layout.LinesRemoved (current_line, 1);
                 MoveToLinePosition (current_line - 1, pll, false);
+                layout.GetText ().JoinLines (current_line);
+                layout.LinesChanged (current_line, 1);
+                layout.LinesRemoved (current_line + 1, 1);
                 AddDirtyRowRange (0, height);
             }
         }
@@ -928,10 +873,11 @@ void CNormalTextCursor::WordBackspace ()
         if (current_position > 0)
         {
             unsigned int to = GetPreviousWordBoundary (current_line, current_position - 1);
+			unsigned int from = current_position;
 
-            layout.GetText ().ReplaceCharsRange (current_line, to, current_position - to, 0, NULL);
-            layout.LinesChanged (current_line, 1);
             MoveToLinePosition (current_line, to, false);
+            layout.GetText ().ReplaceCharsRange (current_line, to, from - to, 0, NULL);
+            layout.LinesChanged (current_line, 1);
             AddDirtyLineRange (current_line, 1);
         }
         else
@@ -941,10 +887,10 @@ void CNormalTextCursor::WordBackspace ()
                 unsigned int height = layout.GetHeight ();
 
                 unsigned int pll = layout.GetText ().GetLineLength (current_line - 1);
-                layout.GetText ().JoinLines (current_line - 1);
-                layout.LinesChanged (current_line - 1, 1);
-                layout.LinesRemoved (current_line, 1);
                 MoveToLinePosition (current_line - 1, pll, false);
+                layout.GetText ().JoinLines (current_line);
+                layout.LinesChanged (current_line, 1);
+                layout.LinesRemoved (current_line + 1, 1);
                 AddDirtyRowRange (0, height);
             }
         }

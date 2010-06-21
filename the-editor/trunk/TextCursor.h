@@ -52,14 +52,12 @@ public:
 class CNormalTextCursorAction;
 class CAddDirtyRowRangeAction;
 class CMoveAction;
-class CUpdateSelectionAction;
 
 class CNormalTextCursor : public CTextCursor
 {
     friend CNormalTextCursorAction;
     friend CAddDirtyRowRangeAction;
     friend CMoveAction;
-    friend CUpdateSelectionAction;
 
 protected:
     unsigned int anchor_line, anchor_position;
