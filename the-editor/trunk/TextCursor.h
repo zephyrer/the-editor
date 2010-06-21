@@ -72,7 +72,7 @@ protected:
 
     virtual void AddDirtyRowRange (unsigned int start_dirty_row, unsigned int dirty_row_count);
     virtual void AddDirtyLineRange (unsigned int start_dirty_line, unsigned int dirty_line_count);
-    virtual void UpdateSelection ();
+    virtual void UpdateSelection (bool from_undo = false);
     virtual void MoveToRowColumn (unsigned int row, unsigned int column, bool selecting);
     virtual void MoveToLinePosition (unsigned int line, unsigned int position, bool selecting);
     virtual void MoveToLinePosition (unsigned int line, unsigned int position, unsigned int aline, unsigned int aposition);
