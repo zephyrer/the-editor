@@ -839,6 +839,9 @@ BEGIN_MESSAGE_MAP(CEditorView, CView)
 
     ON_COMMAND_EX (ID_EDIT_SELECT_ALL, &CEditorView::OnSelectAll)
     ON_COMMAND_EX (ID_EDIT_CLEAR, &CEditorView::OnClear)
+    ON_COMMAND_EX (ID_EDIT_COPY, &CEditorView::OnCopy)
+    ON_COMMAND_EX (ID_EDIT_PASTE, &CEditorView::OnPaste)
+    ON_COMMAND_EX (ID_EDIT_CUT, &CEditorView::OnCut)
 END_MESSAGE_MAP()
 
 CEditorView::CEditorView () : editor_control (*this), line_numbers_control (*this), layout (NULL), cursor (NULL)
@@ -1093,6 +1096,39 @@ BOOL CEditorView::OnSelectAll (UINT nID)
 BOOL CEditorView::OnClear (UINT nID)
 {
     cursor->Del ();
+    editor_control.UpdateScrollBars ();
+    editor_control.EnsureCaretVisible ();
+    editor_control.UpdateCaret ();
+    editor_control.ValidateCursor ();
+
+    return TRUE;
+}
+
+BOOL CEditorView::OnCopy (UINT nID)
+{
+    cursor->Copy (*this);
+    editor_control.UpdateScrollBars ();
+    editor_control.EnsureCaretVisible ();
+    editor_control.UpdateCaret ();
+    editor_control.ValidateCursor ();
+
+    return TRUE;
+}
+
+BOOL CEditorView::OnPaste (UINT nID)
+{
+    cursor->Paste (*this);
+    editor_control.UpdateScrollBars ();
+    editor_control.EnsureCaretVisible ();
+    editor_control.UpdateCaret ();
+    editor_control.ValidateCursor ();
+
+    return TRUE;
+}
+
+BOOL CEditorView::OnCut (UINT nID)
+{
+    cursor->Cut (*this);
     editor_control.UpdateScrollBars ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
