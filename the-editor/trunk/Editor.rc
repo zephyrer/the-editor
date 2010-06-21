@@ -118,7 +118,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT
+        MENUITEM "E&xit\tAlt+F4",               ID_APP_EXIT
     END
     POPUP "&Edit"
     BEGIN
@@ -128,18 +128,28 @@ BEGIN
         MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "C&lear\tDel",                 ID_EDIT_CLEAR
+        MENUITEM SEPARATOR
+        MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
+        MENUITEM "R&eplace...\tCtrl+R",         ID_EDIT_REPLACE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
     END
     POPUP "&View"
     BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM "Line &Numbers",               ID_VIEW_LINE_NUMBERS
+        MENUITEM SEPARATOR
+        MENUITEM "&Word Wrap",                  ID_VIEW_WORDWRAP
+        MENUITEM "&Font...",                    ID_VIEW_FONT
     END
     POPUP "&Help"
     BEGIN
         MENUITEM "&Help Topics",                ID_HELP_FINDER
         MENUITEM SEPARATOR
         MENUITEM "&About Editor...",            ID_APP_ABOUT
+        MENUITEM "&Donate...",                  ID_HELP_DONATE
     END
 END
 
@@ -370,6 +380,14 @@ END
 STRINGTABLE
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_LINE_NUMBERS    "Show or hide line numbers\nToggle Line Numbers"
+    ID_VIEW_WORDWRAP        "Toggle word-wrapping long lines\nToggle Word-Wrapping Long Lines"
+    ID_VIEW_FONT            "Set font to use\nSet Font"
+    ID_HELP_DONATE          "Donate money to support development of the editor\nDonate Money for The Editor"
 END
 
 #endif    // English (United States) resources
