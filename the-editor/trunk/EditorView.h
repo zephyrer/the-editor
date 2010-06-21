@@ -130,8 +130,15 @@ protected:
     afx_msg BOOL OnRedo (UINT nID);
     afx_msg BOOL OnSelectAll (UINT nID);
     afx_msg BOOL OnClear (UINT nID);
+
+
+    afx_msg void OnUpdateCopyMenu (CCmdUI* pCmdUI);
     afx_msg BOOL OnCopy (UINT nID);
+
+    afx_msg void OnUpdatePasteMenu (CCmdUI* pCmdUI);
     afx_msg BOOL OnPaste (UINT nID);
+
+    afx_msg void OnUpdateCutMenu (CCmdUI* pCmdUI);
     afx_msg BOOL OnCut (UINT nID);
 
 protected:

@@ -839,8 +839,14 @@ BEGIN_MESSAGE_MAP(CEditorView, CView)
 
     ON_COMMAND_EX (ID_EDIT_SELECT_ALL, &CEditorView::OnSelectAll)
     ON_COMMAND_EX (ID_EDIT_CLEAR, &CEditorView::OnClear)
+
+    ON_UPDATE_COMMAND_UI (ID_EDIT_COPY, &CEditorView::OnUpdateCopyMenu)
     ON_COMMAND_EX (ID_EDIT_COPY, &CEditorView::OnCopy)
+
+    ON_UPDATE_COMMAND_UI (ID_EDIT_PASTE, &CEditorView::OnUpdatePasteMenu)
     ON_COMMAND_EX (ID_EDIT_PASTE, &CEditorView::OnPaste)
+
+    ON_UPDATE_COMMAND_UI (ID_EDIT_CUT, &CEditorView::OnUpdateCutMenu)
     ON_COMMAND_EX (ID_EDIT_CUT, &CEditorView::OnCut)
 END_MESSAGE_MAP()
 
@@ -1104,6 +1110,11 @@ BOOL CEditorView::OnClear (UINT nID)
     return TRUE;
 }
 
+void CEditorView::OnUpdateCopyMenu (CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable (cursor->CanCopy ());
+}
+
 BOOL CEditorView::OnCopy (UINT nID)
 {
     cursor->Copy (*this);
@@ -1115,6 +1126,11 @@ BOOL CEditorView::OnCopy (UINT nID)
     return TRUE;
 }
 
+void CEditorView::OnUpdatePasteMenu (CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable (cursor->CanPaste (*this));
+}
+
 BOOL CEditorView::OnPaste (UINT nID)
 {
     cursor->Paste (*this);
@@ -1124,6 +1140,11 @@ BOOL CEditorView::OnPaste (UINT nID)
     editor_control.ValidateCursor ();
 
     return TRUE;
+}
+
+void CEditorView::OnUpdateCutMenu (CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable (cursor->CanCopy ());
 }
 
 BOOL CEditorView::OnCut (UINT nID)

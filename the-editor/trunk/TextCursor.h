@@ -21,6 +21,7 @@ public:
     virtual void ResetDirtyRows () = 0;
     virtual bool CanOverwrite () = 0;
     virtual bool CanCopy () = 0;
+    virtual bool CanPaste (CWnd &owner) = 0;
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting) = 0;
     virtual void WordClick (unsigned int row, unsigned int column) = 0;
@@ -114,6 +115,7 @@ public:
     virtual void ResetDirtyRows ();
     virtual bool CanOverwrite ();
     virtual bool CanCopy ();
+    virtual bool CanPaste (CWnd &owner);
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting);
     virtual void WordClick (unsigned int row, unsigned int column);
