@@ -5,21 +5,21 @@
 
 struct CDocChange : public CObject
 {
-	unsigned int first_line;
-	unsigned int original_lines_count;
-	unsigned int new_lines_count;
+    unsigned int first_line;
+    unsigned int original_lines_count;
+    unsigned int new_lines_count;
 
-	inline CDocChange (unsigned int first_line, unsigned int original_lines_count, unsigned int new_lines_count) :
-		first_line (first_line), original_lines_count (original_lines_count), new_lines_count (new_lines_count)
-	{
-	}
+    inline CDocChange (unsigned int first_line, unsigned int original_lines_count, unsigned int new_lines_count) :
+        first_line (first_line), original_lines_count (original_lines_count), new_lines_count (new_lines_count)
+    {
+    }
 };
 
 class CEditorDocument : public CDocument
 {
 protected:
     CSimpleInMemoryText text;
-	CText *text_wrapper;
+    CText *text_wrapper;
     CUndoManager undo_manager;
 
     CEditorDocument ();

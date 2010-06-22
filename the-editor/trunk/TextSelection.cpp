@@ -1,6 +1,10 @@
 #include "StdAfx.h"
 #include "TextSelection.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 #pragma region CContinuousTextSelection
 
 CContinuousTextSelection::CContinuousTextSelection (CTextLayout &layout, unsigned int start_line, unsigned int start_position, unsigned int end_line, unsigned int end_position) :

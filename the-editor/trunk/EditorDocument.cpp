@@ -1,5 +1,4 @@
-#include "stdafx.h"
-
+#include "StdAfx.h"
 #include "EditorDocument.h"
 
 #ifdef _DEBUG

@@ -1,6 +1,10 @@
 #include "StdAfx.h"
 #include "TextLayout.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 #pragma region CAbstractTextLayout
 
 class CAbstractTextLayoutAction : public CUndoableAction

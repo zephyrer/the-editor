@@ -1,17 +1,10 @@
-
-// MainFrame.cpp : implementation of the CMainFrame class
-//
-
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Editor.h"
-
 #include "MainFrame.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-// CMainFrame
 
 IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
 
