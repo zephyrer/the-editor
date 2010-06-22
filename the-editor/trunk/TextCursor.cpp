@@ -79,7 +79,7 @@ public:
         cursor.cursor_row = cursor_row;
         cursor.cursor_column = cursor_column;
 
-		cursor.UpdateSelection ();
+        cursor.UpdateSelection ();
     }
 };
 
@@ -395,12 +395,12 @@ void CNormalTextCursor::DeleteSelection ()
 {
     if (selection == NULL) return;
 
-	unsigned int sline = selection->GetStartLine ();
-	unsigned int sposition = selection->GetStartPosition ();
-	unsigned int eline = selection->GetEndLine ();
-	unsigned int eposition = selection->GetEndPosition ();
+    unsigned int sline = selection->GetStartLine ();
+    unsigned int sposition = selection->GetStartPosition ();
+    unsigned int eline = selection->GetEndLine ();
+    unsigned int eposition = selection->GetEndPosition ();
 
-	MoveToLinePosition (sline, sposition, false);
+    MoveToLinePosition (sline, sposition, false);
 
     if (sline == eline)
     {
@@ -878,7 +878,7 @@ void CNormalTextCursor::WordBackspace ()
         if (current_position > 0)
         {
             unsigned int to = GetPreviousWordBoundary (current_line, current_position - 1);
-			unsigned int from = current_position;
+            unsigned int from = current_position;
 
             MoveToLinePosition (current_line, to, false);
             layout.GetText ().ReplaceCharsRange (current_line, to, from - to, 0, NULL);
@@ -1021,6 +1021,7 @@ void CNormalTextCursor::Paste ()
                 position = 0;
 
                 if ((text [i + 1] == L'\n' || text [i + 1] == L'\r') && (text [i + 1] != text [i])) i++;
+                line_start = i + 1;
             }
         }
         layout.GetText ().ReplaceCharsRange (line, position, 0, i - line_start, &text [line_start]);
