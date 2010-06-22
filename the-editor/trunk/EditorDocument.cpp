@@ -15,7 +15,7 @@ protected:
 
 public:
     inline CTextWrapper (CUndoManager &undo_manager, CEditorDocument &document, CText &text) : 
-        CText (undo_manager), document (document), text (text) 
+        CText (), document (document), text (text) 
     {
         int i = 0;
         // Do nothing
@@ -116,9 +116,8 @@ END_MESSAGE_MAP()
 // CEditorDocument construction/destruction
 
 CEditorDocument::CEditorDocument () : 
-    undo_manager (), text (undo_manager, char_buffer), text_wrapper (new CTextWrapper (undo_manager, *this, text))
+    undo_manager (), text (char_buffer), text_wrapper (new CTextWrapper (undo_manager, *this, text))
 {
-    text.InsertLineAt (0, 0, NULL);
 }
 
 CEditorDocument::~CEditorDocument()
