@@ -1003,11 +1003,19 @@ void CNormalTextCursor::Paste ()
         {
             if (text [i] == L'\n' || text [i] == L'\r')
             {
-                layout.GetText ().ReplaceCharsRange (line, position, 0, i - line_start, &text [line_start]);
-                position += i - line_start;
-                layout.GetText ().BreakLineAt (line, position);
-                line++;
-                position = 0;
+                if (position > 0)
+                {
+                    layout.GetText ().ReplaceCharsRange (line, position, 0, i - line_start, &text [line_start]);
+                    position += i - line_start;
+                    layout.GetText ().BreakLineAt (line, position);
+                    line++;
+                    position = 0;
+                }
+                else
+                {
+                    layout.GetText ().InsertLineAt (line, i - line_start, &text [line_start]);
+                    line++;
+                }
 
                 if ((text [i + 1] == L'\n' || text [i + 1] == L'\r') && (text [i + 1] != text [i])) i++;
                 line_start = i + 1;
