@@ -85,40 +85,15 @@ protected:
     CTextLayout *layout;
     CTextCursor *cursor;
 
-protected: // create from serialization only
-    CEditorView ();
+	CEditorView ();
     DECLARE_DYNCREATE (CEditorView)
 
-// Attributes
-public:
-    CEditorDocument* GetDocument () const;
-
-// Operations
-public:
-
-public:
-    virtual BOOL PreCreateWindow (CREATESTRUCT& cs);
-    virtual void OnInitialUpdate ();
-
-    virtual void UpdateLayout ();
-    virtual void UpdateCellSize ();
-
-protected:
     virtual void OnDraw(CDC* pDC);
     virtual BOOL OnPreparePrinting (CPrintInfo* pInfo);
     virtual void OnBeginPrinting (CDC* pDC, CPrintInfo* pInfo);
     virtual void OnEndPrinting (CDC* pDC, CPrintInfo* pInfo);
     afx_msg void OnSetFocus (CWnd* pOldWnd);
 
-// Implementation
-public:
-    virtual ~CEditorView ();
-#ifdef _DEBUG
-    virtual void AssertValid () const;
-    virtual void Dump (CDumpContext& dc) const;
-#endif
-
-protected:
     afx_msg int OnCreate (LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnSize (UINT nType, int cx, int cy);
     afx_msg LRESULT OnSetFont (WPARAM, LPARAM);
@@ -143,8 +118,25 @@ protected:
     afx_msg void OnUpdateCutMenu (CCmdUI* pCmdUI);
     afx_msg BOOL OnCut (UINT nID);
 
-protected:
     DECLARE_MESSAGE_MAP ()
+
+public:
+    CEditorDocument* GetDocument () const;
+
+    virtual BOOL PreCreateWindow (CREATESTRUCT& cs);
+    virtual void OnInitialUpdate ();
+
+    virtual void UpdateLayout ();
+    virtual void UpdateCellSize ();
+
+	virtual ~CEditorView ();
+
+	virtual void OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint);
+
+#ifdef _DEBUG
+    virtual void AssertValid () const;
+    virtual void Dump (CDumpContext& dc) const;
+#endif
 };
 
 #ifndef _DEBUG  // debug version in EditorView.cpp

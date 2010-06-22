@@ -911,6 +911,8 @@ void CEditorView::OnSetFocus (CWnd* pOldWnd)
 
 void CEditorView::UpdateLayout ()
 {
+	if (layout == NULL) return;
+
     CRect client_rect;
     GetClientRect (&client_rect);
 
@@ -1156,6 +1158,27 @@ BOOL CEditorView::OnCut (UINT nID)
     editor_control.ValidateCursor ();
 
     return TRUE;
+}
+
+void CEditorView::OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint)
+{
+	if (pHint != NULL)
+	{
+		CDocChange &change = *(CDocChange *)pHint;
+
+		unsigned int overlap = min (change.original_lines_count, change.new_lines_count);
+
+		if (overlap > 0)
+			layout->LinesChanged (change.first_line, overlap);
+
+		if (change.original_lines_count > overlap)
+			layout->LinesRemoved (change.first_line + overlap, change.original_lines_count - overlap);
+
+		if (change.new_lines_count > overlap)
+			layout->LinesInserted (change.first_line + overlap, change.new_lines_count - overlap);
+	}
+
+	CView::OnUpdate (pSender, lHint, pHint);
 }
 
 #pragma endregion
