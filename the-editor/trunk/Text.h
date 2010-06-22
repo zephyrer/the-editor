@@ -50,9 +50,11 @@ public:
     virtual unsigned int GetLinesCount ();
     virtual unsigned int GetLineLength (unsigned int line);
     virtual TCHAR GetCharAt (unsigned int line, unsigned int position);
+    virtual void GetCharsRange (unsigned int line, unsigned int start_position, unsigned int count, TCHAR buffer []);
     virtual void InsertCharAt (unsigned int line, unsigned int position, TCHAR character);
     virtual void SetCharAt (unsigned int line, unsigned int position, TCHAR character);
     virtual void RemoveCharAt (unsigned int line, unsigned int position);
+    virtual void ReplaceCharsRange (unsigned int line, unsigned int start_position, unsigned int count, unsigned int replacement_length, TCHAR replacement []);
     virtual void BreakLineAt (unsigned int line, unsigned int position);
     virtual void JoinLines (unsigned int line);
     virtual void InsertLineAt (unsigned int line, unsigned int length, TCHAR characters []);

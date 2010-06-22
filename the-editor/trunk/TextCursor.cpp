@@ -944,7 +944,7 @@ bool CNormalTextCursor::Copy ()
     {
         length = eposition - sposition;
 
-        unicodetext = (TCHAR *)alloca ((length + 1) * sizeof (TCHAR));
+        unicodetext = (TCHAR *)malloc ((length + 1) * sizeof (TCHAR));
         layout.GetText ().GetCharsRange (sline, sposition, length, unicodetext);
         unicodetext [length] = 0;
     }
@@ -954,7 +954,7 @@ bool CNormalTextCursor::Copy ()
         for (unsigned int i = sline + 1; i < eline; i++)
             length += layout.GetText ().GetLineLength (i) + 2;
 
-        unicodetext = (TCHAR *)alloca ((length + 1) * sizeof (TCHAR));
+        unicodetext = (TCHAR *)malloc ((length + 1) * sizeof (TCHAR));
 
         unsigned int n = 0;
         layout.GetText ().GetCharsRange (sline, sposition, layout.GetText ().GetLineLength (sline) - sposition, &unicodetext [n]);
@@ -979,7 +979,11 @@ bool CNormalTextCursor::Copy ()
         unicodetext [length] = 0;
     }
 
-    return clipboard.SetText (unicodetext);
+    bool result = clipboard.SetText (unicodetext);
+
+    free (unicodetext);
+
+    return result;
 }
 
 void CNormalTextCursor::Paste ()

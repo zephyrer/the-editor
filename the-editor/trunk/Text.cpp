@@ -174,6 +174,17 @@ TCHAR CSimpleInMemoryText::GetCharAt (unsigned int line, unsigned int position)
     return text [line][position];
 }
 
+void CSimpleInMemoryText::GetCharsRange (unsigned int line, unsigned int start_position, unsigned int count, TCHAR buffer [])
+{
+    ASSERT (line < GetLinesCount ());
+    ASSERT (start_position <= GetLineLength (line));
+    ASSERT (start_position + count <= GetLineLength (line));
+    ASSERT (buffer != NULL);
+
+    for (unsigned int i = 0; i < count; i++)
+        buffer [i] = text [line][start_position + i];
+}
+
 void CSimpleInMemoryText::InsertCharAt (unsigned int line, unsigned int position, TCHAR character)
 {
     ASSERT (line < GetLinesCount ());
@@ -207,6 +218,37 @@ void CSimpleInMemoryText::RemoveCharAt (unsigned int line, unsigned int position
 
     if (undo_manager.IsWithinTransaction ())
         undo_manager.AddAction (new CReplaceCharsRangeAction (*this, line, position, 1, 0, &old_ch));
+}
+
+void CSimpleInMemoryText::ReplaceCharsRange (unsigned int line, unsigned int start_position, unsigned int count, unsigned int replacement_length, TCHAR replacement [])
+{
+    ASSERT (line < GetLinesCount ());
+    ASSERT (start_position <= GetLineLength (line));
+    ASSERT (start_position + count <= GetLineLength (line));
+    ASSERT (replacement_length == 0 || replacement != NULL);
+
+    TCHAR *temp = (TCHAR *)alloca (count * sizeof (TCHAR));
+    GetCharsRange (line, start_position, count, temp);
+
+    unsigned int overlap = min (count, replacement_length);
+    for (unsigned int i = 0; i < overlap; i++)
+        text [line][start_position + i] = replacement [i];
+
+    if (count > replacement_length)
+    {
+        text [line].erase (
+            text [line].begin () + start_position + overlap, 
+            text [line].begin () + start_position + count);
+    }
+    else
+    {
+        text [line].insert (text [line].begin () + start_position + overlap, replacement_length - overlap, 0);
+        for (unsigned int i = overlap; i < replacement_length; i++)
+            text [line][start_position + i] = replacement [i];
+    }
+
+    if (undo_manager.IsWithinTransaction ())
+        undo_manager.AddAction (new CReplaceCharsRangeAction (*this, line, start_position, count, replacement_length, temp));
 }
 
 void CSimpleInMemoryText::BreakLineAt (unsigned int line, unsigned int position)
