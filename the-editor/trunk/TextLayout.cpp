@@ -100,7 +100,7 @@ void CAbstractTextLayout::AddDirtyRowRange (unsigned int start_row, unsigned int
                 first_dirty_row + dirty_rows_count,
                 start_row + count);
 
-            first_dirty_row = min (first_dirty_row, count);
+            first_dirty_row = min (first_dirty_row, start_row);
             dirty_rows_count = last_dirty_row - first_dirty_row;
         }
     }
