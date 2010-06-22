@@ -518,6 +518,16 @@ void CNormalTextCursor::Click (unsigned int row, unsigned int column, bool selec
     MoveToLinePosition (tc.line, tc.position, selecting);
 }
 
+void CNormalTextCursor::RightClick (unsigned int row, unsigned int column)
+{
+    TEXTCELL tc;
+
+    layout.GetCellAt (row, column, tc);
+
+    if (selection == NULL || !selection->IsCellSelected (tc))
+        MoveToLinePosition (tc.line, tc.position, false);
+}
+
 void CNormalTextCursor::WordClick (unsigned int row, unsigned int column)
 {
     TEXTCELL tc;

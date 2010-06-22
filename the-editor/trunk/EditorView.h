@@ -23,7 +23,9 @@ protected:
     afx_msg BOOL OnMouseWheel (UINT nFlags, short zDelta, CPoint pt);
     afx_msg void OnChar (UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg void OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags);
+    afx_msg void OnContextMenu (CWnd* pWnd, CPoint pos);
 
+    virtual void ClientToRowColumn (int x, int y, unsigned int &row, unsigned int &column);
     virtual void PaintCharsRange (CDC &DC, int row, int start_column, int count, bool selected, TEXTCELL *cells = NULL);
 
     unsigned int click_counter;
