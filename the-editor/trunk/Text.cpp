@@ -216,8 +216,8 @@ void CSimpleInMemoryText::GetCharsRange (unsigned int line, unsigned int start_p
     ASSERT (start_position + count <= GetLineLength (line));
     ASSERT (buffer != NULL);
 
-    for (unsigned int i = 0; i < count; i++)
-        buffer [i] = text [line][start_position + i];
+    if (count > 0)
+        memcpy (buffer, &text [line][start_position], count * sizeof (TCHAR));
 }
 
 void CSimpleInMemoryText::InsertCharAt (unsigned int line, unsigned int position, TCHAR character)
