@@ -24,7 +24,6 @@ BEGIN_MESSAGE_MAP(CEditorControl, CWnd)
     ON_WM_MOUSEMOVE ()
     ON_WM_LBUTTONUP ()
     ON_WM_MOUSEWHEEL ()
-    ON_WM_MOUSEHWHEEL ()
     ON_WM_CHAR ()
     ON_WM_KEYDOWN ()
 END_MESSAGE_MAP()
@@ -482,13 +481,6 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
     CWnd::OnKeyDown (nChar, nRepCnt, nFlags);
 }
 
-void CEditorControl::OnMouseHWheel (UINT nFlags, short zDelta, CPoint pt)
-{
-    Scroll (-zDelta * view.cell_size.cx / 10, 0);
-
-    CWnd::OnMouseHWheel (nFlags, zDelta, pt);
-}
-
 void CEditorControl::UpdateScrollBars ()
 {
     if (view.layout == NULL) return;
@@ -911,7 +903,7 @@ void CEditorView::OnSetFocus (CWnd* pOldWnd)
 
 void CEditorView::UpdateLayout ()
 {
-	if (layout == NULL) return;
+    if (layout == NULL) return;
 
     CRect client_rect;
     GetClientRect (&client_rect);
@@ -1045,7 +1037,7 @@ BOOL CEditorView::OnViewLineNumbersCheck (UINT nID)
 {
     line_numbers_control.SetWindowPos (
         NULL, 0, 0, 0, 0,
-	SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | (line_numbers_control.GetStyle () & WS_VISIBLE ? SWP_HIDEWINDOW : SWP_SHOWWINDOW));
+    SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | (line_numbers_control.GetStyle () & WS_VISIBLE ? SWP_HIDEWINDOW : SWP_SHOWWINDOW));
 
     UpdateLayout ();
 
@@ -1162,23 +1154,23 @@ BOOL CEditorView::OnCut (UINT nID)
 
 void CEditorView::OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint)
 {
-	if (pHint != NULL)
-	{
-		CDocChange &change = *(CDocChange *)pHint;
+    if (pHint != NULL)
+    {
+        CDocChange &change = *(CDocChange *)pHint;
 
-		unsigned int overlap = min (change.original_lines_count, change.new_lines_count);
+        unsigned int overlap = min (change.original_lines_count, change.new_lines_count);
 
-		if (overlap > 0)
-			layout->LinesChanged (change.first_line, overlap);
+        if (overlap > 0)
+            layout->LinesChanged (change.first_line, overlap);
 
-		if (change.original_lines_count > overlap)
-			layout->LinesRemoved (change.first_line + overlap, change.original_lines_count - overlap);
+        if (change.original_lines_count > overlap)
+            layout->LinesRemoved (change.first_line + overlap, change.original_lines_count - overlap);
 
-		if (change.new_lines_count > overlap)
-			layout->LinesInserted (change.first_line + overlap, change.new_lines_count - overlap);
-	}
+        if (change.new_lines_count > overlap)
+            layout->LinesInserted (change.first_line + overlap, change.new_lines_count - overlap);
+    }
 
-	CView::OnUpdate (pSender, lHint, pHint);
+    CView::OnUpdate (pSender, lHint, pHint);
 }
 
 #pragma endregion
