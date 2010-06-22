@@ -2,6 +2,7 @@
 
 #include "TextLayout.h"
 #include "TextSelection.h"
+#include "Clipboard.h"
 
 class CTextCursor : public CObject
 {
@@ -21,7 +22,7 @@ public:
     virtual void ResetDirtyRows () = 0;
     virtual bool CanOverwrite () = 0;
     virtual bool CanCopy () = 0;
-    virtual bool CanPaste (CWnd &owner) = 0;
+    virtual bool CanPaste () = 0;
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting) = 0;
     virtual void WordClick (unsigned int row, unsigned int column) = 0;
@@ -52,9 +53,9 @@ public:
     virtual void WordDel () = 0;
     virtual void NewLine () = 0;
 
-    virtual void Copy (CWnd &owner) = 0;
-    virtual void Paste (CWnd &owner) = 0;
-    virtual void Cut (CWnd &owner) = 0;
+    virtual bool Copy () = 0;
+    virtual void Paste () = 0;
+    virtual void Cut () = 0;
 };
 
 class CNormalTextCursorAction;
@@ -77,6 +78,7 @@ protected:
     CContinuousTextSelection *selection;
 
     CUndoManager &undo_manager;
+    CClipboard &clipboard;
 
     virtual void AddDirtyRowRange (unsigned int start_dirty_row, unsigned int dirty_row_count);
     virtual void AddDirtyLineRange (unsigned int start_dirty_line, unsigned int dirty_line_count);
@@ -92,7 +94,7 @@ protected:
     virtual void DeleteSelection ();
 
 public:
-    inline CNormalTextCursor (CTextLayout &layout, CUndoManager &undo_manager) : 
+    inline CNormalTextCursor (CTextLayout &layout, CUndoManager &undo_manager, CClipboard &clipboard) : 
         CTextCursor (layout), 
         anchor_line (0), anchor_position (0),
         current_line (0), current_position (0),
@@ -100,12 +102,13 @@ public:
         cursor_row (0), cursor_column (0),
         start_dirty_row (0), dirty_row_count (0),
         selection (NULL),
-        undo_manager (undo_manager)
+        undo_manager (undo_manager),
+        clipboard (clipboard)
     {}
+
+    CNormalTextCursor (CTextLayout &layout, unsigned int row, unsigned int column, CUndoManager &undo_manager, CClipboard &clipboard);
     
     virtual ~CNormalTextCursor ();
-
-    CNormalTextCursor (CTextLayout &layout, unsigned int row, unsigned int column, CUndoManager &undo_manager);
 
     virtual unsigned int GetCursorRow ();
     virtual unsigned int GetCursorColumn ();
@@ -115,7 +118,7 @@ public:
     virtual void ResetDirtyRows ();
     virtual bool CanOverwrite ();
     virtual bool CanCopy ();
-    virtual bool CanPaste (CWnd &owner);
+    virtual bool CanPaste ();
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting);
     virtual void WordClick (unsigned int row, unsigned int column);
@@ -146,7 +149,7 @@ public:
     virtual void WordDel ();
     virtual void NewLine ();
 
-    virtual void Copy (CWnd &owner);
-    virtual void Paste (CWnd &owner);
-    virtual void Cut (CWnd &owner);
+    virtual bool Copy ();
+    virtual void Paste ();
+    virtual void Cut ();
 };
