@@ -1057,6 +1057,7 @@ BOOL CEditorView::OnUndo (UINT nID)
     editor_control.ValidateCursor ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
+    ValidateLayout ();
     editor_control.UpdateWindow ();
     line_numbers_control.UpdateWindow ();
 
@@ -1076,6 +1077,7 @@ BOOL CEditorView::OnRedo (UINT nID)
     editor_control.ValidateCursor ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
+    ValidateLayout ();
     editor_control.UpdateWindow ();
     line_numbers_control.UpdateWindow ();
 
@@ -1168,9 +1170,36 @@ void CEditorView::OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint)
 
         if (change.new_lines_count > overlap)
             layout->LinesInserted (change.first_line + overlap, change.new_lines_count - overlap);
-    }
 
-    CView::OnUpdate (pSender, lHint, pHint);
+        ValidateLayout ();
+    }
+    else CView::OnUpdate (pSender, lHint, pHint);
+}
+
+void CEditorView::ValidateLayout ()
+{
+    unsigned int top = 
+        padding_top + 
+        layout->GetFirstDirtyRow () * cell_size.cy - 
+        editor_control.GetScrollPos (SB_HORZ);
+    unsigned int bottom = top + layout->GetDirtyRowsCount () * cell_size.cy;
+
+    layout->ResetDirtyRows ();
+
+    if (top <= bottom)
+    {
+        CRect client_rect;
+
+        editor_control.GetClientRect (&client_rect);
+        client_rect.top = max (client_rect.top, top);
+        client_rect.bottom = min (client_rect.bottom, bottom);
+        editor_control.InvalidateRect (&client_rect, false);
+
+        line_numbers_control.GetClientRect (&client_rect);
+        client_rect.top = max (client_rect.top, top);
+        client_rect.bottom = min (client_rect.bottom, bottom);
+        line_numbers_control.InvalidateRect (&client_rect, false);
+    }
 }
 
 #pragma endregion
