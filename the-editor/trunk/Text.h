@@ -26,6 +26,8 @@ public:
     virtual void JoinLines (unsigned int line) = 0;
     virtual void InsertLineAt (unsigned int line, unsigned int length, TCHAR characters []) = 0;
     virtual void RemoveLineAt (unsigned int line) = 0;
+    virtual void InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters []) = 0;
+    virtual void RemoveLinesAt (unsigned int line, unsigned int count) = 0;
 };
 
 class CAbstractText :
@@ -36,6 +38,8 @@ public:
 
     virtual void GetCharsRange (unsigned int line, unsigned int start_position, unsigned int count, TCHAR buffer []);
     virtual void ReplaceCharsRange (unsigned int line, unsigned int start_position, unsigned int count, unsigned int replacement_length, TCHAR replacement []);
+    virtual void InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters []);
+    virtual void RemoveLinesAt (unsigned int line, unsigned int count);
 };
 
 class CSimpleInMemoryText :
@@ -59,4 +63,6 @@ public:
     virtual void JoinLines (unsigned int line);
     virtual void InsertLineAt (unsigned int line, unsigned int length, TCHAR characters []);
     virtual void RemoveLineAt (unsigned int line);
+    virtual void InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters []);
+    virtual void RemoveLinesAt (unsigned int line, unsigned int count);
 };

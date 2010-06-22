@@ -41,6 +41,25 @@ void CAbstractText::ReplaceCharsRange (unsigned int line, unsigned int start_pos
     }
 }
 
+void CAbstractText::InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters [])
+{
+    ASSERT (line <= GetLinesCount ());
+    ASSERT (count == 0 || length != NULL);
+    ASSERT (count == 0 || characters != NULL);
+
+    for (unsigned int i = 0; i < count; i++)
+        InsertLineAt (line + i, length [i], characters [i]);
+}
+
+void CAbstractText::RemoveLinesAt (unsigned int line, unsigned int count)
+{
+    ASSERT (line <= GetLinesCount ());
+    ASSERT (line + count <= GetLinesCount ());
+
+    for (unsigned int i = count; i > 0; i--)
+        RemoveLineAt (line + i - 1);
+}
+
 #pragma endregion
 
 #pragma region CSimpleInMemoryText
@@ -286,25 +305,48 @@ void CSimpleInMemoryText::InsertLineAt (unsigned int line, unsigned int length, 
 {
     ASSERT (line <= GetLinesCount ());
 
-    text.insert (text.begin () + line, vector <TCHAR> (&characters [0], &characters [length]));
-
-    if (undo_manager.IsWithinTransaction ())
-        undo_manager.AddAction (new CInsertLineAction (*this, line));
+    InsertLinesAt (line, 1, &length, &characters);
 }
 
 void CSimpleInMemoryText::RemoveLineAt (unsigned int line)
 {
-    ASSERT (line >= 0);
     ASSERT (line < GetLinesCount ());
 
-    unsigned int ll = GetLineLength (line);
-    TCHAR *characters = (TCHAR *)alloca (ll * sizeof (TCHAR));
-    GetCharsRange (line, 0, ll, characters);
+    RemoveLinesAt (line, 1);
+}
 
-    text.erase (text.begin () + line);
+void CSimpleInMemoryText::InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters [])
+{
+    ASSERT (line <= GetLinesCount ());
+    ASSERT (count == 0 || length != NULL);
+    ASSERT (count == 0 || characters != NULL);
 
-    if (undo_manager.IsWithinTransaction ())
-        undo_manager.AddAction (new CRemoveLineAction (*this, line, ll, characters));
+    if (count == 0) return;
+
+    text.insert (text.begin () + line, count, vector <TCHAR> ());
+    for (unsigned int i = 0; i < count; i++)
+    {
+        TCHAR *c = characters [i];
+        text [line + i] = vector <TCHAR> (&c [0], &c [length [i]]);
+    }
+
+    // if (undo_manager.IsWithinTransaction ())
+    //    undo_manager.AddAction (new CInsertLinesAction (*this, line, count));
+}
+
+void CSimpleInMemoryText::RemoveLinesAt (unsigned int line, unsigned int count)
+{
+    ASSERT (line <= GetLinesCount ());
+    ASSERT (line + count <= GetLinesCount ());
+
+    // unsigned int ll = GetLineLength (line);
+    // TCHAR *characters = (TCHAR *)alloca (ll * sizeof (TCHAR));
+    // GetCharsRange (line, 0, ll, characters);
+
+    text.erase (text.begin () + line, text.begin () + line + count);
+
+    // if (undo_manager.IsWithinTransaction ())
+    //        undo_manager.AddAction (new CRemoveLinesAction (*this, line, ll, characters));
 }
 
 #pragma endregion
