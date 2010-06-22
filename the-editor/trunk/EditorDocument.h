@@ -18,7 +18,8 @@ struct CDocChange : public CObject
 class CEditorDocument : public CDocument
 {
 protected:
-    CSimpleInMemoryText text;
+    CVectorCharBuffer char_buffer;
+    CCharBufferText text;
     CText *text_wrapper;
     CUndoManager undo_manager;
 

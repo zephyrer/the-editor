@@ -116,7 +116,7 @@ END_MESSAGE_MAP()
 // CEditorDocument construction/destruction
 
 CEditorDocument::CEditorDocument () : 
-    undo_manager (), text (undo_manager), text_wrapper (new CTextWrapper (undo_manager, *this, text))
+    undo_manager (), text (undo_manager, char_buffer), text_wrapper (new CTextWrapper (undo_manager, *this, text))
 {
     text.InsertLineAt (0, 0, NULL);
 }

@@ -348,7 +348,9 @@ void CSimpleInMemoryText::InsertLinesAt (unsigned int line, unsigned int count, 
     for (unsigned int i = 0; i < count; i++)
     {
         TCHAR *c = characters [i];
-        text [line + i] = vector <TCHAR> (&c [0], &c [length [i]]);
+        text [line + i].resize (length [i]);
+        if (length [i] > 0)
+            memcpy (&text [line + i][0], c, length [i] * sizeof (TCHAR));
     }
 
     if (undo_manager.IsWithinTransaction ())
@@ -384,6 +386,232 @@ void CSimpleInMemoryText::RemoveLinesAt (unsigned int line, unsigned int count)
         ASSERT (action != NULL);
         undo_manager.AddAction (action);
     }
+}
+
+#pragma endregion
+
+#pragma region CCharBufferText
+
+CCharBufferText::CCharBufferText (CUndoManager &undo_manager, CCharBuffer &data) : CText (undo_manager), data (data)
+{
+    TCHAR buffer [65536];
+
+    unsigned int size = data.GetSize ();
+    unsigned int ls = 0;
+    TCHAR pch = 0;
+    for (unsigned int i = 0; i < size; i++)
+    {
+        if (i % 65536 == 0)
+            data.GetCharsRange (i, min (65536, size - i), buffer);
+
+        TCHAR ch = buffer [i % 65536];
+        if (ch == L'\n' || ch == L'\r')
+        {
+            if (pch == 0 || pch == ch)
+            {
+                line_start.push_back (ls);
+                line_length.push_back (i - ls);
+                pch = ch;
+            }
+            else
+            {
+                pch = 0;
+            }
+
+            ls = i;
+        }
+        else pch = 0;
+    }
+}
+
+unsigned int CCharBufferText::GetLinesCount ()
+{
+    return line_length.size ();
+}
+
+unsigned int CCharBufferText::GetLineLength (unsigned int line)
+{
+    ASSERT (line < line_length.size ());
+
+    return line_length [line];
+}
+
+TCHAR CCharBufferText::GetCharAt (unsigned int line, unsigned int position)
+{
+    ASSERT (line < line_length.size ());
+    ASSERT (position < line_length [line]);
+
+    return data.GetCharAt (line_start [line] + position);
+}
+
+void CCharBufferText::GetCharsRange (unsigned int line, unsigned int start_position, unsigned int count, TCHAR buffer [])
+{
+    ASSERT (line < line_length.size ());
+    ASSERT (start_position <= line_length [line]);
+    ASSERT (start_position + count <= line_length [line]);
+    ASSERT (count == 0 || buffer != NULL);
+
+    data.GetCharsRange (line_start [line] + start_position, count, buffer);
+}
+
+void CCharBufferText::InsertCharAt (unsigned int line, unsigned int position, TCHAR character)
+{
+    ASSERT (line < line_length.size ());
+    ASSERT (position <= line_length [line]);
+
+    data.InsertCharAt (line_start [line] + position, character);
+
+    line_length [line] += 1;
+
+    unsigned int size = line_length.size ();
+    for (unsigned int i = line + 1; i < size; i++)
+        line_start [i] += 1;
+}
+
+void CCharBufferText::SetCharAt (unsigned int line, unsigned int position, TCHAR character)
+{
+    ASSERT (line < line_length.size ());
+    ASSERT (position < line_length [line]);
+
+    data.SetCharAt (line_start [line] + position, character);
+}
+
+void CCharBufferText::RemoveCharAt (unsigned int line, unsigned int position)
+{
+    ASSERT (line < line_length.size ());
+    ASSERT (position < line_length [line]);
+
+    data.RemoveCharAt (line_start [line] + position);
+
+    line_length [line] -= 1;
+
+    unsigned int size = line_length.size ();
+    for (unsigned int i = line + 1; i < size; i++)
+        line_start [i] -= 1;
+}
+
+void CCharBufferText::ReplaceCharsRange (unsigned int line, unsigned int start_position, unsigned int count, unsigned int replacement_length, TCHAR replacement [])
+{
+    ASSERT (line < line_length.size ());
+    ASSERT (start_position <= line_length [line]);
+    ASSERT (start_position + count <= line_length [line]);
+    ASSERT (replacement_length == 0 || replacement != NULL);
+
+    data.ReplaceCharsRange (line_start [line] + start_position, count, replacement_length, replacement);
+
+    int delta = replacement_length - count;
+
+    line_length [line] += delta;
+
+    unsigned int size = line_length.size ();
+    for (unsigned int i = line + 1; i < size; i++)
+        line_start [i] += delta;
+}
+
+void CCharBufferText::BreakLineAt (unsigned int line, unsigned int position)
+{
+    ASSERT (line < line_length.size ());
+    ASSERT (position <= line_length [line]);
+
+    data.ReplaceCharsRange (line_start [line] + position, 0, 2, L"\r\n");
+
+    line_length.insert (line_length.begin () + line + 1, line_length [line] - position);
+    line_length [line] = position;
+    line_start.insert (line_start.begin () + line + 1, line_start [line] + position + 2);
+
+    unsigned int size = line_length.size ();
+    for (unsigned int i = line + 2; i < size; i++)
+        line_start [i] += 2;
+}
+
+void CCharBufferText::JoinLines (unsigned int line)
+{
+    ASSERT (line < line_length.size () - 1);
+
+    unsigned int delta = line_start [line + 1] - line_start [line] - line_length [line];
+
+    data.ReplaceCharsRange (line_start [line + 1] - delta, delta, 0, NULL);
+
+    line_length [line] += line_length [line + 1];
+
+    line_length.erase (line_length.begin () + line + 1);
+    line_start.erase (line_start.begin () + line + 1);
+
+    unsigned int size = line_length.size ();
+    for (unsigned int i = line + 1; i < size; i++)
+        line_start [i] -= delta;
+}
+
+void CCharBufferText::InsertLineAt (unsigned int line, unsigned int length, TCHAR characters [])
+{
+    ASSERT (line <= line_length.size () - 1);
+
+    unsigned int size = line_length.size ();
+    if (size == 0)
+    {
+        data.ReplaceCharsRange (0, 0, length, characters);
+        line_start.insert (line_start.begin (), 0);
+        line_length.insert (line_length.begin (), length);
+    }
+    else if (line == 0)
+    {
+        data.ReplaceCharsRange (0, 0, length, characters);
+        data.ReplaceCharsRange (0, length, 2, L"\r\n");
+        line_start.insert (line_start.begin (), 0);
+        line_length.insert (line_length.begin (), length);
+
+        for (unsigned int i = 1; i <= size; i++)
+            line_start [i] += length + 2;
+    }
+    else
+    {
+        data.ReplaceCharsRange (line_start [line - 1] + line_length [line - 1], 0, 2, L"\r\n");
+        data.ReplaceCharsRange (line_start [line - 1] + line_length [line - 1] + 2, 0, length, characters);
+        line_start.insert (line_start.begin () + line, line_start [line - 1] + line_length [line - 1] + 2);
+        line_length.insert (line_length.begin () + line, length);
+
+        for (unsigned int i = line + 1; i <= size; i++)
+            line_start [i] += length + 2;
+    }
+}
+
+void CCharBufferText::RemoveLineAt (unsigned int line)
+{
+    ASSERT (line < line_length.size ());
+
+    unsigned int delta;
+
+    if (line < line_length.size () - 1)
+        delta = line_start [line + 1] - line_start [line];
+    else
+        delta = data.GetSize () - line_start [line];
+
+    data.ReplaceCharsRange (line_start [line], delta, 0, NULL);
+    line_length.erase (line_length.begin () + line);
+    line_start.erase (line_start.begin () + line);
+
+    unsigned int size = line_length.size ();
+    for (unsigned int i = line; i < size; i++)
+        line_start [i] -= delta;
+}
+
+void CCharBufferText::InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters [])
+{
+    ASSERT (line <= GetLinesCount ());
+    ASSERT (count == 0 || length != NULL);
+    ASSERT (count == 0 || characters != NULL);
+
+    for (unsigned int i = 0; i < count; i++)
+        InsertLineAt (line + i, length [i], characters [i]);
+}
+
+void CCharBufferText::RemoveLinesAt (unsigned int line, unsigned int count)
+{
+    ASSERT (line <= GetLinesCount ());
+    ASSERT (line + count <= GetLinesCount ());
+
+    for (unsigned int i = count; i > 0; i--)
+        RemoveLineAt (line + i - 1);
 }
 
 #pragma endregion

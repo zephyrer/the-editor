@@ -3,8 +3,7 @@
 #include "afx.h"
 
 #include "UndoManager.h"
-
-using namespace std;
+#include "CharBuffer.h"
 
 class CText : public CObject
 {
@@ -46,10 +45,36 @@ class CSimpleInMemoryText :
     public CAbstractText
 {
 protected:
-    vector <vector <TCHAR>> text;
+    std::vector <vector <TCHAR>> text;
 
 public:
     inline CSimpleInMemoryText (CUndoManager &undo_manager) : CAbstractText (undo_manager) {}
+
+    virtual unsigned int GetLinesCount ();
+    virtual unsigned int GetLineLength (unsigned int line);
+    virtual TCHAR GetCharAt (unsigned int line, unsigned int position);
+    virtual void GetCharsRange (unsigned int line, unsigned int start_position, unsigned int count, TCHAR buffer []);
+    virtual void InsertCharAt (unsigned int line, unsigned int position, TCHAR character);
+    virtual void SetCharAt (unsigned int line, unsigned int position, TCHAR character);
+    virtual void RemoveCharAt (unsigned int line, unsigned int position);
+    virtual void ReplaceCharsRange (unsigned int line, unsigned int start_position, unsigned int count, unsigned int replacement_length, TCHAR replacement []);
+    virtual void BreakLineAt (unsigned int line, unsigned int position);
+    virtual void JoinLines (unsigned int line);
+    virtual void InsertLineAt (unsigned int line, unsigned int length, TCHAR characters []);
+    virtual void RemoveLineAt (unsigned int line);
+    virtual void InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters []);
+    virtual void RemoveLinesAt (unsigned int line, unsigned int count);
+};
+
+class CCharBufferText : public CText
+{
+protected:
+    CCharBuffer &data;
+    std::vector <unsigned int> line_start;
+    std::vector <unsigned int> line_length;
+
+public:
+    CCharBufferText (CUndoManager &undo_manager, CCharBuffer &data);
 
     virtual unsigned int GetLinesCount ();
     virtual unsigned int GetLineLength (unsigned int line);
