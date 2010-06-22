@@ -86,7 +86,7 @@ protected:
     CTextLayout *layout;
     CTextCursor *cursor;
 
-	CEditorView ();
+    CEditorView ();
     DECLARE_DYNCREATE (CEditorView)
 
     virtual void OnDraw(CDC* pDC);

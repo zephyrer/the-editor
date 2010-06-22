@@ -1,9 +1,5 @@
-#include "stdafx.h"
-
-#ifndef SHARED_HANDLERS
+#include "StdAfx.h"
 #include "Editor.h"
-#endif
-
 #include "EditorDocument.h"
 #include "EditorView.h"
 

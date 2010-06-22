@@ -1,6 +1,10 @@
 #include "StdAfx.h"
 #include "UndoManager.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 #pragma region CUndoableAction
 
 CUndoableAction::~CUndoableAction ()

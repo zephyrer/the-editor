@@ -1,6 +1,10 @@
 #include "StdAfx.h"
 #include "Clipboard.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 bool CClipboard::HasText ()
 {
     bool result = false;

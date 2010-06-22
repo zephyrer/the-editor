@@ -1,6 +1,10 @@
 #include "StdAfx.h"
 #include "TextCursor.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 #pragma region CTextCursor
 
 CTextCursor::~CTextCursor ()
