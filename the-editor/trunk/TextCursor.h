@@ -25,6 +25,7 @@ public:
     virtual bool CanPaste () = 0;
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting) = 0;
+    virtual void RightClick (unsigned int row, unsigned int column) = 0;
     virtual void WordClick (unsigned int row, unsigned int column) = 0;
     virtual void LineClick (unsigned int row, unsigned int column) = 0;
     virtual void Drag (unsigned int row, unsigned int column) = 0;
@@ -121,6 +122,7 @@ public:
     virtual bool CanPaste ();
 
     virtual void Click (unsigned int row, unsigned int column, bool selecting);
+    virtual void RightClick (unsigned int row, unsigned int column);
     virtual void WordClick (unsigned int row, unsigned int column);
     virtual void LineClick (unsigned int row, unsigned int column);
     virtual void Drag (unsigned int row, unsigned int column);

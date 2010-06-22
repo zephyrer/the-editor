@@ -26,6 +26,7 @@ BEGIN_MESSAGE_MAP(CEditorControl, CWnd)
     ON_WM_MOUSEWHEEL ()
     ON_WM_CHAR ()
     ON_WM_KEYDOWN ()
+    ON_WM_CONTEXTMENU ()
 END_MESSAGE_MAP()
 
 BOOL CEditorControl::PreCreateWindow (CREATESTRUCT& cs)
@@ -249,17 +250,9 @@ void CEditorControl::OnLButtonDown (UINT nFlags, CPoint point)
 
     SetFocus ();
 
-    point.Offset (GetScrollPos (SB_HORZ), GetScrollPos (SB_VERT));
-
-    unsigned int row = 0;
-    
-    if (point.y >= 0 && (unsigned int)point.y >= view.padding_top)
-        row = (point.y - view.padding_top) / view.cell_size.cy;
-
-    unsigned int column = 0;
-    
-    if (point.x >= 0 && (unsigned int)point.x >= view.padding_left)
-        column = (point.x - view.padding_left + 2) / view.cell_size.cx;
+    unsigned int row;
+    unsigned int column;
+    ClientToRowColumn (point.x + 2, point.y, row, column);
 
     if (click_counter == 1)
     {
@@ -304,17 +297,9 @@ void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
 
     if (nFlags & MK_LBUTTON && drag_type != 0)
     {
-        point.Offset (GetScrollPos (SB_HORZ), GetScrollPos (SB_VERT));
-
-        unsigned int row = 0;
-    
-        if (point.y >= 0 && (unsigned int)point.y >= view.padding_top)
-            row = (point.y - view.padding_top) / view.cell_size.cy;
-
-        unsigned int column = 0;
-    
-        if (point.x >= 0 && (unsigned int)point.x >= view.padding_left)
-            column = (point.x - view.padding_left + 2) / view.cell_size.cx;
+        unsigned int row;
+        unsigned int column;
+        ClientToRowColumn (point.x + 2, point.y, row, column);
 
         switch (drag_type)
         {
@@ -330,9 +315,7 @@ void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
         }
 
         EnsureCaretVisible ();
-
         UpdateCaret ();
-
         ValidateCursor ();
     }
 }
@@ -479,6 +462,44 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
     ValidateCursor ();
 
     CWnd::OnKeyDown (nChar, nRepCnt, nFlags);
+}
+
+void CEditorControl::OnContextMenu (CWnd* pWnd, CPoint point)
+{
+    CPoint p (point);
+    ScreenToClient (&p);
+
+    unsigned int row;
+    unsigned int column;
+    ClientToRowColumn (p.x + 2, p.y, row, column);
+
+    view.cursor->RightClick (row, column);
+
+    EnsureCaretVisible ();
+    UpdateCaret ();
+    ValidateCursor ();
+
+    CMenu* menu_bar = AfxGetMainWnd ()->GetMenu ();
+    CMenu* edit_menu = menu_bar->GetSubMenu (1);
+    ASSERT (edit_menu);
+
+    edit_menu->TrackPopupMenu (TPM_LEFTALIGN |TPM_RIGHTBUTTON, point.x, point.y, AfxGetMainWnd ());
+
+    CWnd::OnContextMenu (pWnd, point);
+}
+
+void CEditorControl::ClientToRowColumn (int x, int y, unsigned int &row, unsigned int &column)
+{
+    x += GetScrollPos (SB_HORZ);
+    y += GetScrollPos (SB_VERT);
+
+    if (y >= 0 && (unsigned int)y >= view.padding_top)
+        row = (y - view.padding_top) / view.cell_size.cy;
+    else row = 0;
+
+    if (x >= 0 && (unsigned int)x >= view.padding_left)
+        column = (x - view.padding_left) / view.cell_size.cx;
+    else column = 0;
 }
 
 void CEditorControl::UpdateScrollBars ()
