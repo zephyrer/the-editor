@@ -112,6 +112,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CharBuffer.cpp" />
     <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="EditorDocument.cpp" />
@@ -128,6 +129,7 @@
     <ClCompile Include="UndoManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CharBuffer.h" />
     <ClInclude Include="Clipboard.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorDocument.h" />
