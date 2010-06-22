@@ -125,29 +125,37 @@ protected:
     unsigned int count;
     unsigned int *length;
     TCHAR **characters;
+    TCHAR *buffer;
 
 public:
     inline CRemoveLinesAction (CSimpleInMemoryText &text, unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters []) :
         CSimpleInMemoryTextAction (text), line (line), count (count)
     {
         CRemoveLinesAction::length = new unsigned int [count];
-        CRemoveLinesAction::characters = new TCHAR* [count];
 
+        unsigned int size = 0;
         for (unsigned int i = 0; i < count; i++)
         {
             CRemoveLinesAction::length [i] = length [i];
-            CRemoveLinesAction::characters [i] = new TCHAR [length [i]];
-            memcpy (CRemoveLinesAction::characters [i], characters [i], length [i] * sizeof (TCHAR));
+            size += length [i];
+        }
+
+        CRemoveLinesAction::characters = new TCHAR* [count];
+        buffer = new TCHAR [size];
+        unsigned int pos = 0;
+        for (unsigned int i = 0; i < count; i++)
+        {
+            CRemoveLinesAction::characters [i] = &buffer [pos];
+            memcpy (CRemoveLinesAction::characters [i], characters [i], length [i]);
+            pos += length [i];
         }
     }
 
     virtual ~CRemoveLinesAction ()
     {
-        for (unsigned int i = 0; i < count; i++)
-            delete [] characters [i];
-
-        delete [] characters;
         delete [] length;
+        delete [] buffer;
+        delete [] characters;
     }
 
     virtual void Undo ()
@@ -352,23 +360,30 @@ void CSimpleInMemoryText::RemoveLinesAt (unsigned int line, unsigned int count)
     ASSERT (line <= GetLinesCount ());
     ASSERT (line + count <= GetLinesCount ());
 
-    unsigned int *ll = (unsigned int *)alloca (count * sizeof (unsigned int));
-    TCHAR **characters = (TCHAR **)alloca (count * sizeof (TCHAR *));
+    unsigned int *ll = new unsigned int [count];
+    TCHAR **characters = new TCHAR* [count];
 
     for (unsigned int i = 0; i < count; i++)
     {
-        ll [i] = GetLineLength (line + i);
-        characters [i] = new TCHAR [ll [i]];
-        GetCharsRange (line + i, 0, ll [i], characters [i]);
+        ll [i] = text [line + i].size ();;
+        characters [i] = ll [i] > 0 ? &text [line + i][0] : NULL;
     }
+
+    CRemoveLinesAction *action = NULL;
+
+    if (undo_manager.IsWithinTransaction ())
+        action = new CRemoveLinesAction (*this, line, count, ll, characters);
+
+    delete [] ll;
+    delete [] characters;
 
     text.erase (text.begin () + line, text.begin () + line + count);
 
     if (undo_manager.IsWithinTransaction ())
-        undo_manager.AddAction (new CRemoveLinesAction (*this, line, count, ll, characters));
-
-    for (unsigned int i = 0; i < count; i++)
-        delete [] characters [i];
+    {
+        ASSERT (action != NULL);
+        undo_manager.AddAction (action);
+    }
 }
 
 #pragma endregion

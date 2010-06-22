@@ -1039,8 +1039,8 @@ void CNormalTextCursor::Paste ()
             layout.GetText ().BreakLineAt (line, current_position + length [0]);
             line++;
 
-            unsigned int *pl = (unsigned int *)alloca (cnt * sizeof (unsigned int));
-            TCHAR **pc = (TCHAR **)alloca (cnt * sizeof (TCHAR *));
+            unsigned int *pl = new unsigned int [cnt - 2];
+            TCHAR **pc = new TCHAR * [cnt - 2];
             for (i = 0; i < cnt - 2; i++)
             {
                 pl [i] = length [i + 1];
@@ -1048,6 +1048,8 @@ void CNormalTextCursor::Paste ()
             }
 
             layout.GetText ().InsertLinesAt (line, cnt - 2, pl, pc);
+            delete [] pl;
+            delete [] pc;
             line += cnt - 2;
 
             layout.GetText ().ReplaceCharsRange (line, 0, 0, length [cnt - 1], characters [cnt - 1]);
