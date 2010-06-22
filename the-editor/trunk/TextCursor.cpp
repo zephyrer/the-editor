@@ -430,8 +430,7 @@ void CNormalTextCursor::DeleteSelection ()
             eposition,
             0, NULL);
 
-        for (unsigned int i = sline + 1; i < eline; i++)
-            layout.GetText ().RemoveLineAt (sline + 1);
+        layout.GetText ().RemoveLinesAt (sline + 1, eline - sline - 1);
 
         layout.GetText ().JoinLines (sline);
     }

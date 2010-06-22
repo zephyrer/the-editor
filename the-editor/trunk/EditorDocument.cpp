@@ -88,6 +88,18 @@ public:
         text.RemoveLineAt (line);
         document.UpdateAllViews (NULL, 0, &CDocChange (line, 1, 0));
     }
+
+    virtual void InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters [])
+    {
+        text.InsertLinesAt (line, count, length, characters);
+        document.UpdateAllViews (NULL, 0, &CDocChange (line, 0, count));
+    }
+
+    virtual void RemoveLinesAt (unsigned int line, unsigned int count)
+    {
+        text.RemoveLinesAt (line, count);
+        document.UpdateAllViews (NULL, 0, &CDocChange (line, count, 0));
+    }
 };
 
 #pragma endregion

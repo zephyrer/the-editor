@@ -170,8 +170,7 @@ void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int cou
 
         if (start_row < row_widths.size ())
         {
-            for (unsigned int r = 0; r < count; r++)
-                row_widths.insert (row_widths.begin () + start_row + r, 0);
+            row_widths.insert (row_widths.begin () + start_row, count, 0);
 
             width = 0;
         }
@@ -197,11 +196,9 @@ void CAbstractTextLayout::RowsRemoved (unsigned int start_row, unsigned int coun
             unsigned int mw = 0;
             unsigned int mc = min (count, row_widths.size () - start_row);
             for (unsigned int r = 0; r < mc; r++)
-            {
                 mw = max (mw, row_widths [start_row]);
 
-                row_widths.erase (row_widths.begin () + start_row);
-            }
+            row_widths.erase (row_widths.begin () + start_row, row_widths.begin () + start_row + mc);
 
             if (width == mw)
                 width = 0;
