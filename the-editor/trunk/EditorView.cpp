@@ -1205,10 +1205,6 @@ void CEditorView::ValidateLayout ()
         client_rect.top = max (client_rect.top, top);
         client_rect.bottom = min (client_rect.bottom, bottom);
         line_numbers_control.InvalidateRect (&client_rect, false);
-
-        editor_control.UpdateScrollBars ();
-        editor_control.ValidateCursor ();
-        editor_control.UpdateCaret ();
     }
 }
 
