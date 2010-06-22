@@ -1,5 +1,8 @@
 #include "StdAfx.h"
+
 #include "TextCursor.h"
+
+using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -957,7 +960,7 @@ bool CNormalTextCursor::Copy ()
     {
         length = eposition - sposition;
 
-        unicodetext = (TCHAR *)malloc ((length + 1) * sizeof (TCHAR));
+        unicodetext = new TCHAR [length + 1];
         layout.GetText ().GetCharsRange (sline, sposition, length, unicodetext);
         unicodetext [length] = 0;
     }
@@ -967,7 +970,7 @@ bool CNormalTextCursor::Copy ()
         for (unsigned int i = sline + 1; i < eline; i++)
             length += layout.GetText ().GetLineLength (i) + 2;
 
-        unicodetext = (TCHAR *)malloc ((length + 1) * sizeof (TCHAR));
+        unicodetext = new TCHAR [length + 1];
 
         unsigned int n = 0;
         layout.GetText ().GetCharsRange (sline, sposition, layout.GetText ().GetLineLength (sline) - sposition, &unicodetext [n]);
@@ -994,7 +997,7 @@ bool CNormalTextCursor::Copy ()
 
     bool result = clipboard.SetText (unicodetext);
 
-    free (unicodetext);
+    delete [] unicodetext;
 
     return result;
 }
@@ -1008,36 +1011,49 @@ void CNormalTextCursor::Paste ()
 
         DeleteSelection ();
 
-        unsigned int line = current_line;
-        unsigned int position = current_position;
+        vector <int> length;
+        vector <TCHAR *> characters;
+
         unsigned int line_start = 0;
         unsigned int i;
         for (i = 0; text [i] != 0; i++)
         {
             if (text [i] == L'\n' || text [i] == L'\r')
             {
-                if (position > 0)
-                {
-                    layout.GetText ().ReplaceCharsRange (line, position, 0, i - line_start, &text [line_start]);
-                    position += i - line_start;
-                    layout.GetText ().BreakLineAt (line, position);
-                    line++;
-                    position = 0;
-                }
-                else
-                {
-                    layout.GetText ().InsertLineAt (line, i - line_start, &text [line_start]);
-                    line++;
-                }
-
+                length.push_back (i - line_start);
+                characters.push_back (&text [line_start]);
                 if ((text [i + 1] == L'\n' || text [i + 1] == L'\r') && (text [i + 1] != text [i])) i++;
                 line_start = i + 1;
             }
         }
-        layout.GetText ().ReplaceCharsRange (line, position, 0, i - line_start, &text [line_start]);
-        position += i - line_start;
+        length.push_back (i - line_start);
+        characters.push_back (&text [line_start]);
 
-        MoveToLinePosition (line, position, false);
+        unsigned int line = current_line;
+
+        layout.GetText ().ReplaceCharsRange (line, current_position, 0, length [0], characters [0]);
+
+        unsigned int cnt = length.size ();
+        if (cnt > 1)
+        {
+            layout.GetText ().BreakLineAt (line, current_position + length [0]);
+            line++;
+
+            unsigned int *pl = (unsigned int *)alloca (cnt * sizeof (unsigned int));
+            TCHAR **pc = (TCHAR **)alloca (cnt * sizeof (TCHAR *));
+            for (i = 0; i < cnt - 2; i++)
+            {
+                pl [i] = length [i + 1];
+                pc [i] = characters [i + 1];
+            }
+
+            layout.GetText ().InsertLinesAt (line, cnt - 2, pl, pc);
+            line += cnt - 2;
+
+            layout.GetText ().ReplaceCharsRange (line, 0, 0, length [cnt - 1], characters [cnt - 1]);
+            MoveToLinePosition (line, length [cnt - 1], false);
+        }
+        else MoveToLinePosition (line, current_position + length [0], false);
 
         undo_manager.FinishTransaction ();
 
