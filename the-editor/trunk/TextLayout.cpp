@@ -81,6 +81,27 @@ unsigned int CAbstractTextLayout::GetRowWidth (unsigned int row)
     return w;
 }
 
+void CAbstractTextLayout::AddDirtyRowRange (unsigned int start_row, unsigned int count)
+{
+    if (count > 0)
+    {
+        if (dirty_rows_count == 0)
+        {
+            first_dirty_row = start_row;
+            dirty_rows_count = count;
+        }
+        else
+        {
+            unsigned int last_dirty_row = max (
+                first_dirty_row + dirty_rows_count,
+                start_row + count);
+
+            first_dirty_row = min (first_dirty_row, count);
+            dirty_rows_count = last_dirty_row - first_dirty_row;
+        }
+    }
+}
+
 unsigned int CAbstractTextLayout::GetWidth ()
 {
     if (width == 0)
@@ -97,6 +118,14 @@ unsigned int CAbstractTextLayout::GetWidth ()
     }
 
     return width;
+}
+
+unsigned int CAbstractTextLayout::GetHeight ()
+{
+    if (height == 0) 
+        height = CalculateHeight ();
+
+    return height;
 }
 
 void CAbstractTextLayout::GetCellAt (unsigned int row, unsigned int column, TEXTCELL &text_cell)
@@ -120,17 +149,21 @@ void CAbstractTextLayout::RowsChanged (unsigned int start_row, unsigned int coun
             width = 0;
         }
 
+        AddDirtyRowRange (start_row, count);
+
         if (undo_manager.IsWithinTransaction ())
             undo_manager.AddAction (new CRowsChangedAction (*this, start_row, count));
-   }
+    }
 }
 
 void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int count)
 {
-    ASSERT (start_row <= GetHeight ());
+    ASSERT (start_row <= height);
 
     if (count > 0)
     {
+        height += count;
+
         if (start_row < row_widths.size ())
         {
             for (unsigned int r = 0; r < count; r++)
@@ -139,6 +172,8 @@ void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int cou
             width = 0;
         }
 
+        AddDirtyRowRange (start_row, height - start_row);
+
         if (undo_manager.IsWithinTransaction ())
             undo_manager.AddAction (new CRowsInsertedAction (*this, start_row, count));
     }
@@ -146,10 +181,13 @@ void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int cou
 
 void CAbstractTextLayout::RowsRemoved (unsigned int start_row, unsigned int count)
 {
-    ASSERT (start_row <= GetHeight ());
+    ASSERT (start_row <= height);
+    ASSERT (start_row + count <= height);
 
     if (count > 0)
     {
+        height -= count;
+
         if (start_row < row_widths.size ())
         {
             unsigned int mw = 0;
@@ -165,16 +203,34 @@ void CAbstractTextLayout::RowsRemoved (unsigned int start_row, unsigned int coun
                 width = 0;
         }
 
+        AddDirtyRowRange (start_row, height - start_row + count);
+
         if (undo_manager.IsWithinTransaction ())
             undo_manager.AddAction (new CRowsRemovedAction (*this, start_row, count));
     }
+}
+
+unsigned int CAbstractTextLayout::GetFirstDirtyRow ()
+{
+    return first_dirty_row;
+}
+
+unsigned int CAbstractTextLayout::GetDirtyRowsCount ()
+{
+    return dirty_rows_count;
+}
+
+void CAbstractTextLayout::ResetDirtyRows ()
+{
+    first_dirty_row = 0;
+    dirty_rows_count = 0;
 }
 
 #pragma endregion
 
 #pragma region CAbstractNonWrappingTextLayout
 
-unsigned int CAbstractNonWrappingTextLayout::GetHeight ()
+unsigned int CAbstractNonWrappingTextLayout::CalculateHeight ()
 {
     return text.GetLinesCount ();
 }

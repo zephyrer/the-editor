@@ -128,9 +128,10 @@ public:
     virtual void UpdateLayout ();
     virtual void UpdateCellSize ();
 
-	virtual ~CEditorView ();
+    virtual ~CEditorView ();
 
-	virtual void OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint);
+    virtual void OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint);
+    virtual void ValidateLayout ();
 
 #ifdef _DEBUG
     virtual void AssertValid () const;

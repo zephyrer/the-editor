@@ -409,8 +409,6 @@ void CNormalTextCursor::DeleteSelection ()
             sposition,
             eposition - sposition,
             0, NULL);
-
-        AddDirtyLineRange (sline, 1);
     }
     else
     {
@@ -432,8 +430,6 @@ void CNormalTextCursor::DeleteSelection ()
             layout.GetText ().RemoveLineAt (sline + 1);
 
         layout.GetText ().JoinLines (sline);
-
-        AddDirtyRowRange (0, height);
     }
 }
 
@@ -788,7 +784,6 @@ void CNormalTextCursor::InsertChar (TCHAR ch)
     layout.GetText ().InsertCharAt (current_line, current_position, ch);
 
     MoveToLinePosition (current_line, current_position + 1, false);
-    AddDirtyLineRange (current_line, 1);
 
     undo_manager.FinishTransaction ();
 }
@@ -803,7 +798,6 @@ void CNormalTextCursor::OverwriteChar (TCHAR ch)
     layout.GetText ().SetCharAt (current_line, current_position, ch);
 
     MoveToLinePosition (current_line, current_position + 1, false);
-    AddDirtyLineRange (current_line, 1);
 
     undo_manager.FinishTransaction ();
 }
@@ -820,7 +814,6 @@ void CNormalTextCursor::Backspace ()
         {
             MoveToLinePosition (current_line, current_position - 1, false);
             layout.GetText ().RemoveCharAt (current_line, current_position);
-            AddDirtyLineRange (current_line, 1);
         }
         else
         {
@@ -831,7 +824,6 @@ void CNormalTextCursor::Backspace ()
                 unsigned int pll = layout.GetText ().GetLineLength (current_line - 1);
                 MoveToLinePosition (current_line - 1, pll, false);
                 layout.GetText ().JoinLines (current_line);
-                AddDirtyRowRange (0, height);
             }
         }
     }
@@ -850,7 +842,6 @@ void CNormalTextCursor::Del ()
         if (current_position < layout.GetText ().GetLineLength (current_line))
         {
             layout.GetText ().RemoveCharAt (current_line, current_position);
-            AddDirtyLineRange (current_line, 1);
         }
         else
         {
@@ -859,7 +850,6 @@ void CNormalTextCursor::Del ()
                 unsigned int height = layout.GetHeight ();
 
                 layout.GetText ().JoinLines (current_line);
-                AddDirtyRowRange (0, height);
             }
         }
     }
@@ -882,7 +872,6 @@ void CNormalTextCursor::WordBackspace ()
 
             MoveToLinePosition (current_line, to, false);
             layout.GetText ().ReplaceCharsRange (current_line, to, from - to, 0, NULL);
-            AddDirtyLineRange (current_line, 1);
         }
         else
         {
@@ -893,7 +882,6 @@ void CNormalTextCursor::WordBackspace ()
                 unsigned int pll = layout.GetText ().GetLineLength (current_line - 1);
                 MoveToLinePosition (current_line - 1, pll, false);
                 layout.GetText ().JoinLines (current_line);
-                AddDirtyRowRange (0, height);
             }
         }
     }
@@ -912,7 +900,6 @@ void CNormalTextCursor::WordDel ()
         if (current_position < layout.GetText ().GetLineLength (current_line))
         {
             layout.GetText ().ReplaceCharsRange (current_line, current_position, GetNextWordBoundary (current_line, current_position + 1) - current_position, 0, NULL);
-            AddDirtyLineRange (current_line, 1);
         }
         else
         {
@@ -921,7 +908,6 @@ void CNormalTextCursor::WordDel ()
                 unsigned int height = layout.GetHeight ();
 
                 layout.GetText ().JoinLines (current_line);
-                AddDirtyRowRange (0, height);
             }
         }
     }
@@ -937,7 +923,6 @@ void CNormalTextCursor::NewLine ()
 
     layout.GetText ().BreakLineAt (current_line, current_position);
     MoveToLinePosition (current_line + 1, 0, false);
-    AddDirtyLineRange (current_line - 1, layout.GetText ().GetLinesCount () - current_line + 1);
 
     undo_manager.FinishTransaction ();
 }
@@ -1027,7 +1012,6 @@ void CNormalTextCursor::Paste ()
         layout.GetText ().ReplaceCharsRange (line, position, 0, i - line_start, &text [line_start]);
         position += i - line_start;
 
-        AddDirtyLineRange (current_line, line - current_line + 1);
         MoveToLinePosition (line, position, false);
 
         undo_manager.FinishTransaction ();
