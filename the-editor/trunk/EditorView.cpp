@@ -850,7 +850,7 @@ BEGIN_MESSAGE_MAP(CEditorView, CView)
     ON_COMMAND_EX (ID_EDIT_CUT, &CEditorView::OnCut)
 END_MESSAGE_MAP()
 
-CEditorView::CEditorView () : editor_control (*this), line_numbers_control (*this), layout (NULL), cursor (NULL)
+CEditorView::CEditorView () : editor_control (*this), line_numbers_control (*this), clipboard (*this), layout (NULL), cursor (NULL)
 {
     font.m_hObject = GetStockObject (ANSI_FIXED_FONT);
 
@@ -899,7 +899,7 @@ BOOL CEditorView::PreCreateWindow(CREATESTRUCT& cs)
 void CEditorView::OnInitialUpdate ()
 {
     layout = new CTabbedTextLayout (GetDocument ()->GetText (), GetDocument ()->GetUndoManager ());
-    cursor = new CNormalTextCursor (*layout, GetDocument ()->GetUndoManager ());
+    cursor = new CNormalTextCursor (*layout, GetDocument ()->GetUndoManager (), clipboard);
 
     CView::OnInitialUpdate ();
 }
@@ -1117,7 +1117,7 @@ void CEditorView::OnUpdateCopyMenu (CCmdUI* pCmdUI)
 
 BOOL CEditorView::OnCopy (UINT nID)
 {
-    cursor->Copy (*this);
+    cursor->Copy ();
     editor_control.UpdateScrollBars ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
@@ -1128,12 +1128,12 @@ BOOL CEditorView::OnCopy (UINT nID)
 
 void CEditorView::OnUpdatePasteMenu (CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable (cursor->CanPaste (*this));
+    pCmdUI->Enable (cursor->CanPaste ());
 }
 
 BOOL CEditorView::OnPaste (UINT nID)
 {
-    cursor->Paste (*this);
+    cursor->Paste ();
     editor_control.UpdateScrollBars ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
@@ -1149,7 +1149,7 @@ void CEditorView::OnUpdateCutMenu (CCmdUI* pCmdUI)
 
 BOOL CEditorView::OnCut (UINT nID)
 {
-    cursor->Cut (*this);
+    cursor->Cut ();
     editor_control.UpdateScrollBars ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();

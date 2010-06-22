@@ -2,6 +2,7 @@
 
 #include "TextLayout.h"
 #include "TextCursor.h"
+#include "Clipboard.h"
 
 class CEditorView;
 
@@ -74,6 +75,7 @@ protected:
 
     CEditorControl editor_control;
     CLineNumbersControl line_numbers_control;
+    CClipboard clipboard;
 
     unsigned int line_numbers_padding_left, line_numbers_padding_right, line_numbers_minimal_digits, line_numbers_border_width;
     COLORREF line_numbers_color;
