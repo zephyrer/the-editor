@@ -495,6 +495,9 @@ void CEditorControl::UpdateScrollBars ()
 
     GetClientRect (&client_rect);
 
+    int x = GetScrollPos (SB_HORZ);
+    int y = GetScrollPos (SB_VERT);
+
     SCROLLINFO si;
 
     si.cbSize = sizeof (si);
@@ -515,6 +518,9 @@ void CEditorControl::UpdateScrollBars ()
 
     SetScrollInfo (SB_VERT, &si);
     EnableScrollBar (SB_VERT, (int)si.nPage >= (int)si.nMax ? ESB_DISABLE_BOTH : ESB_ENABLE_BOTH);
+
+    if (x != GetScrollPos (SB_HORZ) || y != GetScrollPos (SB_VERT))
+        Invalidate ();
 }
 
 void CEditorControl::UpdateCaret ()
@@ -1181,7 +1187,7 @@ void CEditorView::ValidateLayout ()
     unsigned int top = 
         padding_top + 
         layout->GetFirstDirtyRow () * cell_size.cy - 
-        editor_control.GetScrollPos (SB_HORZ);
+        editor_control.GetScrollPos (SB_VERT);
     unsigned int bottom = top + layout->GetDirtyRowsCount () * cell_size.cy;
 
     layout->ResetDirtyRows ();
@@ -1199,6 +1205,10 @@ void CEditorView::ValidateLayout ()
         client_rect.top = max (client_rect.top, top);
         client_rect.bottom = min (client_rect.bottom, bottom);
         line_numbers_control.InvalidateRect (&client_rect, false);
+
+        editor_control.UpdateScrollBars ();
+        editor_control.ValidateCursor ();
+        editor_control.UpdateCaret ();
     }
 }
 
