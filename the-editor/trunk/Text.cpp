@@ -101,45 +101,58 @@ public:
     }
 };
 
-class CInsertLineAction : public CSimpleInMemoryTextAction
+class CInsertLinesAction : public CSimpleInMemoryTextAction
 {
 protected:
     unsigned int line;
+    unsigned int count;
 
 public:
-    inline CInsertLineAction (CSimpleInMemoryText &text, unsigned int line) :
-        CSimpleInMemoryTextAction (text), line (line)
+    inline CInsertLinesAction (CSimpleInMemoryText &text, unsigned int line, unsigned int count) :
+        CSimpleInMemoryTextAction (text), line (line), count (count)
     {}
 
     virtual void Undo ()
     {
-        text.RemoveLineAt (line);
+        text.RemoveLinesAt (line, count);
     }
 };
 
-class CRemoveLineAction : public CSimpleInMemoryTextAction
+class CRemoveLinesAction : public CSimpleInMemoryTextAction
 {
 protected:
     unsigned int line;
-    unsigned int length;
-    TCHAR *characters;
+    unsigned int count;
+    unsigned int *length;
+    TCHAR **characters;
 
 public:
-    inline CRemoveLineAction (CSimpleInMemoryText &text, unsigned int line, unsigned int length, TCHAR characters []) :
-        CSimpleInMemoryTextAction (text), line (line), length (length)
+    inline CRemoveLinesAction (CSimpleInMemoryText &text, unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters []) :
+        CSimpleInMemoryTextAction (text), line (line), count (count)
     {
-        CRemoveLineAction::characters = new TCHAR [length];
-        memcpy (CRemoveLineAction::characters, characters, length * sizeof (TCHAR));
+        CRemoveLinesAction::length = new unsigned int [count];
+        CRemoveLinesAction::characters = new TCHAR* [count];
+
+        for (unsigned int i = 0; i < count; i++)
+        {
+            CRemoveLinesAction::length [i] = length [i];
+            CRemoveLinesAction::characters [i] = new TCHAR [length [i]];
+            memcpy (CRemoveLinesAction::characters [i], characters [i], length [i] * sizeof (TCHAR));
+        }
     }
 
-    virtual ~CRemoveLineAction ()
+    virtual ~CRemoveLinesAction ()
     {
+        for (unsigned int i = 0; i < count; i++)
+            delete [] characters [i];
+
         delete [] characters;
+        delete [] length;
     }
 
     virtual void Undo ()
     {
-        text.InsertLineAt (line, length, characters);
+        text.InsertLinesAt (line, count, length, characters);
     }
 };
 
@@ -330,8 +343,8 @@ void CSimpleInMemoryText::InsertLinesAt (unsigned int line, unsigned int count, 
         text [line + i] = vector <TCHAR> (&c [0], &c [length [i]]);
     }
 
-    // if (undo_manager.IsWithinTransaction ())
-    //    undo_manager.AddAction (new CInsertLinesAction (*this, line, count));
+    if (undo_manager.IsWithinTransaction ())
+       undo_manager.AddAction (new CInsertLinesAction (*this, line, count));
 }
 
 void CSimpleInMemoryText::RemoveLinesAt (unsigned int line, unsigned int count)
@@ -339,14 +352,23 @@ void CSimpleInMemoryText::RemoveLinesAt (unsigned int line, unsigned int count)
     ASSERT (line <= GetLinesCount ());
     ASSERT (line + count <= GetLinesCount ());
 
-    // unsigned int ll = GetLineLength (line);
-    // TCHAR *characters = (TCHAR *)alloca (ll * sizeof (TCHAR));
-    // GetCharsRange (line, 0, ll, characters);
+    unsigned int *ll = (unsigned int *)alloca (count * sizeof (unsigned int));
+    TCHAR **characters = (TCHAR **)alloca (count * sizeof (TCHAR *));
+
+    for (unsigned int i = 0; i < count; i++)
+    {
+        ll [i] = GetLineLength (line + i);
+        characters [i] = new TCHAR [ll [i]];
+        GetCharsRange (line + i, 0, ll [i], characters [i]);
+    }
 
     text.erase (text.begin () + line, text.begin () + line + count);
 
-    // if (undo_manager.IsWithinTransaction ())
-    //        undo_manager.AddAction (new CRemoveLinesAction (*this, line, ll, characters));
+    if (undo_manager.IsWithinTransaction ())
+        undo_manager.AddAction (new CRemoveLinesAction (*this, line, count, ll, characters));
+
+    for (unsigned int i = 0; i < count; i++)
+        delete [] characters [i];
 }
 
 #pragma endregion
