@@ -1141,13 +1141,15 @@ void CEditorView::OnChange (unsigned int first_row, unsigned int old_row_count, 
 
     unsigned int top = 
         padding_top + 
-        first_row * cell_size.cy - 
-        editor_control.GetScrollPos (SB_VERT);
-    unsigned int bottom;
+        first_row * cell_size.cy;
+    unsigned int bottom = top + new_row_count * cell_size.cy;
     
-    if (old_row_count == new_row_count)
-        bottom = top + new_row_count * cell_size.cy;
-    else
+    unsigned int sp = editor_control.GetScrollPos (SB_VERT);
+
+    top > sp ? top -= sp : top = 0;
+    bottom > sp ? bottom -= sp : bottom = 0;
+
+    if (old_row_count != new_row_count)
     {
         CRect r;
 
@@ -1176,9 +1178,13 @@ void CEditorView::OnChange (unsigned int start_dirty_row, unsigned int dirty_row
 {
     unsigned int top = 
         padding_top + 
-        start_dirty_row * cell_size.cy - 
-        editor_control.GetScrollPos (SB_VERT);
+        start_dirty_row * cell_size.cy;
     unsigned int bottom = top + dirty_row_count * cell_size.cy;
+
+    unsigned int sp = editor_control.GetScrollPos (SB_VERT);
+
+    top > sp ? top -= sp : top = 0;
+    bottom > sp ? bottom -= sp : bottom = 0;
 
     if (top <= bottom)
     {
