@@ -15,12 +15,11 @@ struct CDocChange : public CObject
     }
 };
 
-class CEditorDocument : public CDocument
+class CEditorDocument : public CDocument, CTextListener
 {
 protected:
     CVectorCharBuffer char_buffer;
     CCharBufferText text;
-    CText *text_wrapper;
     CUndoManager undo_manager;
 
     CEditorDocument ();
@@ -31,8 +30,13 @@ protected:
 public:
     virtual CText &GetText ();
     virtual CUndoManager & GetUndoManager ();
-
     virtual BOOL OnNewDocument();
+
+    virtual void OnChange (
+        unsigned int start_line, unsigned int start_position, 
+        unsigned int old_end_line, unsigned int old_end_position, 
+        unsigned int new_end_line, unsigned int new_end_position);
+
     virtual void Serialize(CArchive& ar);
     virtual ~CEditorDocument();
 
