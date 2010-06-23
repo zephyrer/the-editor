@@ -128,6 +128,19 @@ void CCharBufferText::SplitIntoLines (unsigned int start, unsigned int count, st
     lengths.push_back (count - ls);
 }
 
+void CCharBufferText::ReplaceRange (std::vector <unsigned int> &v, unsigned int start, unsigned int count, std::vector <unsigned int> &replacement, unsigned int replacement_start, unsigned int replacement_count)
+{
+    unsigned int overlap = min (count, replacement_count);
+
+    if (overlap > 0)
+        memcpy (&v [start], &replacement [replacement_start], overlap * sizeof (unsigned int));
+
+    if (replacement_count > count)
+        v.insert (v.begin () + start + count, replacement.begin () + replacement_start + count, replacement.begin () + replacement_start + replacement_count);
+    else if (replacement_count < count)
+        v.erase (v.begin () + start + replacement_count, v.begin () + start + count);
+}
+
 CCharBufferText::CCharBufferText (CCharBuffer &data) : data (data)
 {
     SplitIntoLines (0, data.GetSize (), line_start, line_length);
@@ -227,30 +240,14 @@ void CCharBufferText::InsertLineAt (unsigned int line, unsigned int length, TCHA
 {
     ASSERT (line <= line_length.size () - 1);
 
-    if (line == 0)
-    {
-        data.ReplaceCharsRange (0, 0, length, characters);
-        data.ReplaceCharsRange (0, length, 2, L"\r\n");
-    }
-    else
-    {
-        data.ReplaceCharsRange (line_start [line - 1] + line_length [line - 1], 0, 2, L"\r\n");
-        data.ReplaceCharsRange (line_start [line - 1] + line_length [line - 1] + 2, 0, length, characters);
-    }
+    InsertLinesAt (line, 1, &length, &characters);
 }
 
 void CCharBufferText::RemoveLineAt (unsigned int line)
 {
     ASSERT (line < line_length.size ());
 
-    unsigned int delta;
-
-    if (line < line_length.size () - 1)
-        delta = line_start [line + 1] - line_start [line];
-    else
-        delta = data.GetSize () - line_start [line];
-
-    data.ReplaceCharsRange (line_start [line], delta, 0, NULL);
+    RemoveLinesAt (line, 1);
 }
 
 void CCharBufferText::InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters [])
@@ -259,8 +256,40 @@ void CCharBufferText::InsertLinesAt (unsigned int line, unsigned int count, unsi
     ASSERT (count == 0 || length != NULL);
     ASSERT (count == 0 || characters != NULL);
 
+    unsigned int l = 0;
     for (unsigned int i = 0; i < count; i++)
-        InsertLineAt (line + i, length [i], characters [i]);
+        l += length [i] + 2;
+
+    TCHAR *buffer = new TCHAR [l];
+
+    if (line < lines_count)
+    {
+        unsigned int pos = 0;
+        for (unsigned int i = 0; i < count; i++)
+        {
+            memcpy (&buffer [pos], characters [i], length [i] * sizeof (TCHAR));
+            pos += length [i];
+            memcpy (&buffer [pos], L"\r\n", 2 * sizeof (TCHAR));
+            pos += 2;
+        }
+
+        data.ReplaceCharsRange (line_start [line], 0, l, buffer);
+    }
+    else
+    {
+        unsigned int pos = 0;
+        for (unsigned int i = 0; i < count; i++)
+        {
+            memcpy (&buffer [pos], L"\r\n", 2 * sizeof (TCHAR));
+            pos += 2;
+            memcpy (&buffer [pos], characters [i], length [i] * sizeof (TCHAR));
+            pos += length [i];
+        }
+
+        data.ReplaceCharsRange (data.GetSize (), 0, l, buffer);
+    }
+
+    delete [] buffer;
 }
 
 void CCharBufferText::RemoveLinesAt (unsigned int line, unsigned int count)
@@ -268,8 +297,11 @@ void CCharBufferText::RemoveLinesAt (unsigned int line, unsigned int count)
     ASSERT (line <= GetLinesCount ());
     ASSERT (line + count <= GetLinesCount ());
 
-    for (unsigned int i = count; i > 0; i--)
-        RemoveLineAt (line + i - 1);
+    unsigned int start = line_start [line];
+    unsigned int end_line = line + count;
+    unsigned int end = end_line < lines_count ? line_start [end_line] : data.GetSize ();
+
+    data.ReplaceCharsRange (start, end - start, 0, NULL);
 }
 
 void CCharBufferText::OnChange (unsigned int start, unsigned int old_count, unsigned int new_count)
@@ -277,9 +309,15 @@ void CCharBufferText::OnChange (unsigned int start, unsigned int old_count, unsi
     int delta = new_count - old_count;
 
     unsigned int before = GetLastLineEndingBefore (start);
+
+    if (before > 0 && before < lines_count && line_length [before] == 0) before -= 1;
+
     unsigned int start_line = before >= lines_count ? 0 : before + 1;
     unsigned int start_pos = before >= lines_count ? 0 : line_start [before] + line_length [before];
     unsigned int after = GetFirstLineStartingAfter (start + old_count);
+
+    if (after < lines_count - 1 && line_length [after] == 0) after += 1;
+
     unsigned int end_line = after >= lines_count ? lines_count : after;
     unsigned int end_pos = after >= lines_count ? data.GetSize () : line_start [after] + delta;
     unsigned int count = end_pos - start_pos;
@@ -323,14 +361,10 @@ void CCharBufferText::OnChange (unsigned int start, unsigned int old_count, unsi
             e = c - 1;
         }
 
-        if (start_line < end_line)
-        {
-            line_length.erase (line_length.begin () + start_line, line_length.begin () + end_line);
-            line_start.erase (line_start.begin () + start_line, line_start.begin () + end_line);
-        }
+        if (end_line < start_line) end_line = start_line;
 
-        line_length.insert (line_length.begin () + (before < lines_count ? before + 1 : 0), lengths.begin () + b, lengths.begin () + e);
-        line_start.insert (line_start.begin () + (before < lines_count ? before + 1 : 0), starts.begin () + b, starts.begin () + e);
+        ReplaceRange (line_length, start_line, end_line - start_line, lengths, b, e - b);
+        ReplaceRange (line_start, start_line, end_line - start_line, starts, b, e - b);
 
         if (delta != 0)
         {
