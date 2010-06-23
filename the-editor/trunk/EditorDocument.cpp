@@ -19,7 +19,9 @@ END_MESSAGE_MAP()
 CEditorDocument::CEditorDocument () : 
     undo_manager (), text (char_buffer)
 {
+    char_buffer.SetUndoManager (&undo_manager);
     text.SetListener (this);
+    text.SetUndoManager (&undo_manager);
 }
 
 CEditorDocument::~CEditorDocument()

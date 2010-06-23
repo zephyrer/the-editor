@@ -108,8 +108,8 @@ void CVectorCharBuffer::ReplaceCharsRange (unsigned int start, unsigned int coun
 
     bool undo = undo_manager != NULL && undo_manager->IsWithinTransaction ();
 
-    TCHAR *characters;
-    if (undo)
+    TCHAR *characters = NULL;
+    if (undo && count > 0)
     {
         characters = new TCHAR [count];
         memcpy (characters, &data [start], count * sizeof (TCHAR));

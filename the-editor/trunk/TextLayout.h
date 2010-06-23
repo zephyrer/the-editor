@@ -49,12 +49,8 @@ public:
     virtual void ResetDirtyRows () = 0;
 };
 
-class CLayoutChangedAction;
-
 class CAbstractTextLayout : public CTextLayout
 {
-    friend CLayoutChangedAction;
-
 protected:
     CUndoManager &undo_manager;
 
