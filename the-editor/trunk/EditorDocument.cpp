@@ -39,23 +39,103 @@ CUndoManager & CEditorDocument::GetUndoManager ()
     return undo_manager;
 }
 
+void CEditorDocument::DeleteContents ()
+{
+    text.RemoveLinesAt (0, text.GetLinesCount ());
+    undo_manager.ClearUndoHistory ();
+}
+
 BOOL CEditorDocument::OnNewDocument()
 {
     if (!CDocument::OnNewDocument())
         return FALSE;
 
-    // TODO: add reinitialization code here
-    // (SDI documents will reuse this document)
+    SetModifiedFlag (FALSE);
 
     return TRUE;
 }
 
+BOOL CEditorDocument::OnOpenDocument (LPCTSTR lpszPathName)
+{
+    CFile file;
+
+    if (!file.Open (lpszPathName, CFile::modeRead | CFile::shareDenyWrite)) return FALSE;
+
+    vector <char> data;
+
+    char buffer [65536];
+    unsigned int l;
+    unsigned int pos = 0;
+    while ((l = file.Read (buffer, 65536)) > 0)
+    {
+        data.resize (pos + l);
+        memcpy (&data [pos], buffer, l);
+        pos += l;
+    }
+
+    file.Close ();
+
+    if (data.size () > 0)
+    {
+        int s = MultiByteToWideChar (CP_ACP, 0, &data [0], data.size (), NULL, 0);
+        vector <TCHAR> unicode;
+
+        if (s > 0)
+        {
+            unicode.resize (s);
+            MultiByteToWideChar (CP_ACP, 0, &data [0], data.size (), &unicode [0], s);
+        }
+
+        char_buffer.ReplaceCharsRange (0, char_buffer.GetSize (), s, &unicode [0]);
+    }
+
+    SetModifiedFlag (FALSE);
+}
+
+BOOL CEditorDocument::OnSaveDocument (LPCTSTR lpszPathName)
+{
+    unsigned int size = char_buffer.GetSize ();
+
+    vector <char> data;
+
+    if (size > 0)
+    {
+        vector <TCHAR> unicode;
+        unicode.resize (size);
+        char_buffer.GetCharsRange (0, size, &unicode [0]);
+
+        int s = WideCharToMultiByte (CP_ACP, 0, &unicode [0], size, NULL, 0, "?", NULL);
+
+        if (s > 0)
+        {
+            data.resize (s);
+            WideCharToMultiByte (CP_ACP, 0, &unicode [0], size, &data [0], s, "?", NULL);
+        }
+    }
+
+    CFile file;
+
+    if (!file.Open (lpszPathName, CFile::modeWrite | CFile::shareExclusive | CFile::modeCreate)) return FALSE;
+
+    if (data.size () > 0)
+    {
+        file.Write (&data [0], data.size ());
+    }
+
+    file.Close ();
+
+    SetModifiedFlag (FALSE);
+
+    return TRUE;
+}
 
 void CEditorDocument::OnChange (
     unsigned int start_line, unsigned int start_position, 
     unsigned int old_end_line, unsigned int old_end_position, 
     unsigned int new_end_line, unsigned int new_end_position)
 {
+    SetModifiedFlag (TRUE);
+
     UpdateAllViews (NULL, 0, &CDocChange (start_line, old_end_line - start_line + 1, new_end_line - start_line + 1));
 }
 
