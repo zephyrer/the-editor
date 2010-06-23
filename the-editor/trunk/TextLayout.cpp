@@ -5,19 +5,27 @@
 #define new DEBUG_NEW
 #endif
 
-#pragma region CAbstractTextLayout
+#pragma region CEditorLayout
 
-class CAbstractTextLayoutAction : public CUndoableAction
+void CEditorLayout::FireOnChange (unsigned int first_row, unsigned int old_row_count, unsigned int new_row_count, bool width_changed)
 {
-protected:
-    CAbstractTextLayout &layout;
+    if (listener != NULL && (old_row_count > 0 || new_row_count == 0 > 0 || width_changed))
+        listener->OnChange (first_row, old_row_count, new_row_count, width_changed);
+}
 
-public:
-    inline CAbstractTextLayoutAction (CAbstractTextLayout &layout) : layout (layout)
-    {}
-};
+void CEditorLayout::SetListener (CEditorLayoutListener *listener)
+{
+    ASSERT (CEditorLayout::listener == NULL);
+    ASSERT (listener != NULL);
 
-unsigned int CAbstractTextLayout::GetRowWidth (unsigned int row)
+    CEditorLayout::listener = listener;
+}
+
+#pragma endregion
+
+#pragma region CAbstractTextEditorLayout
+
+unsigned int CAbstractTextEditorLayout::GetRowWidth (unsigned int row)
 {
     ASSERT (row < GetHeight ());
 
@@ -34,28 +42,7 @@ unsigned int CAbstractTextLayout::GetRowWidth (unsigned int row)
     return w;
 }
 
-void CAbstractTextLayout::AddDirtyRowRange (unsigned int start_row, unsigned int count)
-{
-    if (count > 0)
-    {
-        if (dirty_rows_count == 0)
-        {
-            first_dirty_row = start_row;
-            dirty_rows_count = count;
-        }
-        else
-        {
-            unsigned int last_dirty_row = max (
-                first_dirty_row + dirty_rows_count,
-                start_row + count);
-
-            first_dirty_row = min (first_dirty_row, start_row);
-            dirty_rows_count = last_dirty_row - first_dirty_row;
-        }
-    }
-}
-
-unsigned int CAbstractTextLayout::GetWidth ()
+unsigned int CAbstractTextEditorLayout::GetWidth ()
 {
     if (width == 0)
     {
@@ -73,7 +60,7 @@ unsigned int CAbstractTextLayout::GetWidth ()
     return width;
 }
 
-unsigned int CAbstractTextLayout::GetHeight ()
+unsigned int CAbstractTextEditorLayout::GetHeight ()
 {
     if (height == 0) 
         height = CalculateHeight ();
@@ -81,12 +68,12 @@ unsigned int CAbstractTextLayout::GetHeight ()
     return height;
 }
 
-void CAbstractTextLayout::GetCellAt (unsigned int row, unsigned int column, TEXTCELL &text_cell)
+void CAbstractTextEditorLayout::GetCellAt (unsigned int row, unsigned int column, TEXTCELL &text_cell)
 {
     GetCellsRange (row, column, 1, 1, &text_cell);
 }
 
-void CAbstractTextLayout::RowsChanged (unsigned int start_row, unsigned int count)
+void CAbstractTextEditorLayout::RowsChanged (unsigned int start_row, unsigned int count)
 {
     ASSERT (start_row <= GetHeight ());
     ASSERT (start_row + count <= GetHeight ());
@@ -102,11 +89,11 @@ void CAbstractTextLayout::RowsChanged (unsigned int start_row, unsigned int coun
             width = 0;
         }
 
-        AddDirtyRowRange (start_row, count);
+        FireOnChange (start_row, count, count, true);
     }
 }
 
-void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int count)
+void CAbstractTextEditorLayout::RowsInserted (unsigned int start_row, unsigned int count)
 {
     ASSERT (start_row <= height);
 
@@ -121,11 +108,11 @@ void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int cou
             width = 0;
         }
 
-        AddDirtyRowRange (start_row, height - start_row);
+        FireOnChange (start_row, 0, count, true);
     }
 }
 
-void CAbstractTextLayout::RowsRemoved (unsigned int start_row, unsigned int count)
+void CAbstractTextEditorLayout::RowsRemoved (unsigned int start_row, unsigned int count)
 {
     ASSERT (start_row <= height);
     ASSERT (start_row + count <= height);
@@ -147,36 +134,20 @@ void CAbstractTextLayout::RowsRemoved (unsigned int start_row, unsigned int coun
                 width = 0;
         }
 
-        AddDirtyRowRange (start_row, height - start_row + count);
+        FireOnChange (start_row, count, 0, true);
     }
-}
-
-unsigned int CAbstractTextLayout::GetFirstDirtyRow ()
-{
-    return first_dirty_row;
-}
-
-unsigned int CAbstractTextLayout::GetDirtyRowsCount ()
-{
-    return dirty_rows_count;
-}
-
-void CAbstractTextLayout::ResetDirtyRows ()
-{
-    first_dirty_row = 0;
-    dirty_rows_count = 0;
 }
 
 #pragma endregion
 
-#pragma region CAbstractNonWrappingTextLayout
+#pragma region CAbstractNonWrappingTextEditorLayout
 
-unsigned int CAbstractNonWrappingTextLayout::CalculateHeight ()
+unsigned int CAbstractNonWrappingTextEditorLayout::CalculateHeight ()
 {
     return text.GetLinesCount ();
 }
 
-void CAbstractNonWrappingTextLayout::GetCellsRange (unsigned int start_row, unsigned int start_column, unsigned int row_count, unsigned int column_count, TEXTCELL buffer [])
+void CAbstractNonWrappingTextEditorLayout::GetCellsRange (unsigned int start_row, unsigned int start_column, unsigned int row_count, unsigned int column_count, TEXTCELL buffer [])
 {
     ASSERT (buffer != NULL);
 
@@ -239,7 +210,7 @@ void CAbstractNonWrappingTextLayout::GetCellsRange (unsigned int start_row, unsi
     }
 }
 
-void CAbstractNonWrappingTextLayout::LinesChanged (unsigned int start_line, unsigned int count)
+void CAbstractNonWrappingTextEditorLayout::LinesChanged (unsigned int start_line, unsigned int count)
 {
     ASSERT (start_line <= text.GetLinesCount ());
     ASSERT (start_line + count <= text.GetLinesCount ());
@@ -247,14 +218,14 @@ void CAbstractNonWrappingTextLayout::LinesChanged (unsigned int start_line, unsi
     if (count > 0) RowsChanged (start_line, count);
 }
 
-void CAbstractNonWrappingTextLayout::LinesInserted (unsigned int start_line, unsigned int count)
+void CAbstractNonWrappingTextEditorLayout::LinesInserted (unsigned int start_line, unsigned int count)
 {
     ASSERT (start_line <= text.GetLinesCount ());
 
     if (count > 0) RowsInserted (start_line, count);
 }
 
-void CAbstractNonWrappingTextLayout::LinesRemoved (unsigned int start_line, unsigned int count)
+void CAbstractNonWrappingTextEditorLayout::LinesRemoved (unsigned int start_line, unsigned int count)
 {
     ASSERT (start_line <= text.GetLinesCount ());
 
@@ -263,16 +234,16 @@ void CAbstractNonWrappingTextLayout::LinesRemoved (unsigned int start_line, unsi
 
 #pragma endregion
 
-#pragma region CSimpleTextLayout
+#pragma region CSimpleTextEditorLayout
 
-unsigned int CSimpleTextLayout::CalculateRowWidth (unsigned int row)
+unsigned int CSimpleTextEditorLayout::CalculateRowWidth (unsigned int row)
 {
     ASSERT (row < text.GetLinesCount ());
 
     return text.GetLineLength (row) + 1;
 }
 
-void CSimpleTextLayout::RenderRow (unsigned int row, unsigned int start_column, unsigned int count, TEXTCELL buffer [])
+void CSimpleTextEditorLayout::RenderRow (unsigned int row, unsigned int start_column, unsigned int count, TEXTCELL buffer [])
 {
     ASSERT (row < GetHeight ());
     ASSERT (start_column <= GetRowWidth (row));
@@ -310,7 +281,7 @@ void CSimpleTextLayout::RenderRow (unsigned int row, unsigned int start_column, 
     }
 }
 
-void CSimpleTextLayout::GetCellByLinePosition (unsigned int line, unsigned int position, TEXTCELL &text_cell)
+void CSimpleTextEditorLayout::GetCellByLinePosition (unsigned int line, unsigned int position, TEXTCELL &text_cell)
 {
     ASSERT (line < text.GetLinesCount ());
     ASSERT (position <= text.GetLineLength (line));
@@ -320,9 +291,9 @@ void CSimpleTextLayout::GetCellByLinePosition (unsigned int line, unsigned int p
 
 #pragma endregion
 
-#pragma region CTabbedTextLayout
+#pragma region CTabbedTextEditorLayout
 
-unsigned int CTabbedTextLayout::CalculateRowWidth (unsigned int row)
+unsigned int CTabbedTextEditorLayout::CalculateRowWidth (unsigned int row)
 {
     ASSERT (row < GetHeight ());
 
@@ -345,7 +316,7 @@ unsigned int CTabbedTextLayout::CalculateRowWidth (unsigned int row)
     return n;
 }
 
-void CTabbedTextLayout::RenderRow (unsigned int row, unsigned int start_column, unsigned int count, TEXTCELL buffer [])
+void CTabbedTextEditorLayout::RenderRow (unsigned int row, unsigned int start_column, unsigned int count, TEXTCELL buffer [])
 {
     ASSERT (row < GetHeight ());
     ASSERT (start_column <= GetRowWidth (row));
@@ -431,24 +402,24 @@ void CTabbedTextLayout::RenderRow (unsigned int row, unsigned int start_column, 
     }
 }
 
-CTabbedTextLayout::CTabbedTextLayout (CText &text, CUndoManager &undo_manager, unsigned int tab_size) : CAbstractNonWrappingTextLayout (text, undo_manager)
+CTabbedTextEditorLayout::CTabbedTextEditorLayout (CText &text, unsigned int tab_size) : CAbstractNonWrappingTextEditorLayout (text)
 {
     ASSERT (tab_size > 0);
 
-    CTabbedTextLayout::tab_size = tab_size;
+    CTabbedTextEditorLayout::tab_size = tab_size;
 }
 
-void CTabbedTextLayout::SetTabSize (unsigned int tab_size)
+void CTabbedTextEditorLayout::SetTabSize (unsigned int tab_size)
 {
     ASSERT (tab_size > 0);
 
-    CTabbedTextLayout::tab_size = tab_size;
+    CTabbedTextEditorLayout::tab_size = tab_size;
 
     width = -1;
     row_widths.clear ();
 }
 
-void CTabbedTextLayout::GetCellByLinePosition (unsigned int line, unsigned int position, TEXTCELL &text_cell)
+void CTabbedTextEditorLayout::GetCellByLinePosition (unsigned int line, unsigned int position, TEXTCELL &text_cell)
 {
     ASSERT (line < text.GetLinesCount ());
     ASSERT (position <= text.GetLineLength (line));

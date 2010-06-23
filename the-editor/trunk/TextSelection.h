@@ -5,10 +5,10 @@
 class CTextSelection : public CObject
 {
 protected:
-    CTextLayout &layout;
+    CEditorLayout &layout;
 
 public:
-    inline CTextSelection (CTextLayout &layout) : layout (layout) {}
+    inline CTextSelection (CEditorLayout &layout) : layout (layout) {}
 
     virtual bool IsCellSelected (TEXTCELL &text_cell) = 0;
 };
@@ -22,7 +22,7 @@ protected:
     unsigned int end_position;
 
 public:
-    CContinuousTextSelection (CTextLayout &layout, unsigned int start_line, unsigned int start_position, unsigned int end_line, unsigned int end_position);
+    CContinuousTextSelection (CEditorLayout &layout, unsigned int start_line, unsigned int start_position, unsigned int end_line, unsigned int end_position);
 
     inline CContinuousTextSelection (CContinuousTextSelection &selection) :
         CTextSelection (selection.layout), start_line (selection.start_line), start_position (selection.start_position), end_line (selection.end_line), end_position (selection.end_position)
@@ -45,7 +45,7 @@ protected:
     unsigned int column_count;
 
 public:
-    inline CBlockTextSelection (CTextLayout &layout, unsigned int start_row, unsigned int start_column, unsigned int row_count, unsigned int column_count) :
+    inline CBlockTextSelection (CEditorLayout &layout, unsigned int start_row, unsigned int start_column, unsigned int row_count, unsigned int column_count) :
         CTextSelection (layout), start_row (start_row), start_column (start_column), row_count (row_count), column_count (column_count) {}
 
     virtual bool IsCellSelected (TEXTCELL &text_cell);

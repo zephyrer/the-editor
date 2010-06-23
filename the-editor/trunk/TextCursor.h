@@ -7,10 +7,11 @@
 class CTextCursor : public CObject
 {
 protected:
-    CTextLayout &layout;
+    CText &text;
+    CEditorLayout &layout;
 
 public:
-    inline CTextCursor (CTextLayout &layout) : layout (layout) {}
+    inline CTextCursor (CText &text, CEditorLayout &layout) : text (text), layout (layout) {}
 
     virtual ~CTextCursor ();
 
@@ -95,8 +96,8 @@ protected:
     virtual void DeleteSelection ();
 
 public:
-    inline CNormalTextCursor (CTextLayout &layout, CUndoManager &undo_manager, CClipboard &clipboard) : 
-        CTextCursor (layout), 
+    inline CNormalTextCursor (CText &text, CEditorLayout &layout, CUndoManager &undo_manager, CClipboard &clipboard) : 
+        CTextCursor (text, layout), 
         anchor_line (0), anchor_position (0),
         current_line (0), current_position (0),
         current_row (0), current_column (0),
@@ -107,7 +108,7 @@ public:
         clipboard (clipboard)
     {}
 
-    CNormalTextCursor (CTextLayout &layout, unsigned int row, unsigned int column, CUndoManager &undo_manager, CClipboard &clipboard);
+    CNormalTextCursor (CText &text, CEditorLayout &layout, unsigned int row, unsigned int column, CUndoManager &undo_manager, CClipboard &clipboard);
     
     virtual ~CNormalTextCursor ();
 

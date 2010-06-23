@@ -64,7 +64,7 @@ public:
     virtual BOOL PreCreateWindow (CREATESTRUCT& cs);
 };
 
-class CEditorView : public CView
+class CEditorView : public CView, CEditorLayoutListener
 {
     friend CEditorControl;
     friend CLineNumbersControl;
@@ -83,7 +83,7 @@ protected:
 
     unsigned int padding_left, padding_right, padding_top, padding_bottom;
 
-    CTextLayout *layout;
+    CEditorLayout *layout;
     CTextCursor *cursor;
 
     CEditorView ();
@@ -133,7 +133,7 @@ public:
     virtual ~CEditorView ();
 
     virtual void OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint);
-    virtual void ValidateLayout ();
+    virtual void OnChange (unsigned int first_row, unsigned int old_row_count, unsigned int new_row_count, bool width_changed);
 
 #ifdef _DEBUG
     virtual void AssertValid () const;

@@ -12,18 +12,16 @@ class CCharBuffer : public CObject
 {
 protected:
     CCharBufferListener *listener;
-    CUndoManager *undo_manager;
 
     virtual void FireOnChange (unsigned int start, unsigned int old_count, unsigned int new_count);
 
 public:
-    inline CCharBuffer () : listener (NULL), undo_manager (NULL)
+    inline CCharBuffer () : listener (NULL)
     {
         // Do nothing
     }
 
     virtual void SetListener (CCharBufferListener *listener);
-    virtual void SetUndoManager (CUndoManager *undo_manager);
 
     virtual unsigned int GetSize () = 0;
     virtual void GetCharsRange (unsigned int start, unsigned int count, TCHAR buffer []) = 0;
@@ -36,8 +34,16 @@ class CVectorCharBuffer : public CCharBuffer
 {
 protected:
     std::vector <TCHAR> data;
+    CUndoManager *undo_manager;
 
 public:
+    inline CVectorCharBuffer () : undo_manager (NULL)
+    {
+        // Do nothing
+    }
+
+    virtual void SetUndoManager (CUndoManager *undo_manager);
+
     virtual unsigned int GetSize ();
     virtual void GetCharsRange (unsigned int start, unsigned int count, TCHAR buffer []);
     virtual void ReplaceCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, TCHAR replacement []);

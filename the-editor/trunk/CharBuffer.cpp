@@ -24,14 +24,6 @@ void CCharBuffer::SetListener (CCharBufferListener *listener)
     CCharBuffer::listener = listener;
 }
 
-void CCharBuffer::SetUndoManager (CUndoManager *undo_manager)
-{
-    ASSERT (CCharBuffer::undo_manager == NULL);
-    ASSERT (undo_manager != NULL);
-
-    CCharBuffer::undo_manager = undo_manager;
-}
-
 CCharBuffer::~CCharBuffer(void)
 {
     // Do nothing
@@ -84,6 +76,14 @@ public:
             delete [] characters;
     }
 };
+
+void CVectorCharBuffer::SetUndoManager (CUndoManager *undo_manager)
+{
+    ASSERT (CVectorCharBuffer::undo_manager == NULL);
+    ASSERT (undo_manager != NULL);
+
+    CVectorCharBuffer::undo_manager = undo_manager;
+}
 
 unsigned int CVectorCharBuffer::GetSize ()
 {

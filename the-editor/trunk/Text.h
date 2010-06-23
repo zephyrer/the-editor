@@ -18,7 +18,6 @@ class CText : public CObject
 {
 protected:
     CTextListener *listener;
-    CUndoManager *undo_manager;
 
     virtual void FireOnChange (
         unsigned int start_line, unsigned int start_position, 
@@ -26,13 +25,12 @@ protected:
         unsigned int new_end_line, unsigned int new_end_position);
 
 public:
-    inline CText () : listener (NULL), undo_manager (NULL)
+    inline CText () : listener (NULL)
     {
         // Do nothing
     }
 
     virtual void SetListener (CTextListener *listener);
-    virtual void SetUndoManager (CUndoManager *undo_manager);
 
     virtual unsigned int GetLinesCount () = 0;
     virtual unsigned int GetLineLength (unsigned int line) = 0;
@@ -54,6 +52,7 @@ class CCharBufferText : public CText, CCharBufferListener
 {
 protected:
     CCharBuffer &data;
+    CUndoManager *undo_manager;
 
     unsigned int lines_count;
     std::vector <unsigned int> line_start;
@@ -67,6 +66,8 @@ protected:
 
 public:
     CCharBufferText (CCharBuffer &data);
+
+    virtual void SetUndoManager (CUndoManager *undo_manager);
 
     virtual unsigned int GetLinesCount ();
     virtual unsigned int GetLineLength (unsigned int line);
