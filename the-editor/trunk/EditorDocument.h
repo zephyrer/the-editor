@@ -30,7 +30,11 @@ protected:
 public:
     virtual CText &GetText ();
     virtual CUndoManager & GetUndoManager ();
-    virtual BOOL OnNewDocument();
+
+    virtual void DeleteContents ();
+    virtual BOOL OnNewDocument ();
+    virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
+    virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 
     virtual void OnChange (
         unsigned int start_line, unsigned int start_position, 
