@@ -17,57 +17,6 @@ public:
     {}
 };
 
-class CRowsInsertedAction : public CAbstractTextLayoutAction
-{
-protected:
-    unsigned int start_row;
-    unsigned int count;
-
-public:
-    inline CRowsInsertedAction (CAbstractTextLayout &layout, unsigned int start_row, unsigned int count) : 
-        CAbstractTextLayoutAction (layout), start_row (start_row), count (count)
-    {}
-
-    virtual void Undo ()
-    {
-        layout.RowsRemoved (start_row, count);
-    }
-};
-
-class CRowsChangedAction : public CAbstractTextLayoutAction
-{
-protected:
-    unsigned int start_row;
-    unsigned int count;
-
-public:
-    inline CRowsChangedAction (CAbstractTextLayout &layout, unsigned int start_row, unsigned int count) : 
-        CAbstractTextLayoutAction (layout), start_row (start_row), count (count)
-    {}
-
-    virtual void Undo ()
-    {
-        layout.RowsChanged (start_row, count);
-    }
-};
-
-class CRowsRemovedAction : public CAbstractTextLayoutAction
-{
-protected:
-    unsigned int start_row;
-    unsigned int count;
-
-public:
-    inline CRowsRemovedAction (CAbstractTextLayout &layout, unsigned int start_row, unsigned int count) : 
-        CAbstractTextLayoutAction (layout), start_row (start_row), count (count)
-    {}
-
-    virtual void Undo ()
-    {
-        layout.RowsInserted (start_row, count);
-    }
-};
-
 unsigned int CAbstractTextLayout::GetRowWidth (unsigned int row)
 {
     ASSERT (row < GetHeight ());
@@ -154,9 +103,6 @@ void CAbstractTextLayout::RowsChanged (unsigned int start_row, unsigned int coun
         }
 
         AddDirtyRowRange (start_row, count);
-
-        if (undo_manager.IsWithinTransaction ())
-            undo_manager.AddAction (new CRowsChangedAction (*this, start_row, count));
     }
 }
 
@@ -176,9 +122,6 @@ void CAbstractTextLayout::RowsInserted (unsigned int start_row, unsigned int cou
         }
 
         AddDirtyRowRange (start_row, height - start_row);
-
-        if (undo_manager.IsWithinTransaction ())
-            undo_manager.AddAction (new CRowsInsertedAction (*this, start_row, count));
     }
 }
 
@@ -205,9 +148,6 @@ void CAbstractTextLayout::RowsRemoved (unsigned int start_row, unsigned int coun
         }
 
         AddDirtyRowRange (start_row, height - start_row + count);
-
-        if (undo_manager.IsWithinTransaction ())
-            undo_manager.AddAction (new CRowsRemovedAction (*this, start_row, count));
     }
 }
 
