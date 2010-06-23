@@ -46,7 +46,6 @@ public:
     virtual void Scroll (int dx, int dy);
     virtual void EnsureRectVisible (CRect &rect, CRect &margins);
     virtual void EnsureCaretVisible ();
-    virtual void ValidateCursor ();
 };
 
 class CLineNumbersControl : public CWnd
@@ -64,7 +63,7 @@ public:
     virtual BOOL PreCreateWindow (CREATESTRUCT& cs);
 };
 
-class CEditorView : public CView, CEditorLayoutListener
+class CEditorView : public CView, CEditorLayoutListener, CTextCursorListener
 {
     friend CEditorControl;
     friend CLineNumbersControl;
@@ -134,6 +133,7 @@ public:
 
     virtual void OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint);
     virtual void OnChange (unsigned int first_row, unsigned int old_row_count, unsigned int new_row_count, bool width_changed);
+    virtual void OnChange (unsigned int start_dirty_row, unsigned int dirty_row_count, bool caret_moved);
 
 #ifdef _DEBUG
     virtual void AssertValid () const;

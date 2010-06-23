@@ -10,132 +10,33 @@ using namespace std;
 
 #pragma region CTextCursor
 
+void CTextCursor::FireOnChange (unsigned int first_dirty_row, unsigned int dirty_row_count, bool caret_moved)
+{
+    if (listener != NULL && (dirty_row_count > 0 || caret_moved))
+        listener->OnChange (first_dirty_row, dirty_row_count, caret_moved);
+}
+
 CTextCursor::~CTextCursor ()
 {
+    // Do nothing
+}
+
+void CTextCursor::SetListener (CTextCursorListener *listener)
+{
+    ASSERT (CTextCursor::listener == NULL);
+    ASSERT (listener != NULL);
+
+    CTextCursor::listener = listener;
 }
 
 #pragma endregion
 
 #pragma region CNormalTextCursor
 
-class CNormalTextCursorAction : public CUndoableAction
-{
-protected:
-    CNormalTextCursor &cursor;
-
-public:
-    inline CNormalTextCursorAction (CNormalTextCursor &cursor) : cursor (cursor) {}
-};
-
-class CAddDirtyRowRangeAction : public CNormalTextCursorAction
-{
-protected:
-    unsigned int start_dirty_row;
-    unsigned int dirty_row_count;
-
-public:
-    inline CAddDirtyRowRangeAction (CNormalTextCursor &cursor, unsigned int start_dirty_row, unsigned int dirty_row_count) :
-        CNormalTextCursorAction (cursor), start_dirty_row (start_dirty_row), dirty_row_count (dirty_row_count)
-    {}
-    
-    virtual void Undo ()
-    {
-        cursor.AddDirtyRowRange (start_dirty_row, dirty_row_count);
-    }
-};
-
-class CMoveAction : public CNormalTextCursorAction
-{
-protected:
-    unsigned int anchor_line, anchor_position;
-    unsigned int current_line, current_position;
-    unsigned int current_row, current_column;
-    unsigned int cursor_row, cursor_column;
-
-public:
-    inline CMoveAction (
-        CNormalTextCursor &cursor, 
-        unsigned int anchor_line, unsigned int anchor_position, 
-        unsigned int current_line, unsigned int current_position,
-        unsigned int current_row, unsigned int current_column,
-        unsigned int cursor_row, unsigned int cursor_column) :
-        CNormalTextCursorAction (cursor),
-        anchor_line (anchor_line), anchor_position (anchor_position), 
-        current_line (current_line), current_position (current_position),
-        current_row (current_row), current_column (current_column),
-        cursor_row (cursor_row), cursor_column (cursor_column)
-    {}
-        
-    virtual void Undo ()
-    {
-        if (cursor.undo_manager.IsWithinTransaction ())
-            cursor.undo_manager.AddAction (
-                new CMoveAction (
-                    cursor,
-                    cursor.anchor_line, cursor.anchor_position,
-                    cursor.current_line, cursor.current_position,
-                    cursor.current_row, cursor.current_column,
-                    cursor.cursor_row, cursor.cursor_column));
-
-        cursor.anchor_line = anchor_line;
-        cursor.anchor_position = anchor_position;
-        cursor.current_line = current_line;
-        cursor.current_position = current_position;
-        cursor.current_row = current_row;
-        cursor.current_column = current_column;
-        cursor.cursor_row = cursor_row;
-        cursor.cursor_column = cursor_column;
-
-        cursor.UpdateSelection ();
-    }
-};
-
-void CNormalTextCursor::AddDirtyRowRange (unsigned int start_dirty_row, unsigned int dirty_row_count)
-{
-    if (dirty_row_count > 0)
-    {
-        if (CNormalTextCursor::dirty_row_count == 0)
-        {
-            CNormalTextCursor::start_dirty_row = start_dirty_row;
-            CNormalTextCursor::dirty_row_count = dirty_row_count;
-        }
-        else
-        {
-            unsigned int s = min (CNormalTextCursor::start_dirty_row, start_dirty_row);
-            unsigned int e = max (CNormalTextCursor::start_dirty_row + CNormalTextCursor::dirty_row_count, start_dirty_row + dirty_row_count);
-            CNormalTextCursor::start_dirty_row = s;
-            CNormalTextCursor::dirty_row_count = e - s;
-        }
-
-        if (undo_manager.IsWithinTransaction ())
-            undo_manager.AddAction (new CAddDirtyRowRangeAction (*this, start_dirty_row, dirty_row_count));
-    }
-}
-
-void CNormalTextCursor::AddDirtyLineRange (unsigned int start_dirty_line, unsigned int dirty_line_count)
-{
-    ASSERT (start_dirty_line <= text.GetLinesCount ());
-    ASSERT (start_dirty_line + dirty_line_count <= text.GetLinesCount ());
-
-    if (dirty_line_count == 0) return;
-
-    TEXTCELL tc;
-
-    layout.GetCellByLinePosition (start_dirty_line, 0, tc);
-
-    unsigned int start_row = tc.row;
-    
-    unsigned int end_dirty_line = start_dirty_line + dirty_line_count - 1;
-
-    layout.GetCellByLinePosition (end_dirty_line, text.GetLineLength (end_dirty_line), tc);
-
-    unsigned int end_row = tc.row;
-
-    AddDirtyRowRange (start_row, end_row - start_row + 1);
-}
-
 void CNormalTextCursor::UpdateSelection ()
 {
+    unsigned int first_dirty_row = 0, dirty_row_count = 0;
+
     CContinuousTextSelection *new_selection;
 
     if (current_line == anchor_line && current_position == anchor_position)
@@ -149,43 +50,100 @@ void CNormalTextCursor::UpdateSelection ()
 
     if (new_selection == NULL)
     {
-        if (selection == NULL) return;
+        if (selection != NULL)
+        {
+            first_dirty_row = first_selected_row;
+            dirty_row_count = selected_row_count;
 
-        unsigned int start_line = selection->GetStartLine ();
-        unsigned int end_line = selection->GetEndLine ();
-
-        AddDirtyLineRange (start_line, end_line - start_line + 1);
+            first_selected_row = 0;
+            selected_row_count = 0;
+        }
     }
     else
     {
         if (selection == NULL)
         {
-            unsigned int start_line = new_selection->GetStartLine ();
-            unsigned int end_line = new_selection->GetEndLine ();
+            TEXTCELL start, end;
 
-            AddDirtyLineRange (start_line, end_line - start_line + 1);
+            layout.GetCellByLinePosition (new_selection->GetStartLine (), new_selection->GetStartPosition (), start);
+            layout.GetCellByLinePosition (new_selection->GetEndLine (), new_selection->GetEndPosition (), end);
+
+            first_selected_row = start.row;
+            selected_row_count = end.row - start.row + 1;
+            first_dirty_row = start.row;
+            dirty_row_count = end.row - start.row + 1;
         }
         else
         {
-            unsigned int s = UINT_MAX;
-            unsigned int e = 0;
+            unsigned int sl = UINT_MAX;
+            unsigned int sp = UINT_MAX;
+            unsigned int el = 0;
+            unsigned int ep = 0;
 
             if (selection->GetStartLine () != new_selection->GetStartLine () ||
                 selection->GetStartPosition () != new_selection->GetStartPosition ())
             {
-                s = min (s, min (selection->GetStartLine (), new_selection->GetStartLine ()));
-                e = max (e, max (selection->GetStartLine (), new_selection->GetStartLine ()));
+                if (selection->GetStartLine () < new_selection->GetStartLine () ||
+                    (selection->GetStartLine () == new_selection->GetStartLine () &&
+                     selection->GetStartPosition () < new_selection->GetStartPosition ()))
+                {
+                    sl = selection->GetStartLine ();
+                    sp = selection->GetStartPosition ();
+                    el = new_selection->GetStartLine ();
+                    ep = new_selection->GetStartPosition ();
+                }
+                else
+                {
+                    sl = new_selection->GetStartLine ();
+                    sp = new_selection->GetStartPosition ();
+                    el = selection->GetStartLine ();
+                    ep = selection->GetStartPosition ();
+                }
             }
 
             if (selection->GetEndLine () != new_selection->GetEndLine () ||
                 selection->GetEndPosition () != new_selection->GetEndPosition ())
             {
-                s = min (s, min (selection->GetEndLine (), new_selection->GetEndLine ()));
-                e = max (e, max (selection->GetEndLine (), new_selection->GetEndLine ()));
+                if (selection->GetEndLine () < new_selection->GetEndLine () ||
+                    (selection->GetEndLine () == new_selection->GetEndLine () &&
+                     selection->GetEndPosition () < new_selection->GetEndPosition ()))
+                {
+                    if (sl == UINT_MAX)
+                    {
+                        sl = selection->GetEndLine ();
+                        sp = selection->GetEndPosition ();
+                    }
+                    el = new_selection->GetEndLine ();
+                    ep = new_selection->GetEndPosition ();
+                }
+                else
+                {
+                    if (sl == UINT_MAX)
+                    {
+                        sl = new_selection->GetEndLine ();
+                        sp = new_selection->GetEndPosition ();
+                    }
+                    el = selection->GetEndLine ();
+                    ep = selection->GetEndPosition ();
+                }
             }
 
-            if (s <= e)
-                AddDirtyLineRange (s, e - s + 1);
+            if (sl != UINT_MAX)
+            {
+                TEXTCELL start, end;
+
+                layout.GetCellByLinePosition (new_selection->GetStartLine (), new_selection->GetStartPosition (), start);
+                layout.GetCellByLinePosition (new_selection->GetEndLine (), new_selection->GetEndPosition (), end);
+
+                first_selected_row = start.row;
+                selected_row_count = end.row - start.row + 1;
+
+                layout.GetCellByLinePosition (sl, sp, start);
+                layout.GetCellByLinePosition (el, ep, end);
+
+                first_dirty_row = start.row;
+                dirty_row_count = end.row - start.row + 1;
+            }
         }
     }
 
@@ -193,19 +151,12 @@ void CNormalTextCursor::UpdateSelection ()
         delete selection;
 
     selection = new_selection;
+
+    FireOnChange (first_dirty_row, dirty_row_count, true);
 }
 
 void CNormalTextCursor::MoveToRowColumn (unsigned int row, unsigned int column, bool selecting)
 {
-    if (undo_manager.IsWithinTransaction ())
-        undo_manager.AddAction (
-            new CMoveAction (
-                *this,
-                anchor_line, anchor_position,
-                current_line, current_position,
-                current_row, current_column,
-                cursor_row, cursor_column));
-
     unsigned int height = layout.GetHeight ();
     if (row >= height)
         row = height - 1;
@@ -250,15 +201,6 @@ void CNormalTextCursor::MoveToLinePosition (unsigned int line, unsigned int posi
     ASSERT (position <= text.GetLineLength (line));
     ASSERT (aline < text.GetLinesCount ());
     ASSERT (aposition <= text.GetLineLength (aline));
-
-    if (undo_manager.IsWithinTransaction ())
-        undo_manager.AddAction (
-            new CMoveAction (
-                *this,
-                anchor_line, anchor_position,
-                current_line, current_position,
-                current_row, current_column,
-                cursor_row, cursor_column));
 
     TEXTCELL tc;
 
@@ -440,7 +382,9 @@ void CNormalTextCursor::DeleteSelection ()
 }
 
 CNormalTextCursor::CNormalTextCursor (CText &text, CEditorLayout &layout, unsigned int row, unsigned int column, CUndoManager &undo_manager, CClipboard &clipboard) : 
-    CTextCursor (text, layout), selection (NULL), undo_manager (undo_manager), clipboard (clipboard)
+    CTextCursor (text, layout), selection (NULL), 
+    first_selected_row (0), selected_row_count (0),
+    undo_manager (undo_manager), clipboard (clipboard)
 {
     unsigned int height = layout.GetHeight ();
     if (row >= height)
@@ -482,22 +426,6 @@ unsigned int CNormalTextCursor::GetCursorColumn ()
 CTextSelection *CNormalTextCursor::GetSelection ()
 {
     return selection;
-}
-
-unsigned int CNormalTextCursor::GetStartDirtyRow ()
-{
-    return start_dirty_row;
-}
-
-unsigned int CNormalTextCursor::GetDirtyRowCount ()
-{
-    return dirty_row_count;
-}
-
-void CNormalTextCursor::ResetDirtyRows ()
-{
-    start_dirty_row = 0;
-    dirty_row_count = 0;
 }
 
 bool CNormalTextCursor::CanOverwrite ()
@@ -789,6 +717,52 @@ void CNormalTextCursor::SelectAll ()
 
     unsigned int l = text.GetLinesCount () - 1;
     MoveToLinePosition (l, text.GetLineLength (l), true);
+}
+
+void CNormalTextCursor::OnChange ()
+{
+    unsigned int first_dirty_row = 0;
+    unsigned int dirty_row_count = 0;
+
+    if (selection != NULL)
+    {
+        first_dirty_row = first_selected_row;
+        dirty_row_count = selected_row_count;
+
+        first_selected_row = 0;
+        selected_row_count = 0;
+
+        delete selection;
+        selection = NULL;
+    }
+
+    unsigned int l = current_line;
+    unsigned int p = current_position;
+    if (l >= text.GetLinesCount ())
+    {
+        l = text.GetLinesCount () - 1;
+
+        p = text.GetLineLength (l);
+    }
+    else if (p > text.GetLineLength (l))
+    {
+        p = text.GetLineLength (l);
+    }
+
+    TEXTCELL tc;
+
+    layout.GetCellByLinePosition (l, p, tc);
+
+    anchor_line = l;
+    anchor_position = p;
+    current_line = l;
+    current_position = p;
+    current_row = tc.row;
+    current_column = tc.column;
+    cursor_row = tc.row;
+    cursor_column = tc.column;
+
+    FireOnChange (first_dirty_row, dirty_row_count, true);
 }
 
 void CNormalTextCursor::InsertChar (TCHAR ch)

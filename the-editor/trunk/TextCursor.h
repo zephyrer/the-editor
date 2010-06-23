@@ -4,23 +4,33 @@
 #include "TextSelection.h"
 #include "Clipboard.h"
 
+class CTextCursorListener
+{
+public:
+    virtual void OnChange (unsigned int start_dirty_row, unsigned int dirty_row_count, bool caret_moved) = 0;
+};
+
 class CTextCursor : public CObject
 {
 protected:
     CText &text;
     CEditorLayout &layout;
 
+    CTextCursorListener *listener;
+
+    virtual void FireOnChange (unsigned int first_dirty_row, unsigned int dirty_row_count, bool caret_moved);
+
 public:
-    inline CTextCursor (CText &text, CEditorLayout &layout) : text (text), layout (layout) {}
+    inline CTextCursor (CText &text, CEditorLayout &layout) : 
+        text (text), layout (layout), listener (NULL) {}
 
     virtual ~CTextCursor ();
+
+    virtual void SetListener (CTextCursorListener *listener);
 
     virtual unsigned int GetCursorRow () = 0;
     virtual unsigned int GetCursorColumn () = 0;
     virtual CTextSelection *GetSelection () = 0;
-    virtual unsigned int GetStartDirtyRow () = 0;
-    virtual unsigned int GetDirtyRowCount () = 0;
-    virtual void ResetDirtyRows () = 0;
     virtual bool CanOverwrite () = 0;
     virtual bool CanCopy () = 0;
     virtual bool CanPaste () = 0;
@@ -46,6 +56,7 @@ public:
     virtual void TextEnd (bool selecting) = 0;
 
     virtual void SelectAll () = 0;
+    virtual void OnChange () = 0;
 
     virtual void InsertChar (TCHAR ch) = 0;
     virtual void OverwriteChar (TCHAR ch) = 0;
@@ -75,15 +86,13 @@ protected:
     unsigned int current_line, current_position;
     unsigned int current_row, current_column;
     unsigned int cursor_row, cursor_column;
-    unsigned int start_dirty_row, dirty_row_count;
 
+    unsigned int first_selected_row, selected_row_count;
     CContinuousTextSelection *selection;
 
     CUndoManager &undo_manager;
     CClipboard &clipboard;
 
-    virtual void AddDirtyRowRange (unsigned int start_dirty_row, unsigned int dirty_row_count);
-    virtual void AddDirtyLineRange (unsigned int start_dirty_line, unsigned int dirty_line_count);
     virtual void UpdateSelection ();
     virtual void MoveToRowColumn (unsigned int row, unsigned int column, bool selecting);
     virtual void MoveToLinePosition (unsigned int line, unsigned int position, bool selecting);
@@ -102,7 +111,7 @@ public:
         current_line (0), current_position (0),
         current_row (0), current_column (0),
         cursor_row (0), cursor_column (0),
-        start_dirty_row (0), dirty_row_count (0),
+        first_selected_row (0), selected_row_count (0),
         selection (NULL),
         undo_manager (undo_manager),
         clipboard (clipboard)
@@ -115,9 +124,6 @@ public:
     virtual unsigned int GetCursorRow ();
     virtual unsigned int GetCursorColumn ();
     virtual CTextSelection *GetSelection ();
-    virtual unsigned int GetStartDirtyRow ();
-    virtual unsigned int GetDirtyRowCount ();
-    virtual void ResetDirtyRows ();
     virtual bool CanOverwrite ();
     virtual bool CanCopy ();
     virtual bool CanPaste ();
@@ -143,6 +149,7 @@ public:
     virtual void TextEnd (bool selecting);
 
     virtual void SelectAll ();
+    virtual void OnChange ();
 
     virtual void InsertChar (TCHAR ch);
     virtual void OverwriteChar (TCHAR ch);

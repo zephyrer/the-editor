@@ -279,8 +279,6 @@ void CEditorControl::OnLButtonDown (UINT nFlags, CPoint point)
     UpdateCaret ();
 
     SetCapture ();
-
-    ValidateCursor ();
 }
 
 void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
@@ -312,7 +310,6 @@ void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
 
         EnsureCaretVisible ();
         UpdateCaret ();
-        ValidateCursor ();
     }
 }
 
@@ -373,7 +370,6 @@ void CEditorControl::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
 
     EnsureCaretVisible ();
     UpdateCaret ();
-    ValidateCursor ();
 
     CWnd::OnChar (nChar, nRepCnt, nFlags);
 }
@@ -453,7 +449,6 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
     }
 
     UpdateCaret ();
-    ValidateCursor ();
 
     CWnd::OnKeyDown (nChar, nRepCnt, nFlags);
 }
@@ -471,7 +466,6 @@ void CEditorControl::OnContextMenu (CWnd* pWnd, CPoint point)
 
     EnsureCaretVisible ();
     UpdateCaret ();
-    ValidateCursor ();
 
     CMenu* menu_bar = AfxGetMainWnd ()->GetMenu ();
     CMenu* edit_menu = menu_bar->GetSubMenu (1);
@@ -710,35 +704,6 @@ void CEditorControl::PaintCharsRange (CDC &DC, int row, int start_column, int co
     DC.ExtTextOut (x, y, ETO_OPAQUE, &rect, chars, count, widths);
 }
 
-void CEditorControl::ValidateCursor ()
-{
-    if (view.cursor == NULL) return;
-    CTextCursor &cursor = *view.cursor;
-
-    unsigned int start_dirty_row = cursor.GetStartDirtyRow ();
-    unsigned int dirty_row_count = cursor.GetDirtyRowCount ();
-
-    if (dirty_row_count == 0) return;
-
-    CRect r, r1;
-
-    GetClientRect (&r);
-    view.line_numbers_control.GetClientRect (&r1);
-
-    r.top = start_dirty_row * view.cell_size.cy + view.padding_top;
-    r.bottom = r.top + dirty_row_count * view.cell_size.cy;
-    r1.top = start_dirty_row * view.cell_size.cy + view.padding_top;
-    r1.bottom = r.top + dirty_row_count * view.cell_size.cy;
-
-    r.OffsetRect (0, -GetScrollPos (SB_VERT));
-    r1.OffsetRect (0, -GetScrollPos (SB_VERT));
-
-    InvalidateRect (&r);
-    view.line_numbers_control.InvalidateRect (&r1);
-
-    cursor.ResetDirtyRows ();
-}
-
 #pragma endregion
 
 #pragma region CLineNumbersControl
@@ -915,6 +880,7 @@ void CEditorView::OnInitialUpdate ()
     layout->SetListener (this);
 
     cursor = new CNormalTextCursor (GetDocument ()->GetText (), *layout, GetDocument ()->GetUndoManager (), clipboard);
+    cursor->SetListener (this);
 
     CView::OnInitialUpdate ();
 }
@@ -1076,7 +1042,6 @@ BOOL CEditorView::OnUndo (UINT nID)
 {
     GetDocument ()->GetUndoManager ().Undo ();
 
-    editor_control.ValidateCursor ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
     editor_control.UpdateWindow ();
@@ -1094,7 +1059,6 @@ BOOL CEditorView::OnRedo (UINT nID)
 {
     GetDocument ()->GetUndoManager ().Redo ();
 
-    editor_control.ValidateCursor ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
     editor_control.UpdateWindow ();
@@ -1108,7 +1072,6 @@ BOOL CEditorView::OnSelectAll (UINT nID)
     cursor->SelectAll ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
-    editor_control.ValidateCursor ();
 
     return TRUE;
 }
@@ -1118,7 +1081,6 @@ BOOL CEditorView::OnClear (UINT nID)
     cursor->Del ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
-    editor_control.ValidateCursor ();
 
     return TRUE;
 }
@@ -1133,7 +1095,6 @@ BOOL CEditorView::OnCopy (UINT nID)
     cursor->Copy ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
-    editor_control.ValidateCursor ();
 
     return TRUE;
 }
@@ -1148,7 +1109,6 @@ BOOL CEditorView::OnPaste (UINT nID)
     cursor->Paste ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
-    editor_control.ValidateCursor ();
 
     return TRUE;
 }
@@ -1163,7 +1123,6 @@ BOOL CEditorView::OnCut (UINT nID)
     cursor->Cut ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
-    editor_control.ValidateCursor ();
 
     return TRUE;
 }
@@ -1184,6 +1143,8 @@ void CEditorView::OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint)
 
         if (change.new_lines_count > overlap)
             layout->LinesInserted (change.first_line + overlap, change.new_lines_count - overlap);
+
+        cursor->OnChange ();
     }
     else CView::OnUpdate (pSender, lHint, pHint);
 }
@@ -1224,6 +1185,27 @@ void CEditorView::OnChange (unsigned int first_row, unsigned int old_row_count, 
         client_rect.bottom = min (client_rect.bottom, bottom);
         line_numbers_control.InvalidateRect (&client_rect, false);
     }
+}
+
+void CEditorView::OnChange (unsigned int start_dirty_row, unsigned int dirty_row_count, bool caret_moved)
+{
+    unsigned int top = 
+        padding_top + 
+        start_dirty_row * cell_size.cy - 
+        editor_control.GetScrollPos (SB_VERT);
+    unsigned int bottom = top + dirty_row_count * cell_size.cy;
+
+    if (top <= bottom)
+    {
+        CRect client_rect;
+
+        editor_control.GetClientRect (&client_rect);
+        client_rect.top = max (client_rect.top, top);
+        client_rect.bottom = min (client_rect.bottom, bottom);
+        editor_control.InvalidateRect (&client_rect, false);
+    }
+
+    if (caret_moved) editor_control.UpdateCaret ();
 }
 
 #pragma endregion
