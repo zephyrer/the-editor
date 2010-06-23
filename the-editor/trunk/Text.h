@@ -61,6 +61,7 @@ protected:
 
     virtual unsigned int GetLastLineEndingBefore (unsigned int position);
     virtual unsigned int GetFirstLineStartingAfter (unsigned int position);
+    virtual unsigned int GetLine (unsigned int position);
     virtual void SplitIntoLines (unsigned int start, unsigned int count, std::vector <unsigned int> &starts, std::vector <unsigned int> &lengths);
     virtual void ReplaceRange (std::vector <unsigned int> &v, unsigned int start, unsigned int count, std::vector <unsigned int> &replacement, unsigned int replacement_start, unsigned int replacement_count);
 

@@ -89,6 +89,29 @@ unsigned int CCharBufferText::GetFirstLineStartingAfter (unsigned int position)
     return b;
 }
 
+unsigned int CCharBufferText::GetLine (unsigned int position)
+{
+    if (lines_count == 0) return lines_count;
+
+    if (line_start [0] > position) return lines_count;
+
+    unsigned int last_line = lines_count - 1;
+    if (line_start [last_line] <= position) return last_line;
+
+    unsigned int a = 0;
+    unsigned int b = last_line;
+
+    while (b - a > 1)
+    {
+        unsigned int m = (a + b) / 2;
+
+        if (line_start [m] > position) b = m;
+        else a = m;
+    }
+
+    return a;
+}
+
 void CCharBufferText::SplitIntoLines (unsigned int start, unsigned int count, std::vector <unsigned int> &starts, std::vector <unsigned int> &lengths)
 {
     ASSERT (start <= data.GetSize ());
@@ -306,6 +329,14 @@ void CCharBufferText::RemoveLinesAt (unsigned int line, unsigned int count)
 
 void CCharBufferText::OnChange (unsigned int start, unsigned int old_count, unsigned int new_count)
 {
+    unsigned int c_start_line = GetLine (start);
+    ASSERT (c_start_line < lines_count);
+    unsigned int c_start_position = min (start - line_start [c_start_line], line_length [c_start_line]);
+
+    unsigned int c_old_end_line = GetLine (start + old_count);
+    ASSERT (c_old_end_line < lines_count);
+    unsigned int c_old_end_position = min (start + old_count - line_start [c_old_end_line], line_length [c_old_end_line]);
+
     int delta = new_count - old_count;
 
     unsigned int before = GetLastLineEndingBefore (start);
@@ -375,6 +406,12 @@ void CCharBufferText::OnChange (unsigned int start, unsigned int old_count, unsi
     }
 
     lines_count = line_length.size ();
+
+    unsigned int c_new_end_line = GetLine (start + new_count);
+    ASSERT (c_new_end_line < lines_count);
+    unsigned int c_new_end_position = min (start + new_count - line_start [c_new_end_line], line_length [c_new_end_line]);
+
+    FireOnChange (c_start_line, c_start_position, c_old_end_line, c_old_end_position, c_new_end_line, c_new_end_position);
 }
 
 #pragma endregion

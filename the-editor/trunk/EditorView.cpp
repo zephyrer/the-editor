@@ -1194,6 +1194,7 @@ void CEditorView::OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint)
         if (change.new_lines_count > overlap)
             layout->LinesInserted (change.first_line + overlap, change.new_lines_count - overlap);
 
+        editor_control.UpdateScrollBars ();
         ValidateLayout ();
     }
     else CView::OnUpdate (pSender, lHint, pHint);
