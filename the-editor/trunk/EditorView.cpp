@@ -276,8 +276,6 @@ void CEditorControl::OnLButtonDown (UINT nFlags, CPoint point)
 
     EnsureCaretVisible ();
 
-    UpdateCaret ();
-
     SetCapture ();
 }
 
@@ -309,7 +307,6 @@ void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
         }
 
         EnsureCaretVisible ();
-        UpdateCaret ();
     }
 }
 
@@ -369,7 +366,6 @@ void CEditorControl::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
     }
 
     EnsureCaretVisible ();
-    UpdateCaret ();
 
     CWnd::OnChar (nChar, nRepCnt, nFlags);
 }
@@ -448,8 +444,6 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
         }
     }
 
-    UpdateCaret ();
-
     CWnd::OnKeyDown (nChar, nRepCnt, nFlags);
 }
 
@@ -465,7 +459,6 @@ void CEditorControl::OnContextMenu (CWnd* pWnd, CPoint point)
     view.cursor->RightClick (row, column);
 
     EnsureCaretVisible ();
-    UpdateCaret ();
 
     CMenu* menu_bar = AfxGetMainWnd ()->GetMenu ();
     CMenu* edit_menu = menu_bar->GetSubMenu (1);
@@ -529,7 +522,10 @@ void CEditorControl::UpdateScrollBars ()
     EnableScrollBar (SB_VERT, (int)si.nPage >= (int)si.nMax ? ESB_DISABLE_BOTH : ESB_ENABLE_BOTH);
 
     if (x != GetScrollPos (SB_HORZ) || y != GetScrollPos (SB_VERT))
+    {
+        UpdateCaret ();
         Invalidate ();
+    }
 }
 
 void CEditorControl::UpdateCaret ()
@@ -1043,9 +1039,6 @@ BOOL CEditorView::OnUndo (UINT nID)
     GetDocument ()->GetUndoManager ().Undo ();
 
     editor_control.EnsureCaretVisible ();
-    editor_control.UpdateCaret ();
-    editor_control.UpdateWindow ();
-    line_numbers_control.UpdateWindow ();
 
     return TRUE;
 }
@@ -1060,9 +1053,6 @@ BOOL CEditorView::OnRedo (UINT nID)
     GetDocument ()->GetUndoManager ().Redo ();
 
     editor_control.EnsureCaretVisible ();
-    editor_control.UpdateCaret ();
-    editor_control.UpdateWindow ();
-    line_numbers_control.UpdateWindow ();
 
     return TRUE;
 }
@@ -1071,7 +1061,6 @@ BOOL CEditorView::OnSelectAll (UINT nID)
 {
     cursor->SelectAll ();
     editor_control.EnsureCaretVisible ();
-    editor_control.UpdateCaret ();
 
     return TRUE;
 }
@@ -1080,7 +1069,6 @@ BOOL CEditorView::OnClear (UINT nID)
 {
     cursor->Del ();
     editor_control.EnsureCaretVisible ();
-    editor_control.UpdateCaret ();
 
     return TRUE;
 }
@@ -1094,7 +1082,6 @@ BOOL CEditorView::OnCopy (UINT nID)
 {
     cursor->Copy ();
     editor_control.EnsureCaretVisible ();
-    editor_control.UpdateCaret ();
 
     return TRUE;
 }
@@ -1108,7 +1095,6 @@ BOOL CEditorView::OnPaste (UINT nID)
 {
     cursor->Paste ();
     editor_control.EnsureCaretVisible ();
-    editor_control.UpdateCaret ();
 
     return TRUE;
 }
@@ -1122,7 +1108,6 @@ BOOL CEditorView::OnCut (UINT nID)
 {
     cursor->Cut ();
     editor_control.EnsureCaretVisible ();
-    editor_control.UpdateCaret ();
 
     return TRUE;
 }
@@ -1205,7 +1190,11 @@ void CEditorView::OnChange (unsigned int start_dirty_row, unsigned int dirty_row
         editor_control.InvalidateRect (&client_rect, false);
     }
 
-    if (caret_moved) editor_control.UpdateCaret ();
+    if (caret_moved)
+    {
+        editor_control.EnsureCaretVisible ();
+        editor_control.UpdateCaret ();
+    }
 }
 
 #pragma endregion

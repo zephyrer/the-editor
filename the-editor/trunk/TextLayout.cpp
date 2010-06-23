@@ -80,7 +80,7 @@ void CAbstractTextEditorLayout::RowsChanged (unsigned int start_row, unsigned in
 
     if (count > 0)
     {
-        if (start_row < row_widths.size ())
+        if (start_row <= row_widths.size ())
         {
             unsigned int mc = min (count, row_widths.size () - start_row);
             for (unsigned int r = 0; r < mc; r++)
@@ -101,7 +101,7 @@ void CAbstractTextEditorLayout::RowsInserted (unsigned int start_row, unsigned i
     {
         height += count;
 
-        if (start_row < row_widths.size ())
+        if (start_row <= row_widths.size ())
         {
             row_widths.insert (row_widths.begin () + start_row, count, 0);
 
@@ -121,7 +121,7 @@ void CAbstractTextEditorLayout::RowsRemoved (unsigned int start_row, unsigned in
     {
         height -= count;
 
-        if (start_row < row_widths.size ())
+        if (start_row <= row_widths.size ())
         {
             unsigned int mw = 0;
             unsigned int mc = min (count, row_widths.size () - start_row);
