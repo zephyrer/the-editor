@@ -371,7 +371,6 @@ void CEditorControl::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
         }
     }
 
-    UpdateScrollBars ();
     EnsureCaretVisible ();
     UpdateCaret ();
     ValidateCursor ();
@@ -444,7 +443,6 @@ void CEditorControl::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
             break;
         case VK_DELETE:
             ctrl ? cursor.WordDel () : cursor.Del ();
-            UpdateScrollBars ();
             EnsureCaretVisible ();
             break;
         case VK_INSERT:
@@ -522,7 +520,7 @@ void CEditorControl::UpdateScrollBars ()
 
     si.nPos = 0;
     si.nMin = 0;
-    si.nMax = view.padding_left + layout.GetWidth () * view.cell_size.cx + view.padding_right;
+    si.nMax = view.padding_left + layout.GetWidth () * view.cell_size.cx + view.padding_right - 1;
     si.nPage = client_rect.Width ();
 
     SetScrollInfo (SB_HORZ, &si);
@@ -530,7 +528,7 @@ void CEditorControl::UpdateScrollBars ()
 
     si.nPos = 0;
     si.nMin = 0;
-    si.nMax = view.padding_top + layout.GetHeight () * view.cell_size.cy + view.padding_bottom;
+    si.nMax = view.padding_top + layout.GetHeight () * view.cell_size.cy + view.padding_bottom - 1;
     si.nPage = client_rect.Height ();
 
     SetScrollInfo (SB_VERT, &si);
@@ -1078,7 +1076,6 @@ BOOL CEditorView::OnUndo (UINT nID)
 {
     GetDocument ()->GetUndoManager ().Undo ();
 
-    editor_control.UpdateScrollBars ();
     editor_control.ValidateCursor ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
@@ -1097,7 +1094,6 @@ BOOL CEditorView::OnRedo (UINT nID)
 {
     GetDocument ()->GetUndoManager ().Redo ();
 
-    editor_control.UpdateScrollBars ();
     editor_control.ValidateCursor ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
@@ -1110,7 +1106,6 @@ BOOL CEditorView::OnRedo (UINT nID)
 BOOL CEditorView::OnSelectAll (UINT nID)
 {
     cursor->SelectAll ();
-    editor_control.UpdateScrollBars ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
     editor_control.ValidateCursor ();
@@ -1121,7 +1116,6 @@ BOOL CEditorView::OnSelectAll (UINT nID)
 BOOL CEditorView::OnClear (UINT nID)
 {
     cursor->Del ();
-    editor_control.UpdateScrollBars ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
     editor_control.ValidateCursor ();
@@ -1137,7 +1131,6 @@ void CEditorView::OnUpdateCopyMenu (CCmdUI* pCmdUI)
 BOOL CEditorView::OnCopy (UINT nID)
 {
     cursor->Copy ();
-    editor_control.UpdateScrollBars ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
     editor_control.ValidateCursor ();
@@ -1153,7 +1146,6 @@ void CEditorView::OnUpdatePasteMenu (CCmdUI* pCmdUI)
 BOOL CEditorView::OnPaste (UINT nID)
 {
     cursor->Paste ();
-    editor_control.UpdateScrollBars ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
     editor_control.ValidateCursor ();
@@ -1169,7 +1161,6 @@ void CEditorView::OnUpdateCutMenu (CCmdUI* pCmdUI)
 BOOL CEditorView::OnCut (UINT nID)
 {
     cursor->Cut ();
-    editor_control.UpdateScrollBars ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
     editor_control.ValidateCursor ();
