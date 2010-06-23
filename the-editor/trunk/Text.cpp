@@ -347,7 +347,7 @@ void CCharBufferText::OnChange (unsigned int start, unsigned int old_count, unsi
     unsigned int start_pos = before >= lines_count ? 0 : line_start [before] + line_length [before];
     unsigned int after = GetFirstLineStartingAfter (start + old_count);
 
-    if (after < lines_count - 1 && line_length [after] == 0) after += 1;
+    if (after < lines_count && line_length [after] == 0) after += 1;
 
     unsigned int end_line = after >= lines_count ? lines_count : after;
     unsigned int end_pos = after >= lines_count ? data.GetSize () : line_start [after] + delta;

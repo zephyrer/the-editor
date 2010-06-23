@@ -1118,18 +1118,21 @@ void CEditorView::OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint)
     {
         CDocChange &change = *(CDocChange *)pHint;
 
-        unsigned int overlap = min (change.original_lines_count, change.new_lines_count);
+        if (layout != NULL)
+        {
+            unsigned int overlap = min (change.original_lines_count, change.new_lines_count);
 
-        if (change.original_lines_count > overlap)
-            layout->LinesRemoved (change.first_line + overlap, change.original_lines_count - overlap);
+            if (change.original_lines_count > overlap)
+                layout->LinesRemoved (change.first_line + overlap, change.original_lines_count - overlap);
 
-        if (overlap > 0)
-            layout->LinesChanged (change.first_line, overlap);
+            if (overlap > 0)
+                layout->LinesChanged (change.first_line, overlap);
 
-        if (change.new_lines_count > overlap)
-            layout->LinesInserted (change.first_line + overlap, change.new_lines_count - overlap);
+            if (change.new_lines_count > overlap)
+                layout->LinesInserted (change.first_line + overlap, change.new_lines_count - overlap);
+        }
 
-        cursor->OnChange ();
+        if (cursor != NULL) cursor->OnChange ();
     }
     else CView::OnUpdate (pSender, lHint, pHint);
 }
