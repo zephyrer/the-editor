@@ -41,7 +41,7 @@ CUndoManager & CEditorDocument::GetUndoManager ()
 
 void CEditorDocument::DeleteContents ()
 {
-    text.RemoveLinesAt (0, text.GetLinesCount ());
+    char_buffer.ReplaceCharsRange (0, char_buffer.GetSize (), 0, NULL);
     undo_manager.ClearUndoHistory ();
 }
 

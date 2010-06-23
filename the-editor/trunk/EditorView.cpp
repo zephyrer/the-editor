@@ -1120,11 +1120,11 @@ void CEditorView::OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint)
 
         unsigned int overlap = min (change.original_lines_count, change.new_lines_count);
 
-        if (overlap > 0)
-            layout->LinesChanged (change.first_line, overlap);
-
         if (change.original_lines_count > overlap)
             layout->LinesRemoved (change.first_line + overlap, change.original_lines_count - overlap);
+
+        if (overlap > 0)
+            layout->LinesChanged (change.first_line, overlap);
 
         if (change.new_lines_count > overlap)
             layout->LinesInserted (change.first_line + overlap, change.new_lines_count - overlap);
