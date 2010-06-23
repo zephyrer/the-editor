@@ -48,7 +48,7 @@ void CEditorControl::OnSize (UINT nType, int cx, int cy)
 void CEditorControl::OnPaint ()
 {
     if (view.layout == NULL) return;
-    CTextLayout &layout = *view.layout;
+    CEditorLayout &layout = *view.layout;
 
     CPaintDC paintDC (this);
 
@@ -229,7 +229,7 @@ void CEditorControl::OnLButtonDown (UINT nFlags, CPoint point)
     if (view.layout == NULL) return;
     if (view.cursor == NULL) return;
 
-    CTextLayout &layout = *view.layout;
+    CEditorLayout &layout = *view.layout;
     CTextCursor &cursor = *view.cursor;
 
     unsigned int tc = GetTickCount ();
@@ -288,7 +288,7 @@ void CEditorControl::OnMouseMove (UINT nFlags, CPoint point)
     if (view.layout == NULL) return;
     if (view.cursor == NULL) return;
 
-    CTextLayout &layout = *view.layout;
+    CEditorLayout &layout = *view.layout;
     CTextCursor &cursor = *view.cursor;
 
     if (nFlags & MK_LBUTTON && drag_type != 0)
@@ -502,7 +502,7 @@ void CEditorControl::UpdateScrollBars ()
 {
     if (view.layout == NULL) return;
 
-    CTextLayout &layout = *view.layout;
+    CEditorLayout &layout = *view.layout;
 
     ShowScrollBar (SB_BOTH, TRUE);
 
@@ -670,7 +670,7 @@ void CEditorControl::EnsureCaretVisible ()
 void CEditorControl::PaintCharsRange (CDC &DC, int row, int start_column, int count, bool selected, TEXTCELL *cells)
 {
     if (view.layout == NULL) return;
-    CTextLayout &layout = *view.layout;
+    CEditorLayout &layout = *view.layout;
 
     if (cells == NULL)
     {
@@ -764,7 +764,7 @@ BOOL CLineNumbersControl::PreCreateWindow (CREATESTRUCT& cs)
 void CLineNumbersControl::OnPaint ()
 {
     if (view.layout == NULL) return;
-    CTextLayout &layout = *view.layout;
+    CEditorLayout &layout = *view.layout;
 
     CPaintDC paintDC (this);
 
@@ -913,8 +913,10 @@ BOOL CEditorView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CEditorView::OnInitialUpdate ()
 {
-    layout = new CTabbedTextLayout (GetDocument ()->GetText (), GetDocument ()->GetUndoManager ());
-    cursor = new CNormalTextCursor (*layout, GetDocument ()->GetUndoManager (), clipboard);
+    layout = new CTabbedTextEditorLayout (GetDocument ()->GetText ());
+    layout->SetListener (this);
+
+    cursor = new CNormalTextCursor (GetDocument ()->GetText (), *layout, GetDocument ()->GetUndoManager (), clipboard);
 
     CView::OnInitialUpdate ();
 }
@@ -1080,7 +1082,6 @@ BOOL CEditorView::OnUndo (UINT nID)
     editor_control.ValidateCursor ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
-    ValidateLayout ();
     editor_control.UpdateWindow ();
     line_numbers_control.UpdateWindow ();
 
@@ -1100,7 +1101,6 @@ BOOL CEditorView::OnRedo (UINT nID)
     editor_control.ValidateCursor ();
     editor_control.EnsureCaretVisible ();
     editor_control.UpdateCaret ();
-    ValidateLayout ();
     editor_control.UpdateWindow ();
     line_numbers_control.UpdateWindow ();
 
@@ -1193,22 +1193,31 @@ void CEditorView::OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint)
 
         if (change.new_lines_count > overlap)
             layout->LinesInserted (change.first_line + overlap, change.new_lines_count - overlap);
-
-        editor_control.UpdateScrollBars ();
-        ValidateLayout ();
     }
     else CView::OnUpdate (pSender, lHint, pHint);
 }
 
-void CEditorView::ValidateLayout ()
+void CEditorView::OnChange (unsigned int first_row, unsigned int old_row_count, unsigned int new_row_count, bool width_changed)
 {
+    if (old_row_count != new_row_count || width_changed)
+        editor_control.UpdateScrollBars ();
+
     unsigned int top = 
         padding_top + 
-        layout->GetFirstDirtyRow () * cell_size.cy - 
+        first_row * cell_size.cy - 
         editor_control.GetScrollPos (SB_VERT);
-    unsigned int bottom = top + layout->GetDirtyRowsCount () * cell_size.cy;
+    unsigned int bottom;
+    
+    if (old_row_count == new_row_count)
+        bottom = top + new_row_count * cell_size.cy;
+    else
+    {
+        CRect r;
 
-    layout->ResetDirtyRows ();
+        editor_control.GetClientRect (&r);
+
+        bottom = r.bottom;
+    }
 
     if (top <= bottom)
     {

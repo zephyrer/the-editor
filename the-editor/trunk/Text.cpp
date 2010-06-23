@@ -31,14 +31,6 @@ void CText::SetListener (CTextListener *listener)
     CText::listener = listener;
 }
 
-void CText::SetUndoManager (CUndoManager *undo_manager)
-{
-    ASSERT (CText::undo_manager == NULL);
-    ASSERT (undo_manager != NULL);
-
-    CText::undo_manager = undo_manager;
-}
-
 #pragma endregion
 
 #pragma region CCharBufferText
@@ -164,7 +156,15 @@ void CCharBufferText::ReplaceRange (std::vector <unsigned int> &v, unsigned int 
         v.erase (v.begin () + start + replacement_count, v.begin () + start + count);
 }
 
-CCharBufferText::CCharBufferText (CCharBuffer &data) : data (data)
+void CCharBufferText::SetUndoManager (CUndoManager *undo_manager)
+{
+    ASSERT (CCharBufferText::undo_manager == NULL);
+    ASSERT (undo_manager != NULL);
+
+    CCharBufferText::undo_manager = undo_manager;
+}
+
+CCharBufferText::CCharBufferText (CCharBuffer &data) : data (data), undo_manager (NULL)
 {
     SplitIntoLines (0, data.GetSize (), line_start, line_length);
 
