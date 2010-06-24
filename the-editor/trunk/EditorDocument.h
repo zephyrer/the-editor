@@ -18,7 +18,7 @@ struct CDocChange : public CObject
 class CEditorDocument : public CDocument, CTextListener
 {
 protected:
-    CVectorCharBuffer char_buffer;
+    CVector8BitCharBuffer char_buffer;
     CCharBufferText text;
     CUndoManager undo_manager;
 
