@@ -50,3 +50,22 @@ public:
 
     virtual ~CVectorCharBuffer ();
 };
+
+class CVector8BitCharBuffer : public CCharBuffer
+{
+protected:
+    std::vector <char> data;
+    CUndoManager *undo_manager;
+    unsigned int code_page;
+
+public:
+    CVector8BitCharBuffer (unsigned int code_page, unsigned int count = 0, char *buffer = NULL);
+
+    virtual std::vector <char> &GetData ();
+
+    virtual unsigned int GetSize ();
+    virtual void GetCharsRange (unsigned int start, unsigned int count, TCHAR buffer []);
+    virtual void ReplaceCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, TCHAR replacement []);
+
+    virtual ~CVector8BitCharBuffer ();
+};

@@ -17,9 +17,9 @@ END_MESSAGE_MAP()
 // CEditorDocument construction/destruction
 
 CEditorDocument::CEditorDocument () : 
-    undo_manager (), text (char_buffer)
+    undo_manager (), char_buffer (CP_ACP), text (char_buffer)
 {
-    char_buffer.SetUndoManager (&undo_manager);
+    // char_buffer.SetUndoManager (&undo_manager);
     text.SetListener (this);
     text.SetUndoManager (&undo_manager);
 }
@@ -61,35 +61,20 @@ BOOL CEditorDocument::OnOpenDocument (LPCTSTR lpszPathName)
 
     if (!file.Open (lpszPathName, CFile::modeRead | CFile::shareDenyWrite)) return FALSE;
 
-    vector <char> data;
+    unsigned long long l = file.GetLength ();
 
-    char buffer [65536];
-    unsigned int l;
-    unsigned int pos = 0;
-    while ((l = file.Read (buffer, 65536)) > 0)
-    {
-        data.resize (pos + l);
-        memcpy (&data [pos], buffer, l);
-        pos += l;
-    }
+    vector <char> &data = char_buffer.GetData ();
+    unsigned int old_size = data.size ();
+    data.resize (l);
+
+    if (l > 0)
+        file.Read (&data [0], l);
 
     file.Close ();
 
-    if (data.size () > 0)
-    {
-        int s = MultiByteToWideChar (CP_ACP, 0, &data [0], data.size (), NULL, 0);
-        vector <TCHAR> unicode;
-
-        if (s > 0)
-        {
-            unicode.resize (s);
-            MultiByteToWideChar (CP_ACP, 0, &data [0], data.size (), &unicode [0], s);
-        }
-
-        char_buffer.ReplaceCharsRange (0, char_buffer.GetSize (), s, &unicode [0]);
-    }
-
     SetModifiedFlag (FALSE);
+
+    text.OnChange (0, old_size, data.size ());
 }
 
 BOOL CEditorDocument::OnSaveDocument (LPCTSTR lpszPathName)

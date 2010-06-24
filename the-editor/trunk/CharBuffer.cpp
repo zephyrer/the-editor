@@ -134,3 +134,77 @@ CVectorCharBuffer::~CVectorCharBuffer ()
 }
 
 #pragma endregion
+
+#pragma region CVector8BitCharBuffer
+
+CVector8BitCharBuffer::CVector8BitCharBuffer (unsigned int code_page, unsigned int count, char *buffer) : 
+    undo_manager (NULL), code_page (code_page)
+{
+    ASSERT (count == 0 || buffer != NULL);
+
+#ifdef DEBUG
+    CPINFOEX info;
+
+    BOOL status = GetCPInfoEx (code_page, 0, &info);
+
+    ASSERT (status);
+    ASSERT (info.MaxCharSize == 1);
+#endif
+
+    if (count > 0)
+    {
+        data.resize (count);
+        memcpy (&data [0], buffer, count);
+    }
+}
+
+std::vector <char> &CVector8BitCharBuffer::GetData ()
+{
+    return data;
+}
+
+unsigned int CVector8BitCharBuffer::GetSize ()
+{
+    return data.size ();
+}
+
+void CVector8BitCharBuffer::GetCharsRange (unsigned int start, unsigned int count, TCHAR buffer [])
+{
+    ASSERT (start <= data.size ());
+    ASSERT (start + count <= data.size ());
+
+    if (count > 0)
+    {
+        int c = MultiByteToWideChar (code_page, 0, &data [start], count, buffer, count);
+
+        ASSERT (c == count);
+    }
+}
+
+void CVector8BitCharBuffer::ReplaceCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, TCHAR replacement [])
+{
+    ASSERT (start <= data.size ());
+    ASSERT (start + count <= data.size ());
+    ASSERT (replacement_length == 0 || replacement != NULL);
+
+    if (count > replacement_length)
+        data.erase (data.begin () + start + replacement_length, data.begin () + start + count);
+    else if (count < replacement_length)
+        data.insert (data.begin () + start + count, replacement_length - count, 0);
+
+    if (replacement_length > 0)
+    {
+        int c = WideCharToMultiByte (code_page, 0, replacement, replacement_length, &data [start], replacement_length, "?", NULL);
+
+        ASSERT (c == replacement_length);
+    }
+
+    FireOnChange (start, count, replacement_length);
+}
+
+CVector8BitCharBuffer::~CVector8BitCharBuffer ()
+{
+    // Do nothing
+}
+
+#pragma endregion
