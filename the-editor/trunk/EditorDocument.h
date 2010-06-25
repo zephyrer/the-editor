@@ -5,12 +5,13 @@
 
 struct CDocChange : public CObject
 {
+    bool text_replaced;
     unsigned int first_line;
     unsigned int original_lines_count;
     unsigned int new_lines_count;
 
-    inline CDocChange (unsigned int first_line, unsigned int original_lines_count, unsigned int new_lines_count) :
-        first_line (first_line), original_lines_count (original_lines_count), new_lines_count (new_lines_count)
+    inline CDocChange (bool text_replaced, unsigned int first_line, unsigned int original_lines_count, unsigned int new_lines_count) :
+        text_replaced (text_replaced), first_line (first_line), original_lines_count (original_lines_count), new_lines_count (new_lines_count)
     {
     }
 };
@@ -18,9 +19,9 @@ struct CDocChange : public CObject
 class CEditorDocument : public CDocument, CTextListener
 {
 protected:
-    CVector8BitCharBuffer char_buffer;
-    CCharBufferText text;
-    CUndoManager undo_manager;
+    CUndoManager *undo_manager;
+    CCharBuffer *char_buffer;
+    CText *text;
 
     CEditorDocument ();
     DECLARE_DYNCREATE (CEditorDocument)
@@ -32,7 +33,6 @@ public:
     virtual CUndoManager & GetUndoManager ();
 
     virtual void DeleteContents ();
-    virtual BOOL OnNewDocument ();
     virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
     virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 

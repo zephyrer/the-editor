@@ -17,97 +17,99 @@ END_MESSAGE_MAP()
 // CEditorDocument construction/destruction
 
 CEditorDocument::CEditorDocument () : 
-    undo_manager (), char_buffer (CP_ACP), text (char_buffer)
+    undo_manager ()
 {
-    // char_buffer.SetUndoManager (&undo_manager);
-    text.SetListener (this);
-    text.SetUndoManager (&undo_manager);
+    CUndoManager *um = new CUndoManager ();
+    CVectorCharBuffer *cb = new CVectorCharBuffer (CP_UTF8);
+    cb->SetUndoManager (um);
+    CCharBufferText *t = new CCharBufferText (*cb);
+    t->SetListener (this);
+    t->SetUndoManager (um);
+
+    undo_manager = um;
+    char_buffer = cb;
+    text = t;
 }
 
 CEditorDocument::~CEditorDocument()
 {
-    // Do nothing
+    if (text != NULL) delete text;
+    if (char_buffer != NULL) delete char_buffer;
+    if (undo_manager != NULL) delete undo_manager;
 }
 
 CText & CEditorDocument::GetText ()
 {
-    return text;
+    ASSERT (text != NULL);
+
+    return *text;
 }
 
 CUndoManager & CEditorDocument::GetUndoManager ()
 {
-    return undo_manager;
+    ASSERT (undo_manager != NULL);
+
+    return *undo_manager;
 }
 
 void CEditorDocument::DeleteContents ()
 {
-    char_buffer.ReplaceCharsRange (0, char_buffer.GetSize (), 0, NULL);
-    undo_manager.ClearUndoHistory ();
-}
+    CUndoManager *um = new CUndoManager ();
+    CVectorCharBuffer *cb = new CVectorCharBuffer (CP_UTF8);
+    cb->SetUndoManager (um);
+    CCharBufferText *t = new CCharBufferText (*cb);
+    t->SetListener (this);
+    t->SetUndoManager (um);
 
-BOOL CEditorDocument::OnNewDocument()
-{
-    if (!CDocument::OnNewDocument())
-        return FALSE;
+    if (text != NULL) delete text;
+    if (char_buffer != NULL) delete char_buffer;
+    if (undo_manager != NULL) delete undo_manager;
+
+    undo_manager = um;
+    char_buffer = cb;
+    text = t;
 
     SetModifiedFlag (FALSE);
 
-    return TRUE;
+    UpdateAllViews (NULL, 0, &CDocChange (true, 0, 0, 0));
 }
 
 BOOL CEditorDocument::OnOpenDocument (LPCTSTR lpszPathName)
 {
-    CFile file;
+    CUndoManager *um = new CUndoManager ();
 
-    if (!file.Open (lpszPathName, CFile::modeRead | CFile::shareDenyWrite)) return FALSE;
+    CVector8BitCharBuffer *cb = new CVector8BitCharBuffer (CP_ACP);
+    if (!cb->Load (lpszPathName))
+    {
+        delete cb;
+        return FALSE;
+    }
+    cb->SetUndoManager (um);
 
-    unsigned long long l = file.GetLength ();
+    CCharBufferText *t = new CCharBufferText (*cb);
+    t->SetListener (this);
+    t->SetUndoManager (um);
 
-    vector <char> &data = char_buffer.GetData ();
-    unsigned int old_size = data.size ();
-    data.resize (l);
 
-    if (l > 0)
-        file.Read (&data [0], l);
+    if (text != NULL) delete text;
+    if (char_buffer != NULL) delete char_buffer;
+    if (undo_manager != NULL) delete undo_manager;
 
-    file.Close ();
+    undo_manager = um;
+    char_buffer = cb;
+    text = t;
 
     SetModifiedFlag (FALSE);
 
-    text.OnChange (0, old_size, data.size ());
+    UpdateAllViews (NULL, 0, &CDocChange (true, 0, 0, 0));
+
+    return TRUE;
 }
 
 BOOL CEditorDocument::OnSaveDocument (LPCTSTR lpszPathName)
 {
-    unsigned int size = char_buffer.GetSize ();
-
-    vector <char> data;
-
-    if (size > 0)
-    {
-        vector <TCHAR> unicode;
-        unicode.resize (size);
-        char_buffer.GetCharsRange (0, size, &unicode [0]);
-
-        int s = WideCharToMultiByte (CP_ACP, 0, &unicode [0], size, NULL, 0, "?", NULL);
-
-        if (s > 0)
-        {
-            data.resize (s);
-            WideCharToMultiByte (CP_ACP, 0, &unicode [0], size, &data [0], s, "?", NULL);
-        }
-    }
-
-    CFile file;
-
-    if (!file.Open (lpszPathName, CFile::modeWrite | CFile::shareExclusive | CFile::modeCreate)) return FALSE;
-
-    if (data.size () > 0)
-    {
-        file.Write (&data [0], data.size ());
-    }
-
-    file.Close ();
+    if (!((CVector8BitCharBuffer *)char_buffer)->Save (lpszPathName))
+        return FALSE;
 
     SetModifiedFlag (FALSE);
 
@@ -121,7 +123,7 @@ void CEditorDocument::OnChange (
 {
     SetModifiedFlag (TRUE);
 
-    UpdateAllViews (NULL, 0, &CDocChange (start_line, old_end_line - start_line + 1, new_end_line - start_line + 1));
+    UpdateAllViews (NULL, 0, &CDocChange (false, start_line, old_end_line - start_line + 1, new_end_line - start_line + 1));
 }
 
 void CEditorDocument::Serialize(CArchive& ar)

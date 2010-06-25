@@ -27,45 +27,68 @@ public:
     virtual void GetCharsRange (unsigned int start, unsigned int count, TCHAR buffer []) = 0;
     virtual void ReplaceCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, TCHAR replacement []) = 0;
 
+    virtual bool Load (LPCTSTR file_name) = 0;
+    virtual bool Save (LPCTSTR file_name) = 0;
+
     virtual ~CCharBuffer ();
 };
 
-class CVectorCharBuffer : public CCharBuffer
+class CUndoableCharBuffer : public CCharBuffer
 {
 protected:
-    std::vector <TCHAR> data;
     CUndoManager *undo_manager;
 
 public:
-    inline CVectorCharBuffer () : undo_manager (NULL)
+    inline CUndoableCharBuffer () : undo_manager (NULL)
     {
         // Do nothing
     }
 
     virtual void SetUndoManager (CUndoManager *undo_manager);
+};
+
+class CVectorCharBuffer : public CUndoableCharBuffer
+{
+protected:
+    unsigned int code_page;
+    std::vector <TCHAR> *data;
+
+public:
+    inline CVectorCharBuffer (unsigned int code_page) : code_page (code_page), data (NULL)
+    {
+        data = new std::vector <TCHAR> ();
+    }
 
     virtual unsigned int GetSize ();
     virtual void GetCharsRange (unsigned int start, unsigned int count, TCHAR buffer []);
     virtual void ReplaceCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, TCHAR replacement []);
+
+    virtual bool Load (LPCTSTR file_name);
+    virtual bool Save (LPCTSTR file_name);
 
     virtual ~CVectorCharBuffer ();
 };
 
-class CVector8BitCharBuffer : public CCharBuffer
+class CVector8BitCharBuffer : public CUndoableCharBuffer
 {
 protected:
-    std::vector <char> data;
-    CUndoManager *undo_manager;
     unsigned int code_page;
+    std::vector <char> *data;
 
 public:
-    CVector8BitCharBuffer (unsigned int code_page, unsigned int count = 0, char *buffer = NULL);
-
-    virtual std::vector <char> &GetData ();
+    inline CVector8BitCharBuffer (unsigned int code_page) : code_page (code_page), data (NULL)
+    {
+        data = new std::vector <char> ();
+    }
 
     virtual unsigned int GetSize ();
     virtual void GetCharsRange (unsigned int start, unsigned int count, TCHAR buffer []);
+    virtual void Get8BitCharsRange (unsigned int start, unsigned int count, char buffer []);
     virtual void ReplaceCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, TCHAR replacement []);
+    virtual void Replace8BitCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, char replacement []);
+
+    virtual bool Load (LPCTSTR file_name);
+    virtual bool Save (LPCTSTR file_name);
 
     virtual ~CVector8BitCharBuffer ();
 };

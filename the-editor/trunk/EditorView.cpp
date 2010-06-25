@@ -1118,7 +1118,25 @@ void CEditorView::OnUpdate (CView* pSender, LPARAM lHint, CObject* pHint)
     {
         CDocChange &change = *(CDocChange *)pHint;
 
-        if (layout != NULL)
+        if (change.text_replaced)
+        {
+            if (cursor != NULL) delete cursor;
+            if (layout != NULL) delete layout;
+
+            layout = new CTabbedTextEditorLayout (GetDocument ()->GetText ());
+            layout->SetListener (this);
+
+            cursor = new CNormalTextCursor (GetDocument ()->GetText (), *layout, GetDocument ()->GetUndoManager (), clipboard);
+            cursor->SetListener (this);
+
+            editor_control.UpdateScrollBars ();
+            editor_control.EnsureCaretVisible ();
+            editor_control.UpdateCaret ();
+
+            editor_control.Invalidate ();
+            line_numbers_control.Invalidate ();
+        }
+        else if (layout != NULL)
         {
             unsigned int overlap = min (change.original_lines_count, change.new_lines_count);
 
