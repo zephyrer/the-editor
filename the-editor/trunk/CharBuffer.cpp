@@ -195,7 +195,7 @@ bool CVectorCharBuffer::Save (LPCTSTR file_name)
 
 CVectorCharBuffer::~CVectorCharBuffer ()
 {
-    // Do nothing
+    if (data != NULL) delete data;
 }
 
 #pragma endregion
@@ -379,7 +379,7 @@ bool CVector8BitCharBuffer::Save (LPCTSTR file_name)
 
 CVector8BitCharBuffer::~CVector8BitCharBuffer ()
 {
-    // Do nothing
+    if (data != NULL) delete data;
 }
 
 #pragma endregion

@@ -872,6 +872,9 @@ BOOL CEditorView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CEditorView::OnInitialUpdate ()
 {
+    if (layout != NULL) delete layout;
+    if (cursor != NULL) delete cursor;
+
     layout = new CTabbedTextEditorLayout (GetDocument ()->GetText ());
     layout->SetListener (this);
 
