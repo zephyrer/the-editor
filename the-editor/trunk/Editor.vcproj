@@ -246,11 +246,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Release\res\Editor.rc2"
+				RelativePath=".\res\Editor.rc2"
 				>
 			</File>
 			<File
-				RelativePath=".\Release\res\Toolbar.bmp"
+				RelativePath=".\res\Toolbar.bmp"
 				>
 			</File>
 		</Filter>
