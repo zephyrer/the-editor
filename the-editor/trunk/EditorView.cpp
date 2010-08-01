@@ -777,8 +777,7 @@ void CLineNumbersControl::OnPaint ()
             i * view.cell_size.cy + view.padding_top,
             ETO_OPAQUE,
             &CRect (0, i * view.cell_size.cy + view.padding_top, client_rect.right - view.line_numbers_padding_right + 1, (i + 1) * view.cell_size.cy + view.padding_top),
-            temp,
-            _tcslen (temp),
+            temp, _tcslen (temp),
             NULL);
 
         prev_line = tc.line;
