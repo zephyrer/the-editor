@@ -225,7 +225,7 @@ unsigned int CNormalTextCursor::GetFirstNonBlankPosition (unsigned int line)
 {
     ASSERT (line < text.GetLinesCount ());
 
-    TCHAR buffer [256];
+    UNICHAR buffer [256];
 
     unsigned int line_length = text.GetLineLength (line);
     unsigned int position = 0;
@@ -234,7 +234,7 @@ unsigned int CNormalTextCursor::GetFirstNonBlankPosition (unsigned int line)
         if (position % 256 == 0)
             text.GetCharsRange (line, position, min (256, line_length - position), buffer);
 
-        TCHAR ch = buffer [position % 256];
+        UNICHAR ch = buffer [position % 256];
 
         if (!_istspace (ch)) return position;
 
@@ -244,7 +244,7 @@ unsigned int CNormalTextCursor::GetFirstNonBlankPosition (unsigned int line)
     return 0;
 }
 
-bool CNormalTextCursor::IsWordBoundary (TCHAR ch1, TCHAR ch2)
+bool CNormalTextCursor::IsWordBoundary (UNICHAR ch1, UNICHAR ch2)
 {
     if (_istalnum (ch1))
     {
@@ -271,8 +271,8 @@ unsigned int CNormalTextCursor::GetPreviousWordBoundary (unsigned int line, unsi
     unsigned int line_length = text.GetLineLength (line);
     if (start == line_length) return line_length;
 
-    TCHAR buffer [256];
-    TCHAR pch;
+    UNICHAR buffer [256];
+    UNICHAR pch;
 
     for (unsigned int i = 0; i <= start; i++)
     {
@@ -287,7 +287,7 @@ unsigned int CNormalTextCursor::GetPreviousWordBoundary (unsigned int line, unsi
                 position >= 256 ? buffer : &buffer [255 - position]);
         }
 
-        TCHAR ch = buffer [255 - i % 256];
+        UNICHAR ch = buffer [255 - i % 256];
 
         if (i > 0)
         {
@@ -309,8 +309,8 @@ unsigned int CNormalTextCursor::GetNextWordBoundary (unsigned int line, unsigned
     unsigned int line_length = text.GetLineLength (line);
     if (start == line_length) return line_length;
 
-    TCHAR buffer [256];
-    TCHAR pch;
+    UNICHAR buffer [256];
+    UNICHAR pch;
 
     unsigned int c = line_length - start;
 
@@ -327,7 +327,7 @@ unsigned int CNormalTextCursor::GetNextWordBoundary (unsigned int line, unsigned
                 buffer);
         }
 
-        TCHAR ch = buffer [i % 256];
+        UNICHAR ch = buffer [i % 256];
 
         if (i > 0)
         {
@@ -765,7 +765,7 @@ void CNormalTextCursor::OnChange ()
     FireOnChange (first_dirty_row, dirty_row_count, true);
 }
 
-void CNormalTextCursor::InsertChar (TCHAR ch)
+void CNormalTextCursor::InsertChar (UNICHAR ch)
 {
     undo_manager.StartTransaction ();
 
@@ -778,7 +778,7 @@ void CNormalTextCursor::InsertChar (TCHAR ch)
     undo_manager.FinishTransaction ();
 }
 
-void CNormalTextCursor::OverwriteChar (TCHAR ch)
+void CNormalTextCursor::OverwriteChar (UNICHAR ch)
 {
     if (current_position == text.GetLineLength (current_line))
         return;
@@ -928,13 +928,13 @@ bool CNormalTextCursor::Copy ()
 
     unsigned int length = 0;
 
-    TCHAR *unicodetext;
+    UNICHAR *unicodetext;
 
     if (sline == eline)
     {
         length = eposition - sposition;
 
-        unicodetext = new TCHAR [length + 1];
+        unicodetext = new UNICHAR [length + 1];
         text.GetCharsRange (sline, sposition, length, unicodetext);
         unicodetext [length] = 0;
     }
@@ -944,7 +944,7 @@ bool CNormalTextCursor::Copy ()
         for (unsigned int i = sline + 1; i < eline; i++)
             length += text.GetLineLength (i) + 2;
 
-        unicodetext = new TCHAR [length + 1];
+        unicodetext = new UNICHAR [length + 1];
 
         unsigned int n = 0;
         text.GetCharsRange (sline, sposition, text.GetLineLength (sline) - sposition, &unicodetext [n]);
@@ -969,7 +969,10 @@ bool CNormalTextCursor::Copy ()
         unicodetext [length] = 0;
     }
 
-    bool result = clipboard.SetText (unicodetext);
+    TCHAR *b = (TCHAR *)alloca (length * sizeof (TCHAR));
+    for (unsigned int i = 0; i < length; i++)
+        b [i] = unicodetext [i];
+    bool result = clipboard.SetText (b);
 
     delete [] unicodetext;
 
@@ -981,27 +984,33 @@ void CNormalTextCursor::Paste ()
     TCHAR *text = clipboard.GetText ();
     if (text != NULL)
     {
+        unsigned int l = _tcslen (text) + 1;
+        UNICHAR *b = (UNICHAR *)alloca (l * sizeof (UNICHAR));
+        for (unsigned int i = 0; i < l; i++)
+            b [i] = text [i];
+        delete [] text;
+
         undo_manager.StartTransaction ();
 
         DeleteSelection ();
 
         vector <int> length;
-        vector <TCHAR *> characters;
+        vector <UNICHAR *> characters;
 
         unsigned int line_start = 0;
         unsigned int i;
-        for (i = 0; text [i] != 0; i++)
+        for (i = 0; b [i] != 0; i++)
         {
-            if (text [i] == L'\n' || text [i] == L'\r')
+            if (b [i] == L'\n' || b [i] == L'\r')
             {
                 length.push_back (i - line_start);
-                characters.push_back (&text [line_start]);
-                if ((text [i + 1] == L'\n' || text [i + 1] == L'\r') && (text [i + 1] != text [i])) i++;
+                characters.push_back (&b [line_start]);
+                if ((b [i + 1] == L'\n' || b [i + 1] == L'\r') && (b [i + 1] != b [i])) i++;
                 line_start = i + 1;
             }
         }
         length.push_back (i - line_start);
-        characters.push_back (&text [line_start]);
+        characters.push_back (&b [line_start]);
 
         unsigned int line = current_line;
 
@@ -1014,7 +1023,7 @@ void CNormalTextCursor::Paste ()
             line++;
 
             unsigned int *pl = new unsigned int [cnt - 2];
-            TCHAR **pc = new TCHAR * [cnt - 2];
+            UNICHAR **pc = new UNICHAR * [cnt - 2];
             for (i = 0; i < cnt - 2; i++)
             {
                 pl [i] = length [i + 1];
@@ -1032,8 +1041,6 @@ void CNormalTextCursor::Paste ()
         else MoveToLinePosition (line, current_position + length [0], false);
 
         undo_manager.FinishTransaction ();
-
-        delete [] text;
     }
 }
 

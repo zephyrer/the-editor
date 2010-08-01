@@ -58,8 +58,8 @@ public:
     virtual void SelectAll () = 0;
     virtual void OnChange () = 0;
 
-    virtual void InsertChar (TCHAR ch) = 0;
-    virtual void OverwriteChar (TCHAR ch) = 0;
+    virtual void InsertChar (UNICHAR ch) = 0;
+    virtual void OverwriteChar (UNICHAR ch) = 0;
     virtual void Backspace () = 0;
     virtual void Del () = 0;
     virtual void WordBackspace () = 0;
@@ -98,7 +98,7 @@ protected:
     virtual void MoveToLinePosition (unsigned int line, unsigned int position, bool selecting);
     virtual void MoveToLinePosition (unsigned int line, unsigned int position, unsigned int aline, unsigned int aposition);
     virtual unsigned int GetFirstNonBlankPosition (unsigned int line);
-    virtual bool IsWordBoundary (TCHAR ch1, TCHAR ch2);
+    virtual bool IsWordBoundary (UNICHAR ch1, UNICHAR ch2);
     virtual unsigned int GetPreviousWordBoundary (unsigned int line, unsigned int start);
     virtual unsigned int GetNextWordBoundary (unsigned int line, unsigned int start);
 
@@ -151,8 +151,8 @@ public:
     virtual void SelectAll ();
     virtual void OnChange ();
 
-    virtual void InsertChar (TCHAR ch);
-    virtual void OverwriteChar (TCHAR ch);
+    virtual void InsertChar (UNICHAR ch);
+    virtual void OverwriteChar (UNICHAR ch);
     virtual void Backspace ();
     virtual void Del ();
     virtual void WordBackspace ();

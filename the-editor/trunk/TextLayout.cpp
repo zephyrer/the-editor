@@ -252,7 +252,7 @@ void CSimpleTextEditorLayout::RenderRow (unsigned int row, unsigned int start_co
 
     unsigned int line_length = text.GetLineLength (row);
     unsigned int mc = min (count, line_length - start_column);
-    TCHAR *temp = (TCHAR *)alloca (mc * sizeof (TCHAR));
+    UNICHAR *temp = (UNICHAR *)alloca (mc * sizeof (UNICHAR));
 
     for (unsigned int c = 0; c < mc; c++)
     {
@@ -299,7 +299,7 @@ unsigned int CTabbedTextEditorLayout::CalculateRowWidth (unsigned int row)
 
     int line_length = text.GetLineLength (row);
 
-    TCHAR *temp = (TCHAR *)alloca (line_length * sizeof (TCHAR));
+    UNICHAR *temp = (UNICHAR *)alloca (line_length * sizeof (UNICHAR));
 
     text.GetCharsRange (row, 0, line_length, temp);
 
@@ -327,7 +327,7 @@ void CTabbedTextEditorLayout::RenderRow (unsigned int row, unsigned int start_co
     unsigned int line_length = text.GetLineLength (line);
     unsigned int mc = min (start_column + count, line_length);
 
-    TCHAR *temp = (TCHAR *)alloca (mc * sizeof (TCHAR));
+    UNICHAR *temp = (UNICHAR *)alloca (mc * sizeof (UNICHAR));
     text.GetCharsRange (row, 0, mc, temp);
 
     unsigned int column = 0;
@@ -426,7 +426,7 @@ void CTabbedTextEditorLayout::GetCellByLinePosition (unsigned int line, unsigned
 
     unsigned int mp = min (position + 1, text.GetLineLength (line));
 
-    TCHAR *temp = (TCHAR *)alloca (mp * sizeof (TCHAR));
+    UNICHAR *temp = (UNICHAR *)alloca (mp * sizeof (UNICHAR));
     text.GetCharsRange (line, 0, mp, temp);
 
     int column = 0;
@@ -449,7 +449,7 @@ void CTabbedTextEditorLayout::GetCellByLinePosition (unsigned int line, unsigned
     }
     else
     {
-        TCHAR ch = temp [position];
+        UNICHAR ch = temp [position];
 
         if (ch != L'\t')
         {

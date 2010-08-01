@@ -53,7 +53,7 @@ protected:
     unsigned int start;
     unsigned int old_count;
     unsigned int new_count;
-    TCHAR *characters;
+    UNICHAR *characters;
 
 public:
     inline CVectorCharBufferChangeAction (
@@ -61,12 +61,12 @@ public:
         unsigned int start,
         unsigned int old_count,
         unsigned int new_count,
-        TCHAR *characters) : buffer (buffer), start (start), old_count (old_count), new_count (new_count)
+        UNICHAR *characters) : buffer (buffer), start (start), old_count (old_count), new_count (new_count)
     {
         if (old_count > 0)
         {
-            CVectorCharBufferChangeAction::characters = new TCHAR [old_count];
-            memcpy (CVectorCharBufferChangeAction::characters, characters, old_count * sizeof (TCHAR));
+            CVectorCharBufferChangeAction::characters = new UNICHAR [old_count];
+            memcpy (CVectorCharBufferChangeAction::characters, characters, old_count * sizeof (UNICHAR));
         }
         else
         {
@@ -93,7 +93,7 @@ unsigned int CVectorCharBuffer::GetSize ()
     return (unsigned int)data->size ();
 }
 
-void CVectorCharBuffer::GetCharsRange (unsigned int start, unsigned int count, TCHAR buffer [])
+void CVectorCharBuffer::GetCharsRange (unsigned int start, unsigned int count, UNICHAR buffer [])
 {
     ASSERT (data != NULL);
     ASSERT (start <= data->size ());
@@ -101,10 +101,10 @@ void CVectorCharBuffer::GetCharsRange (unsigned int start, unsigned int count, T
     ASSERT (count == 0 || buffer != NULL);
 
     if (count > 0)
-        memcpy (buffer, &((*data) [start]), count * sizeof (TCHAR));
+        memcpy (buffer, &((*data) [start]), count * sizeof (UNICHAR));
 }
 
-void CVectorCharBuffer::ReplaceCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, TCHAR replacement [])
+void CVectorCharBuffer::ReplaceCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, UNICHAR replacement [])
 {
     ASSERT (data != NULL);
     ASSERT (start <= data->size ());
@@ -113,11 +113,11 @@ void CVectorCharBuffer::ReplaceCharsRange (unsigned int start, unsigned int coun
 
     bool undo = undo_manager != NULL && undo_manager->IsWithinTransaction ();
 
-    TCHAR *characters = NULL;
+    UNICHAR *characters = NULL;
     if (undo && count > 0)
     {
-        characters = new TCHAR [count];
-        memcpy (characters, &(*data) [start], count * sizeof (TCHAR));
+        characters = new UNICHAR [count];
+        memcpy (characters, &(*data) [start], count * sizeof (UNICHAR));
     }
 
     if (count > replacement_length)
@@ -126,7 +126,7 @@ void CVectorCharBuffer::ReplaceCharsRange (unsigned int start, unsigned int coun
         data->insert (data->begin () + start + count, replacement_length - count, 0);
 
     if (replacement_length > 0)
-        memcpy (&(*data) [start], replacement, replacement_length * sizeof (TCHAR));
+        memcpy (&(*data) [start], replacement, replacement_length * sizeof (UNICHAR));
 
     if (undo) undo_manager->AddAction (new CVectorCharBufferChangeAction (*this, start, count, replacement_length, characters));
 
@@ -137,6 +137,7 @@ void CVectorCharBuffer::ReplaceCharsRange (unsigned int start, unsigned int coun
 
 bool CVectorCharBuffer::Load (LPCTSTR file_name)
 {
+    /*
     ASSERT (data != NULL);
     ASSERT (file_name != NULL);
 
@@ -146,7 +147,7 @@ bool CVectorCharBuffer::Load (LPCTSTR file_name)
         return false;
     else
     {
-        std::vector <TCHAR> *ud = new std::vector <TCHAR> ();
+        std::vector <UNICHAR> *ud = new std::vector <UNICHAR> ();
 
         if (d.size () > 0)
         {
@@ -169,10 +170,14 @@ bool CVectorCharBuffer::Load (LPCTSTR file_name)
 
         return true;
     }
+    */
+
+    return true;
 }
 
 bool CVectorCharBuffer::Save (LPCTSTR file_name)
 {
+    /*
     ASSERT (data != NULL);
     ASSERT (file_name != NULL);
 
@@ -191,6 +196,9 @@ bool CVectorCharBuffer::Save (LPCTSTR file_name)
     }
 
     return CFileHelper::SaveFile (file_name, d);
+    */
+
+    return true;
 }
 
 CVectorCharBuffer::~CVectorCharBuffer ()
@@ -249,7 +257,7 @@ unsigned int CVector8BitCharBuffer::GetSize ()
     return (unsigned int)data->size ();
 }
 
-void CVector8BitCharBuffer::GetCharsRange (unsigned int start, unsigned int count, TCHAR buffer [])
+void CVector8BitCharBuffer::GetCharsRange (unsigned int start, unsigned int count, UNICHAR buffer [])
 {
     ASSERT (data != NULL);
     ASSERT (start <= data->size ());
@@ -257,9 +265,13 @@ void CVector8BitCharBuffer::GetCharsRange (unsigned int start, unsigned int coun
 
     if (count > 0)
     {
-        int c = MultiByteToWideChar (code_page, 0, &(*data) [start], count, buffer, count);
+        TCHAR * b = (TCHAR *)alloca (count * sizeof (TCHAR));
 
+        int c = MultiByteToWideChar (code_page, 0, &(*data) [start], count, b, count);
         ASSERT (c == count);
+
+        for (unsigned int i = 0; i < count; i++)
+            buffer [i] = b [i];
     }
 }
 
@@ -273,7 +285,7 @@ void CVector8BitCharBuffer::Get8BitCharsRange (unsigned int start, unsigned int 
         memcpy (buffer, &(*data) [start], count * sizeof (char));
 }
 
-void CVector8BitCharBuffer::ReplaceCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, TCHAR replacement [])
+void CVector8BitCharBuffer::ReplaceCharsRange (unsigned int start, unsigned int count, unsigned int replacement_length, UNICHAR replacement [])
 {
     ASSERT (data != NULL);
     ASSERT (start <= data->size ());
@@ -296,7 +308,11 @@ void CVector8BitCharBuffer::ReplaceCharsRange (unsigned int start, unsigned int 
 
     if (replacement_length > 0)
     {
-        int c = WideCharToMultiByte (code_page, 0, replacement, replacement_length, &(*data) [start], replacement_length, "?", NULL);
+        TCHAR *b = (TCHAR *)alloca (replacement_length * sizeof (TCHAR));
+        for (unsigned int i = 0; i < replacement_length; i++)
+            b [i] = replacement [i];
+
+        int c = WideCharToMultiByte (code_page, 0, b, replacement_length, &(*data) [start], replacement_length, "?", NULL);
 
         ASSERT (c == replacement_length);
     }
