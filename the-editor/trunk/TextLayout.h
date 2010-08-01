@@ -19,7 +19,7 @@
 struct TEXTCELL
 {
     unsigned int flags;
-    TCHAR character;
+    UNICHAR character;
     unsigned int line;
     unsigned int position;
     unsigned int row;

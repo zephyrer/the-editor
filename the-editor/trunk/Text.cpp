@@ -111,16 +111,16 @@ void CCharBufferText::SplitIntoLines (unsigned int start, unsigned int count, st
     ASSERT (starts.size () == 0);
     ASSERT (lengths.size () == 0);
 
-    TCHAR buffer [65536];
+    UNICHAR buffer [65536];
 
     unsigned int ls = 0;
-    TCHAR pch = 0;
+    UNICHAR pch = 0;
     for (unsigned int i = 0; i < count; i++)
     {
         if (i % 65536 == 0)
             data.GetCharsRange (start + i, min (65536, count - i), buffer);
 
-        TCHAR ch = buffer [i % 65536];
+        UNICHAR ch = buffer [i % 65536];
         if (ch == L'\n' || ch == L'\r')
         {
             if (pch == 0 || pch == ch)
@@ -186,19 +186,19 @@ unsigned int CCharBufferText::GetLineLength (unsigned int line)
     return line_length [line];
 }
 
-TCHAR CCharBufferText::GetCharAt (unsigned int line, unsigned int position)
+UNICHAR CCharBufferText::GetCharAt (unsigned int line, unsigned int position)
 {
     ASSERT (line < line_length.size ());
     ASSERT (position < line_length [line]);
 
-    TCHAR ch;
+    UNICHAR ch;
 
     data.GetCharsRange (line_start [line] + position, 1, &ch);
 
     return ch;
 }
 
-void CCharBufferText::GetCharsRange (unsigned int line, unsigned int start_position, unsigned int count, TCHAR buffer [])
+void CCharBufferText::GetCharsRange (unsigned int line, unsigned int start_position, unsigned int count, UNICHAR buffer [])
 {
     ASSERT (line < line_length.size ());
     ASSERT (start_position <= line_length [line]);
@@ -208,7 +208,7 @@ void CCharBufferText::GetCharsRange (unsigned int line, unsigned int start_posit
     data.GetCharsRange (line_start [line] + start_position, count, buffer);
 }
 
-void CCharBufferText::InsertCharAt (unsigned int line, unsigned int position, TCHAR character)
+void CCharBufferText::InsertCharAt (unsigned int line, unsigned int position, UNICHAR character)
 {
     ASSERT (line < line_length.size ());
     ASSERT (position <= line_length [line]);
@@ -216,7 +216,7 @@ void CCharBufferText::InsertCharAt (unsigned int line, unsigned int position, TC
     data.ReplaceCharsRange (line_start [line] + position, 0, 1, &character);
 }
 
-void CCharBufferText::SetCharAt (unsigned int line, unsigned int position, TCHAR character)
+void CCharBufferText::SetCharAt (unsigned int line, unsigned int position, UNICHAR character)
 {
     ASSERT (line < line_length.size ());
     ASSERT (position < line_length [line]);
@@ -232,7 +232,7 @@ void CCharBufferText::RemoveCharAt (unsigned int line, unsigned int position)
     data.ReplaceCharsRange (line_start [line] + position, 1, 0, NULL);
 }
 
-void CCharBufferText::ReplaceCharsRange (unsigned int line, unsigned int start_position, unsigned int count, unsigned int replacement_length, TCHAR replacement [])
+void CCharBufferText::ReplaceCharsRange (unsigned int line, unsigned int start_position, unsigned int count, unsigned int replacement_length, UNICHAR replacement [])
 {
     ASSERT (line < line_length.size ());
     ASSERT (start_position <= line_length [line]);
@@ -244,10 +244,12 @@ void CCharBufferText::ReplaceCharsRange (unsigned int line, unsigned int start_p
 
 void CCharBufferText::BreakLineAt (unsigned int line, unsigned int position)
 {
+    static UNICHAR EOL [] = {'\r', '\n'};
+
     ASSERT (line < line_length.size ());
     ASSERT (position <= line_length [line]);
 
-    data.ReplaceCharsRange (line_start [line] + position, 0, 2, L"\r\n");
+    data.ReplaceCharsRange (line_start [line] + position, 0, 2, EOL);
 }
 
 void CCharBufferText::JoinLines (unsigned int line)
@@ -259,7 +261,7 @@ void CCharBufferText::JoinLines (unsigned int line)
     data.ReplaceCharsRange (line_start [line + 1] - delta, delta, 0, NULL);
 }
 
-void CCharBufferText::InsertLineAt (unsigned int line, unsigned int length, TCHAR characters [])
+void CCharBufferText::InsertLineAt (unsigned int line, unsigned int length, UNICHAR characters [])
 {
     ASSERT (line <= line_length.size () - 1);
 
@@ -273,8 +275,10 @@ void CCharBufferText::RemoveLineAt (unsigned int line)
     RemoveLinesAt (line, 1);
 }
 
-void CCharBufferText::InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], TCHAR *characters [])
+void CCharBufferText::InsertLinesAt (unsigned int line, unsigned int count, unsigned int length [], UNICHAR *characters [])
 {
+    static UNICHAR EOL [] = {'\r', '\n'};
+
     ASSERT (line <= GetLinesCount ());
     ASSERT (count == 0 || length != NULL);
     ASSERT (count == 0 || characters != NULL);
@@ -283,16 +287,16 @@ void CCharBufferText::InsertLinesAt (unsigned int line, unsigned int count, unsi
     for (unsigned int i = 0; i < count; i++)
         l += length [i] + 2;
 
-    TCHAR *buffer = new TCHAR [l];
+    UNICHAR *buffer = new UNICHAR [l];
 
     if (line < lines_count)
     {
         unsigned int pos = 0;
         for (unsigned int i = 0; i < count; i++)
         {
-            memcpy (&buffer [pos], characters [i], length [i] * sizeof (TCHAR));
+            memcpy (&buffer [pos], characters [i], length [i] * sizeof (UNICHAR));
             pos += length [i];
-            memcpy (&buffer [pos], L"\r\n", 2 * sizeof (TCHAR));
+            memcpy (&buffer [pos], EOL, 2 * sizeof (UNICHAR));
             pos += 2;
         }
 
@@ -303,9 +307,9 @@ void CCharBufferText::InsertLinesAt (unsigned int line, unsigned int count, unsi
         unsigned int pos = 0;
         for (unsigned int i = 0; i < count; i++)
         {
-            memcpy (&buffer [pos], L"\r\n", 2 * sizeof (TCHAR));
+            memcpy (&buffer [pos], EOL, 2 * sizeof (UNICHAR));
             pos += 2;
-            memcpy (&buffer [pos], characters [i], length [i] * sizeof (TCHAR));
+            memcpy (&buffer [pos], characters [i], length [i] * sizeof (UNICHAR));
             pos += length [i];
         }
 

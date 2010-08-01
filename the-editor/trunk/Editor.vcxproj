@@ -117,6 +117,7 @@
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="EditorDocument.cpp" />
     <ClCompile Include="EditorView.cpp" />
+    <ClCompile Include="FileHelper.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -134,6 +135,7 @@
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorDocument.h" />
     <ClInclude Include="EditorView.h" />
+    <ClInclude Include="FileHelper.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="TextCursor.h" />
