@@ -523,6 +523,9 @@
     <ClCompile Include="model.c" />
     <ClCompile Include="xalloc.c" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="CHANGELOG.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
