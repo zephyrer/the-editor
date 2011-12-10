@@ -1,0 +1,1 @@
+- Basic editing implemented (no mouse, no cut and paste).
