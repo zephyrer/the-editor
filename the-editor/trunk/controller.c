@@ -324,45 +324,40 @@ extern void controller_request_data (controller_t *controller, int start_row, in
     {
         model_coord_t line_length = model_get_line_length (controller->model, line);
 
+        int i = 0;
+
         if (start_column < line_length)
         {
             int count = min (line_length, end_column) - start_column;
-            int i;
 
             model_get_chars_range (controller->model, line, start_column, start_column + count, chars);
-            for (i = 0; i < count; i++)
+            for (; i < count; i++)
             {
-                *bp++ = chars [i];
-                *sp++ = controller_is_selected (controller, line, start_column + i) ? ECS_SELECTED : ECS_NORMAL;
-            }
-
-            for (i = count; i < width; i++)
-            {
-                *bp++ = ' ';
-
-				if (i + start_column != line_length)
-		            *sp++ = ECS_NONE;
+				if (chars [i] != ' ')
+				{
+					*bp++ = chars [i];
+					*sp++ = controller_is_selected (controller, line, start_column + i) ? ECS_SELECTED : ECS_NORMAL;
+				}
 				else
 				{
-		            *sp++ = controller_is_selected (controller, line, line_length) ? ECS_SELECTED : ECS_NORMAL;
+					*bp++ = 0xB7;
+					*sp++ = controller_is_selected (controller, line, start_column + i) ? ECS_SELECTED_WHITESPACE : ECS_WHITESPACE;
 				}
             }
-        }
-        else
+		}
+
+        for (; i < width; i++)
         {
-            int i;
-
-            for (i = 0; i < width; i++)
-            {
-	            *bp++ = ' ';
-
-				if (i + start_column != line_length)
-		            *sp++ = ECS_NONE;
-				else
-				{
-		            *sp++ = controller_is_selected (controller, line, line_length) ? ECS_SELECTED : ECS_NORMAL;
-				}
-            }
+			if (i + start_column != line_length)
+			{
+				*bp++ = '\0';
+		        *sp++ = ECS_NONE;
+			}
+			else
+			{
+				*bp++ = 0xB6;
+				*sp++ = controller_is_selected (controller, line, line_length) ? ECS_SELECTED_WHITESPACE : ECS_WHITESPACE;
+			}
         }
     }
 
