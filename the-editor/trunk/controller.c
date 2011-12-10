@@ -339,7 +339,13 @@ extern void controller_request_data (controller_t *controller, int start_row, in
             for (i = count; i < width; i++)
             {
                 *bp++ = ' ';
-                *sp++ = ECS_NONE;
+
+				if (i + start_column != line_length)
+		            *sp++ = ECS_NONE;
+				else
+				{
+		            *sp++ = controller_is_selected (controller, line, line_length) ? ECS_SELECTED : ECS_NORMAL;
+				}
             }
         }
         else
@@ -348,8 +354,14 @@ extern void controller_request_data (controller_t *controller, int start_row, in
 
             for (i = 0; i < width; i++)
             {
-                *bp++ = ' ';
-                *sp++ = ECS_NONE;
+	            *bp++ = ' ';
+
+				if (i + start_column != line_length)
+		            *sp++ = ECS_NONE;
+				else
+				{
+		            *sp++ = controller_is_selected (controller, line, line_length) ? ECS_SELECTED : ECS_NORMAL;
+				}
             }
         }
     }
