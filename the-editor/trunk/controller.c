@@ -195,6 +195,10 @@ static void controller_replace_range (controller_t *controller,
         controller_update_max_line_length (controller);
 
 	controller_move_cursor (controller, new_cursor_line, new_cursor_position, FALSE);
+
+    controller_update_view (controller);
+
+    InvalidateRect (controller->view, NULL, FALSE);
 }
 
 static int controller_get_selection_direction (controller_t * controller)
