@@ -141,6 +141,19 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
     extra->row_offsets [row] = row_offset;
     row++;
     col_count = max (col_count, col);
+    row_offset = extra->text_length;
+
+    if (state != 0)
+    {
+        col = 0;
+        ensure_row_capacity (extra, (row + 1) * sizeof (int));
+        extra->row_offsets [row] = row_offset;
+        row++;
+        col_count = max (col_count, col);
+    }
+
+    col_count = max (col_count, col + 1);
+
     extra->column_count = col_count;
     extra->row_count = row;
 

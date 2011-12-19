@@ -14,7 +14,7 @@ BOOL editorctl_offset_to_row (HWND hwnd, int offset, int *row)
     {
         *row = a;
     }
-    else if (extra->row_offsets [b] == offset)
+    else if (extra->row_offsets [b] <= offset)
     {
         *row = b;
     }
