@@ -226,6 +226,7 @@
   <ItemGroup>
     <ClCompile Include="editorctl\editorctl_create_whitespace_icons.c" />
     <ClCompile Include="editorctl\editorctl_get_next_char.c" />
+    <ClCompile Include="editorctl\editorctl_get_prev_char.c" />
     <ClCompile Include="editorctl\editorctl_offset_to_rc.c" />
     <ClCompile Include="editorctl\editorctl_offset_to_row.c" />
     <ClCompile Include="editorctl\editorctl_on_char.c" />
