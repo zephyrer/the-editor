@@ -1,5 +1,20 @@
 #include "editorctl.h"
 
+static BOOL is_eol (EDITORCTL_EXTRA *extra, int offset)
+{
+    char *ptr;
+
+    if (offset < extra->text_length)
+    {
+        EDITORCTL_UNICODE_CHAR ch;
+
+        ptr = extra->text + offset;
+        ch = editorctl_get_next_char (&ptr);
+        return ch == '\r' || ch == '\n';
+    }
+    else return TRUE;
+}
+
 static BOOL insert (HWND hwnd, EDITORCTL_EXTRA *extra, char *buffer, int buffer_length, BOOL overwrite)
 {
     int start_offset;
@@ -12,12 +27,9 @@ static BOOL insert (HWND hwnd, EDITORCTL_EXTRA *extra, char *buffer, int buffer_
     }
     else
     {
-        int line;
-
         start_offset = extra->caret_offset;
 
-        if (!editorctl_offset_to_line (hwnd, start_offset, &line)) goto error;
-        if (overwrite && start_offset < extra->line_offsets [line] + extra->line_lengths [line])
+        if (overwrite && !is_eol (extra, start_offset))
         {
             char *ptr;
 

@@ -13,9 +13,6 @@
     <ClCompile Include="editorctl\editorctl_wnd_proc.c">
       <Filter>editorctl</Filter>
     </ClCompile>
-    <ClCompile Include="editorctl\editorctl_offset_to_line.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
     <ClCompile Include="editorctl\editorctl_offset_to_rc.c">
       <Filter>editorctl</Filter>
     </ClCompile>
@@ -68,6 +65,9 @@
       <Filter>editorctl</Filter>
     </ClCompile>
     <ClCompile Include="editorctl\editorctl_update_scroll_range.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_offset_to_row.c">
       <Filter>editorctl</Filter>
     </ClCompile>
   </ItemGroup>
