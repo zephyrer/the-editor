@@ -7,6 +7,8 @@ typedef struct tagMAINWND_EXTRA
 {
     HANDLE heap;
 
+    HFONT font;
+
     HWND editor;
     HWND status_bar;
 } MAINWND_EXTRA;

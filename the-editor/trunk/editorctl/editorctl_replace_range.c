@@ -127,7 +127,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
             if (!ensure_row_capacity (extra, (row + 1) * sizeof (int))) goto error;
             extra->row_offsets [row] = row_offset;
             row++;
-            col_count = max (col_count, col);
+            col_count = max (col_count, col + 1);
             col = 0;
             row_offset = offset;
         }
@@ -140,7 +140,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
     ensure_row_capacity (extra, (row + 1) * sizeof (int));
     extra->row_offsets [row] = row_offset;
     row++;
-    col_count = max (col_count, col);
+    col_count = max (col_count, col + 1);
     row_offset = extra->text_length;
 
     if (state != 0)
@@ -149,10 +149,8 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
         ensure_row_capacity (extra, (row + 1) * sizeof (int));
         extra->row_offsets [row] = row_offset;
         row++;
-        col_count = max (col_count, col);
+        col_count = max (col_count, col + 1);
     }
-
-    col_count = max (col_count, col + 1);
 
     extra->column_count = col_count;
     extra->row_count = row;
