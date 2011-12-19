@@ -78,6 +78,7 @@ BOOL editorctl_offset_to_row (HWND hwnd, int offset, int *row);
 BOOL editorctl_offset_to_rc (HWND hwnd, int offset, int *row, int *col);
 
 EDITORCTL_UNICODE_CHAR editorctl_get_next_char (const char **ptr);
+EDITORCTL_UNICODE_CHAR editorctl_get_prev_char (const char **ptr);
 void editorctl_set_next_char (EDITORCTL_UNICODE_CHAR ch, char **ptr);
 
 
