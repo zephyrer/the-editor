@@ -110,8 +110,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -143,8 +142,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -183,8 +181,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release (static)|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -225,6 +222,7 @@
   <ItemGroup>
     <ClInclude Include="controller.h" />
     <ClInclude Include="editorctl.h" />
+    <ClInclude Include="editorctl\editorctl.h" />
     <ClInclude Include="mainwnd.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="xalloc.h" />
@@ -232,6 +230,27 @@
   <ItemGroup>
     <ClCompile Include="controller.c" />
     <ClCompile Include="editorctl.c" />
+    <ClCompile Include="editorctl\editorctl_get_next_char.c" />
+    <ClCompile Include="editorctl\editorctl_offset_to_rc.c" />
+    <ClCompile Include="editorctl\editorctl_offset_to_line.c" />
+    <ClCompile Include="editorctl\editorctl_on_char.c" />
+    <ClCompile Include="editorctl\editorctl_on_create.c" />
+    <ClCompile Include="editorctl\editorctl_on_destroy.c" />
+    <ClCompile Include="editorctl\editorctl_on_hscroll.c" />
+    <ClCompile Include="editorctl\editorctl_on_killfocus.c" />
+    <ClCompile Include="editorctl\editorctl_on_mousewheel.c" />
+    <ClCompile Include="editorctl\editorctl_on_paint.c" />
+    <ClCompile Include="editorctl\editorctl_on_setfocus.c" />
+    <ClCompile Include="editorctl\editorctl_on_setfont.c" />
+    <ClCompile Include="editorctl\editorctl_on_size.c" />
+    <ClCompile Include="editorctl\editorctl_on_vscroll.c" />
+    <ClCompile Include="editorctl\editorctl_register_class.c" />
+    <ClCompile Include="editorctl\editorctl_replace_range.c" />
+    <ClCompile Include="editorctl\editorctl_scroll_to.c" />
+    <ClCompile Include="editorctl\editorctl_set_next_char.c" />
+    <ClCompile Include="editorctl\editorctl_update_caret_pos.c" />
+    <ClCompile Include="editorctl\editorctl_update_scroll_range.c" />
+    <ClCompile Include="editorctl\editorctl_wnd_proc.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="mainwnd.c" />
     <ClCompile Include="model.c" />
