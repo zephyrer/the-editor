@@ -26,13 +26,14 @@ static WPARAM run_main_loop ()
     return Msg.wParam;
 }
 
+
 static void error (const WCHAR *message)
 {
     TCHAR *message_buffer = NULL;
-	TCHAR code_buffer [12];
+    TCHAR code_buffer [12];
     TCHAR *display_buffer = NULL;
     DWORD error_code = GetLastError(); 
-	size_t buffer_size;
+    size_t buffer_size;
 
     if (!FormatMessage (
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 
@@ -40,25 +41,25 @@ static void error (const WCHAR *message)
         error_code, 
         MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), 
         (TCHAR *)&message_buffer, 0, NULL)) 
-		message_buffer = NULL;
+        message_buffer = NULL;
 
-	_itot_s (error_code, code_buffer, 12, 10);
+    _itot_s (error_code, code_buffer, 12, 10);
 
-	buffer_size = _tcslen (message) + _tcslen (message_buffer) + 40;
-	display_buffer = (TCHAR *)_malloca (sizeof (TCHAR) * (buffer_size));
+    buffer_size = _tcslen (message) + _tcslen (message_buffer) + 40;
+    display_buffer = (TCHAR *)_malloca (sizeof (TCHAR) * (buffer_size));
 
-	_tcscpy_s (display_buffer, buffer_size, message);
-	_tcscat_s (display_buffer, buffer_size, TEXT (":\n("));
-	_tcscat_s (display_buffer, buffer_size, code_buffer);
-	_tcscat_s (display_buffer, buffer_size, TEXT (") "));
-	_tcscat_s (display_buffer, buffer_size, message_buffer == NULL ? TEXT ("") : message_buffer);
+    _tcscpy_s (display_buffer, buffer_size, message);
+    _tcscat_s (display_buffer, buffer_size, TEXT (":\n("));
+    _tcscat_s (display_buffer, buffer_size, code_buffer);
+    _tcscat_s (display_buffer, buffer_size, TEXT (") "));
+    _tcscat_s (display_buffer, buffer_size, message_buffer == NULL ? TEXT ("") : message_buffer);
 
     MessageBox (NULL, (LPCTSTR)display_buffer, TEXT ("Error"), MB_ICONEXCLAMATION | MB_OK);
 
-	if (message_buffer != NULL)
-	    LocalFree (message_buffer);
+    if (message_buffer != NULL)
+        LocalFree (message_buffer);
 
-	_freea (display_buffer);
+    _freea (display_buffer);
     return;
 }
 

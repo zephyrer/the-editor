@@ -9,7 +9,11 @@ LRESULT mainwnd_on_destroy (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     DestroyWindow (extra->status_bar);
     HeapFree (extra->heap, 0, extra);
 
+    PostQuitMessage (0);
+
     return 0;
 error:
+    PostQuitMessage (-1);
+
     return -1;
 }
