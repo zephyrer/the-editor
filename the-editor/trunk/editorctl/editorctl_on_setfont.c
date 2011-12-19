@@ -9,6 +9,7 @@ LRESULT editorctl_on_setfont (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if (extra->font != (HFONT)wParam)
     {
         extra->font = (HFONT)wParam;
+
         if (lParam)
         {
             if (!InvalidateRect (hwnd, NULL, TRUE)) goto error;

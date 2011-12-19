@@ -12,17 +12,6 @@ typedef enum tagCELL_STYLE
     STYLE_WHITESPACE_SELECTED
 } CELL_STYLE;
 
-typedef enum tagWHITESPACE
-{
-    WHITESPACE_SPACE,
-    WHITESPACE_TAB_START,
-    WHITESPACE_TAB_MIDDLE,
-    WHITESPACE_TAB_END,
-    WHITESPACE_TAB,
-    WHITESPACE_CR,
-    WHITESPACE_LF
-} WHITESPACE;
-
 static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int width, EDITORCTL_UNICODE_CHAR chars [], CELL_STYLE styles [])
 {
     int col, end_col, state;
@@ -60,28 +49,28 @@ static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int widt
                 if (ch == ' ')
                 {
                     style = STYLE_WHITESPACE;
-                    ch = WHITESPACE_SPACE;
+                    ch = EDITORCTL_WHITESPACE_SPACE;
                 }
                 else if (ch == '\r')
                 {
                     style = STYLE_WHITESPACE;
-                    ch = WHITESPACE_CR;
+                    ch = EDITORCTL_WHITESPACE_CR;
                 }
                 else if (ch == '\n')
                 {
                     style = STYLE_WHITESPACE;
-                    ch = WHITESPACE_LF;
+                    ch = EDITORCTL_WHITESPACE_LF;
                 }
                 else if (ch == '\t')
                 {
                     style = STYLE_WHITESPACE;
                     if ((col + 1) % extra->tab_width == 0)
                     {
-                        ch = WHITESPACE_TAB;
+                        ch = EDITORCTL_WHITESPACE_TAB;
                     }
                     else
                     {
-                        ch = WHITESPACE_TAB_START;
+                        ch = EDITORCTL_WHITESPACE_TAB_START;
                         state = 2;
                     }
                 }
@@ -99,12 +88,12 @@ static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int widt
             style = STYLE_WHITESPACE;
             if ((col + 1) % extra->tab_width == 0)
             {
-                ch = WHITESPACE_TAB_END;
+                ch = EDITORCTL_WHITESPACE_TAB_END;
                 state = 0;
             }
             else
             {
-                ch = WHITESPACE_TAB_MIDDLE;
+                ch = EDITORCTL_WHITESPACE_TAB_MIDDLE;
             }
             break;
         }
@@ -163,83 +152,29 @@ error:
     return FALSE;
 }
 
-static BOOL paint_whitespace (HDC hdc, RECT *r, const EDITORCTL_UNICODE_CHAR chars [], int count, int w, COLORREF color)
+static BOOL paint_whitespace (EDITORCTL_EXTRA *extra, HDC hdc, int x, int y, const EDITORCTL_UNICODE_CHAR chars [], int count, BOOL selected)
 {
-    int i, h, e;
-    HPEN pen = NULL;
-    HPEN old_pen = NULL;
+    HDC mem_dc = NULL;
+    int i, w, h;
+    HBITMAP old_bitmap = NULL;
 
-    h = r->bottom - r->top;
+    if ((mem_dc = CreateCompatibleDC (hdc)) == NULL) goto error;
+    if (SelectObject (mem_dc, extra->whitespace_icons) == NULL) goto error;
 
-    if ((pen = CreatePen (PS_SOLID, 1, color)) == NULL) goto error;
-    if ((old_pen = SelectObject (hdc, pen)) == NULL) goto error;
-
-    e = min (h / 5, w / 3);
+    w = extra->cell_size.cx;
+    h = extra->cell_size.cy;
 
     for (i = 0; i < count; i++)
     {
-        int x, y;
-
-        x = r->left + i * w;
-        y = r->top;
-
-        switch (chars [i])
-        {
-        case WHITESPACE_SPACE:
-            SetPixel (hdc, x + w / 2, y + h / 2, color);
-            break;
-        case WHITESPACE_TAB:
-            MoveToEx (hdc, x + w * 1 / 5, y + h / 2 - e, NULL);
-            LineTo (hdc, x + w * 1 / 5, y + h / 2 + e + 1);
-            MoveToEx (hdc, x + w * 1 / 5, y + h / 2, NULL);
-            LineTo (hdc, x + w - 1, y + h / 2);
-            LineTo (hdc, x + w - 1 - e - 1, y + h / 2 - e - 1);
-            MoveToEx (hdc, x + w - 1, y + h / 2, NULL);
-            LineTo (hdc, x + w - 1 - e - 1, y + h / 2 + e + 1);
-            break;
-        case WHITESPACE_TAB_START:
-            MoveToEx (hdc, x + w * 1 / 5, y + h / 2 - e, NULL);
-            LineTo (hdc, x + w * 1 / 5, y + h / 2 + e + 1);
-            MoveToEx (hdc, x + w * 1 / 5, y + h / 2, NULL);
-            LineTo (hdc, x + w, y + h / 2);
-            break;
-        case WHITESPACE_TAB_MIDDLE:
-            MoveToEx (hdc, x, y + h / 2, NULL);
-            LineTo (hdc, x + w, y + h / 2);
-            break;
-        case WHITESPACE_TAB_END:
-            MoveToEx (hdc, x, y + h / 2, NULL);
-            LineTo (hdc, x + w - 1, y + h / 2);
-            LineTo (hdc, x + w - 1 - e - 1, y + h / 2 - e - 1);
-            MoveToEx (hdc, x + w - 1, y + h / 2, NULL);
-            LineTo (hdc, x + w - 1 - e - 1, y + h / 2 + e + 1);
-            break;
-        case WHITESPACE_CR:
-            MoveToEx (hdc, x + w * 4 / 5, y + h / 2, NULL);
-            LineTo (hdc, x + w / 5, y + h / 2);
-            LineTo (hdc, x + w / 5 + e + 1, y + h / 2 - e - 1);
-            MoveToEx (hdc, x + w / 5, y + h / 2, NULL);
-            LineTo (hdc, x + w / 5 + e + 1, y + h / 2 + e + 1);
-            break;
-        case WHITESPACE_LF:
-            MoveToEx (hdc, x + w / 2, y + h / 5, NULL);
-            LineTo (hdc, x + w / 2, y + h * 4 / 5);
-            LineTo (hdc, x + w / 2 - e - 1, y + h * 4 / 5 - e - 1);
-            MoveToEx (hdc, x + w / 2, y + h * 4 / 5, NULL);
-            LineTo (hdc, x + w / 2 + e + 1, y + h * 4 / 5 - e - 1);
-            break;
-        }
+        if (!BitBlt (hdc, x + i * w, y, w, h, mem_dc, chars [i] * w, selected ? h : 0, SRCCOPY)) goto error;
     }
 
-    SelectObject (hdc, old_pen);
-    DeleteObject (pen);
+    DeleteDC (mem_dc);
 
     return TRUE;
 error:
-    if (old_pen != NULL)
-        SelectObject (hdc, old_pen);
-    if (pen != NULL)
-        DeleteObject (pen);
+    if (mem_dc != NULL)
+        DeleteDC (mem_dc);
 
     return FALSE;
 }
@@ -266,8 +201,7 @@ static BOOL paint_row (EDITORCTL_EXTRA *extra, HDC hdc, int row, int start_col, 
         break;
     case STYLE_WHITESPACE:
     case STYLE_WHITESPACE_SELECTED:
-        if (!FillRect (hdc, &r, (HBRUSH)((style == STYLE_WHITESPACE ? COLOR_WINDOW : COLOR_HIGHLIGHT) + 1))) goto error;
-        if (!paint_whitespace (hdc, &r, chars, width, extra->cell_size.cx, GetSysColor (COLOR_GRAYTEXT))) goto error;
+        if (!paint_whitespace (extra, hdc, r.left, r.top, chars, width, style != STYLE_WHITESPACE)) goto error;
         break;
     }
 

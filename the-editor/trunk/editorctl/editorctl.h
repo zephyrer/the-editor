@@ -5,11 +5,26 @@
 
 #define EDITORCTL_MAX_CHAR_WIDTH 5
 
+typedef enum tagEDITORCTL_WHITESPACE
+{
+    EDITORCTL_WHITESPACE_SPACE,
+    EDITORCTL_WHITESPACE_TAB_START,
+    EDITORCTL_WHITESPACE_TAB_MIDDLE,
+    EDITORCTL_WHITESPACE_TAB_END,
+    EDITORCTL_WHITESPACE_TAB,
+    EDITORCTL_WHITESPACE_CR,
+    EDITORCTL_WHITESPACE_LF,
+    EDITORCTL_WHITESPACE_WRAP,
+
+    EDITORCTL_WHITESPACE_LAST
+} EDITORCTL_WHITESPACE;
+
 typedef struct tagEDITORCTL_EXTRA
 {
     HANDLE heap;
 
     HFONT font;
+    HBITMAP whitespace_icons;
 
     SIZE cell_size;
     POINT scroll_location;
@@ -50,6 +65,8 @@ LRESULT editorctl_on_mousewheel (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 LRESULT editorctl_on_setfont (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT editorctl_on_char (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+BOOL editorctl_create_whitespace_icons (HWND hwnd);
 
 BOOL editorctl_update_caret_pos (HWND hwnd);
 BOOL editorctl_scroll_to (HWND hwnd, int x, int y);

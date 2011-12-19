@@ -86,6 +86,9 @@
     <ClCompile Include="mainwnd\mainwnd_on_setfocus.c">
       <Filter>mainwnd</Filter>
     </ClCompile>
+    <ClCompile Include="editorctl\editorctl_create_whitespace_icons.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">
