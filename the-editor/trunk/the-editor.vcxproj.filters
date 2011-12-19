@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="controller.c" />
+    <ClCompile Include="editorctl.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="mainwnd.c" />
+    <ClCompile Include="model.c" />
+    <ClCompile Include="xalloc.c" />
+    <ClCompile Include="editorctl\editorctl_get_next_char.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_wnd_proc.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_offset_to_line.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_offset_to_rc.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_char.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_create.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_destroy.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_hscroll.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_killfocus.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_mousewheel.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_paint.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_setfocus.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_setfont.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_size.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_vscroll.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_register_class.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_replace_range.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_scroll_to.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_set_next_char.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_update_caret_pos.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_update_scroll_range.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="controller.h" />
+    <ClInclude Include="editorctl.h" />
+    <ClInclude Include="mainwnd.h" />
+    <ClInclude Include="model.h" />
+    <ClInclude Include="xalloc.h" />
+    <ClInclude Include="editorctl\editorctl.h">
+      <Filter>editorctl</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CHANGELOG.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="editorctl">
+      <UniqueIdentifier>{cb5418a8-4a7e-4800-8583-8984e467d4c0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
