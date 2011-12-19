@@ -10,25 +10,34 @@ BOOL editorctl_offset_to_line (HWND hwnd, int offset, int *line)
     a = 0;
     b = extra->line_count - 1;
 
-    if (extra->line_offsets [a] == offset) return a;
-    if (extra->line_offsets [b] == offset) return b;
-    while (b - a > 1)
-    {
-        int c, c_offset;
+    if (extra->line_offsets [a] == offset)
+	{
+		*line = a;
+	}
+	else if (extra->line_offsets [b] == offset)
+	{
+		*line = b;
+	}
+	else
+	{
+		while (b - a > 1)
+		{
+			int c, c_offset;
         
-        c = (a + b) / 2;
-        c_offset = extra->line_offsets [c];
+			c = (a + b) / 2;
+			c_offset = extra->line_offsets [c];
 
-        if (c_offset == offset)
-        {
-            a = c;
-            break;
-        }
-        else if (c_offset < offset) a = c;
-        else b = c;
-    }
+			if (c_offset == offset)
+			{
+				a = c;
+				break;
+			}
+			else if (c_offset < offset) a = c;
+			else b = c;
+		}
 
-    *line = a;
+		*line = a;
+	}
 
     return TRUE;
 error:
