@@ -18,6 +18,7 @@ typedef struct tagEDITORCTL_EXTRA
 
     int row_count;
     int column_count;
+    int *row_offsets;
 
     int caret_offset;
 
@@ -27,9 +28,6 @@ typedef struct tagEDITORCTL_EXTRA
 
     char *text;
     int text_length;
-    int line_count;
-    int *line_offsets;
-    int *line_lengths;
 
     int anchor_offset;
 } EDITORCTL_EXTRA;
@@ -59,7 +57,7 @@ BOOL editorctl_update_scroll_range (HWND hwnd);
 
 BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buffer, int buffer_length);
 
-BOOL editorctl_offset_to_line (HWND hwnd, int offset, int *line);
+BOOL editorctl_offset_to_row (HWND hwnd, int offset, int *row);
 BOOL editorctl_offset_to_rc (HWND hwnd, int offset, int *row, int *col);
 
 EDITORCTL_UNICODE_CHAR editorctl_get_next_char (const char **ptr);

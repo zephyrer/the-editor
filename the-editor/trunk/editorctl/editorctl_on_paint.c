@@ -20,11 +20,11 @@ static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int widt
     col = 0;
     end_col = start_col + width;
 
-    if (row < extra->line_count)
+    if (row < extra->row_count)
     {
         state = 0;
-        ptr = extra->text + extra->line_offsets [row];
-        end_ptr = ptr + extra->line_lengths [row];
+        ptr = extra->text + extra->row_offsets [row];
+        end_ptr = row < extra->row_count - 1 ? ptr + extra->row_offsets [row + 1] : extra->text + extra->text_length;
     }
     else
         state = 1;
@@ -39,8 +39,8 @@ static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int widt
         case 0: // Before char
             if (ptr >= end_ptr)
             {
-                style = STYLE_WHITESPACE;
-                ch = 0xB6;
+                style = STYLE_NONE;
+                ch = 0;
                 state = 1;
             }
             else
@@ -50,6 +50,16 @@ static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int widt
                 {
                     style = STYLE_WHITESPACE;
                     ch = 0xB7;
+                }
+                else if (ch == '\r')
+                {
+                    style = STYLE_WHITESPACE;
+                    ch = 0x2190;
+                }
+                else if (ch == '\n')
+                {
+                    style = STYLE_WHITESPACE;
+                    ch = 0x2193;
                 }
                 else if (ch == '\t')
                 {
@@ -71,10 +81,11 @@ static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int widt
             }
             break;
         case 1: // After end of line
-            ch = 0;
             style = STYLE_NONE;
+            ch = 0;
             break;
         case 2: // Inside the tab
+            style = STYLE_WHITESPACE;
             if ((col + 1) % extra->tab_width == 0)
             {
                 ch = 0x2192;

@@ -232,7 +232,7 @@
     <ClCompile Include="editorctl.c" />
     <ClCompile Include="editorctl\editorctl_get_next_char.c" />
     <ClCompile Include="editorctl\editorctl_offset_to_rc.c" />
-    <ClCompile Include="editorctl\editorctl_offset_to_line.c" />
+    <ClCompile Include="editorctl\editorctl_offset_to_row.c" />
     <ClCompile Include="editorctl\editorctl_on_char.c" />
     <ClCompile Include="editorctl\editorctl_on_create.c" />
     <ClCompile Include="editorctl\editorctl_on_destroy.c" />

@@ -3,15 +3,15 @@
 BOOL editorctl_offset_to_rc (HWND hwnd, int offset, int *row, int *col)
 {
     EDITORCTL_EXTRA *extra = NULL;
-    int line;
+    int r;
     int c;
     char *ptr, *p;
 
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
 
-    if (!editorctl_offset_to_line (hwnd, offset, &line)) goto error;
+    if (!editorctl_offset_to_row (hwnd, offset, &r)) goto error;
 
-    ptr = extra->text + extra->line_offsets [line];
+    ptr = extra->text + extra->row_offsets [r];
     p = extra->text + offset;
 
     c = 0;
@@ -25,7 +25,7 @@ BOOL editorctl_offset_to_rc (HWND hwnd, int offset, int *row, int *col)
         else c++;
     }
 
-    *row = line;
+    *row = r;
     *col = c;
 
     return TRUE;
