@@ -1,12 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="controller.c" />
-    <ClCompile Include="editorctl.c" />
     <ClCompile Include="main.c" />
-    <ClCompile Include="mainwnd.c" />
-    <ClCompile Include="model.c" />
-    <ClCompile Include="xalloc.c" />
     <ClCompile Include="editorctl\editorctl_get_next_char.c">
       <Filter>editorctl</Filter>
     </ClCompile>
@@ -70,15 +65,34 @@
     <ClCompile Include="editorctl\editorctl_offset_to_row.c">
       <Filter>editorctl</Filter>
     </ClCompile>
+    <ClCompile Include="mainwnd\mainwnd_register_class.c">
+      <Filter>mainwnd</Filter>
+    </ClCompile>
+    <ClCompile Include="mainwnd\mainwnd_wnd_proc.c">
+      <Filter>mainwnd</Filter>
+    </ClCompile>
+    <ClCompile Include="mainwnd\mainwnd_on_create.c">
+      <Filter>mainwnd</Filter>
+    </ClCompile>
+    <ClCompile Include="mainwnd\mainwnd_on_destroy.c">
+      <Filter>mainwnd</Filter>
+    </ClCompile>
+    <ClCompile Include="mainwnd\mainwnd_on_close.c">
+      <Filter>mainwnd</Filter>
+    </ClCompile>
+    <ClCompile Include="mainwnd\mainwnd_on_size.c">
+      <Filter>mainwnd</Filter>
+    </ClCompile>
+    <ClCompile Include="mainwnd\mainwnd_on_setfocus.c">
+      <Filter>mainwnd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="controller.h" />
-    <ClInclude Include="editorctl.h" />
-    <ClInclude Include="mainwnd.h" />
-    <ClInclude Include="model.h" />
-    <ClInclude Include="xalloc.h" />
     <ClInclude Include="editorctl\editorctl.h">
       <Filter>editorctl</Filter>
+    </ClInclude>
+    <ClInclude Include="mainwnd\mainwnd.h">
+      <Filter>mainwnd</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +101,9 @@
   <ItemGroup>
     <Filter Include="editorctl">
       <UniqueIdentifier>{cb5418a8-4a7e-4800-8583-8984e467d4c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mainwnd">
+      <UniqueIdentifier>{a7c00512-74b4-4698-932c-43fe83158590}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

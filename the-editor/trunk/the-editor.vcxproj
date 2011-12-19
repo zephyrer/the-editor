@@ -220,16 +220,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="controller.h" />
-    <ClInclude Include="editorctl.h" />
     <ClInclude Include="editorctl\editorctl.h" />
-    <ClInclude Include="mainwnd.h" />
-    <ClInclude Include="model.h" />
-    <ClInclude Include="xalloc.h" />
+    <ClInclude Include="mainwnd\mainwnd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="controller.c" />
-    <ClCompile Include="editorctl.c" />
     <ClCompile Include="editorctl\editorctl_get_next_char.c" />
     <ClCompile Include="editorctl\editorctl_offset_to_rc.c" />
     <ClCompile Include="editorctl\editorctl_offset_to_row.c" />
@@ -252,9 +246,13 @@
     <ClCompile Include="editorctl\editorctl_update_scroll_range.c" />
     <ClCompile Include="editorctl\editorctl_wnd_proc.c" />
     <ClCompile Include="main.c" />
-    <ClCompile Include="mainwnd.c" />
-    <ClCompile Include="model.c" />
-    <ClCompile Include="xalloc.c" />
+    <ClCompile Include="mainwnd\mainwnd_on_close.c" />
+    <ClCompile Include="mainwnd\mainwnd_on_create.c" />
+    <ClCompile Include="mainwnd\mainwnd_on_destroy.c" />
+    <ClCompile Include="mainwnd\mainwnd_on_setfocus.c" />
+    <ClCompile Include="mainwnd\mainwnd_on_size.c" />
+    <ClCompile Include="mainwnd\mainwnd_register_class.c" />
+    <ClCompile Include="mainwnd\mainwnd_wnd_proc.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CHANGELOG.txt" />
