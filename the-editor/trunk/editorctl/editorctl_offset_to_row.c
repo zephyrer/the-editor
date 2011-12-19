@@ -2,7 +2,7 @@
 
 BOOL editorctl_offset_to_row (HWND hwnd, int offset, int *row)
 {
-    EDITORCTL_EXTRA *extra = NULL;
+    EDITORCTL_EXTRA *extra;
     int a, b;
 
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;

@@ -26,9 +26,9 @@ LRESULT CALLBACK editorctl_wnd_proc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             return editorctl_on_setfont (hwnd, msg, wParam, lParam);
         case WM_CHAR:
             return editorctl_on_char (hwnd, msg, wParam, lParam);
-/*        case WM_KEYDOWN:
+        case WM_KEYDOWN:
             return editorctl_on_keydown (hwnd, msg, wParam, lParam);
-        case ECM_SET_MODEL_SIZE:
+/*        case ECM_SET_MODEL_SIZE:
             return editorctl_on_set_model_size (hwnd, wParam, lParam);
         case ECM_GET_MODEL_SIZE:
             return editorctl_on_get_model_size (hwnd, wParam, lParam);

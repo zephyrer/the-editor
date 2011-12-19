@@ -14,8 +14,8 @@ LRESULT editorctl_on_create (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     extra->heap = heap;
 
-    extra->cell_size.cx = 80;
-    extra->cell_size.cy = 160;
+    extra->cell_size.cx = 8;
+    extra->cell_size.cy = 16;
 
     extra->tab_width = 8;
     extra->new_line = "\r\n";

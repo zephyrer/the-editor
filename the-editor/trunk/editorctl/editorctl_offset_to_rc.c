@@ -2,7 +2,7 @@
 
 BOOL editorctl_offset_to_rc (HWND hwnd, int offset, int *row, int *col)
 {
-    EDITORCTL_EXTRA *extra = NULL;
+    EDITORCTL_EXTRA *extra;
     int r;
     int c;
     char *ptr, *p;

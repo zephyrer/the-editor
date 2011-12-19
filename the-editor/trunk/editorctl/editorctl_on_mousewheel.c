@@ -2,7 +2,7 @@
 
 LRESULT editorctl_on_mousewheel (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    EDITORCTL_EXTRA *extra = NULL;
+    EDITORCTL_EXTRA *extra;
     RECT r;
     int y, h, height;
 
