@@ -2,7 +2,7 @@
 
 BOOL editorctl_scroll_to (HWND hwnd, int x, int y)
 {
-    EDITORCTL_EXTRA *extra = NULL;
+    EDITORCTL_EXTRA *extra;
 
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
 

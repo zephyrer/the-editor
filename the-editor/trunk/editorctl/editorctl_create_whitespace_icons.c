@@ -2,7 +2,7 @@
 
 static BOOL draw_space (HDC hdc, int x, int y, int w, int h)
 {
-    SetPixel (hdc, x + w / 2, y + h / 2, GetSysColor (COLOR_GRAYTEXT));
+    if (SetPixel (hdc, x + w / 2, y + h / 2, GetSysColor (COLOR_GRAYTEXT)) == -1) goto error;
 
     return TRUE;
 error:
@@ -126,7 +126,7 @@ error:
 
 BOOL editorctl_create_whitespace_icons (HWND hwnd)
 {
-    EDITORCTL_EXTRA *extra = NULL;
+    EDITORCTL_EXTRA *extra;
     HDC hdc = NULL, mem_dc = NULL;
     RECT r;
     HPEN pen = NULL, old_pen = NULL;

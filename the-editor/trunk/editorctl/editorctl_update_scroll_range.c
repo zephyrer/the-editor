@@ -2,7 +2,7 @@
 
 BOOL editorctl_update_scroll_range (HWND hwnd)
 {
-    EDITORCTL_EXTRA *extra = NULL;
+    EDITORCTL_EXTRA *extra;
     SCROLLINFO si;
     RECT r;
 

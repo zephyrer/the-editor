@@ -52,7 +52,7 @@ error:
 
 LRESULT editorctl_on_char (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    EDITORCTL_EXTRA *extra = NULL;
+    EDITORCTL_EXTRA *extra;
     char buffer [EDITORCTL_MAX_CHAR_WIDTH];
     char *ptr;
 

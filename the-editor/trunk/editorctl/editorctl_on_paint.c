@@ -274,7 +274,7 @@ error:
 
 LRESULT editorctl_on_paint (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    EDITORCTL_EXTRA *extra = NULL;
+    EDITORCTL_EXTRA *extra;
     PAINTSTRUCT ps;
     HDC hdc = NULL;
     HFONT old_font = NULL;

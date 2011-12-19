@@ -2,7 +2,7 @@
 
 BOOL editorctl_update_caret_pos (HWND hwnd)
 {
-    EDITORCTL_EXTRA *extra = NULL;
+    EDITORCTL_EXTRA *extra;
 
     if (GetFocus () == hwnd)
     {
