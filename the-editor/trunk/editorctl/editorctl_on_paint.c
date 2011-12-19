@@ -24,7 +24,7 @@ static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int widt
     {
         state = 0;
         ptr = extra->text + extra->row_offsets [row];
-        end_ptr = row < extra->row_count - 1 ? ptr + extra->row_offsets [row + 1] : extra->text + extra->text_length;
+        end_ptr = extra->text + (row < extra->row_count - 1 ? extra->row_offsets [row + 1] : extra->text_length);
     }
     else
         state = 1;
