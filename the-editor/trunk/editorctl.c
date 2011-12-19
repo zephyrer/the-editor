@@ -4,7 +4,7 @@
 #include "xalloc.h"
 #include "editorctl.h"
 
-extern LPTSTR EDITORCTL_CLASS_NAME = TEXT ("TheEditorEditorControl");
+static LPTSTR EDITORCTL_CLASS_NAME = TEXT ("TheEditorEditorControl");
 
 struct editorctl_extra
 {
@@ -639,73 +639,52 @@ static LRESULT CALLBACK editorctl_wnd_proc (HWND hwnd, UINT msg, WPARAM wParam, 
     {
         case WM_CREATE:
             return editorctl_on_create (hwnd, wParam, lParam);
-        break;
         case WM_DESTROY:
             return editorctl_on_destroy (hwnd, wParam, lParam);
-        break;
         case WM_PAINT:
             return editorctl_on_paint (hwnd, wParam, lParam);
-        break;
         case WM_SETFOCUS:
             return editorctl_on_setfocus (hwnd, wParam, lParam);
-        break;
         case WM_KILLFOCUS:
             return editorctl_on_killfocus (hwnd, wParam, lParam);
-        break;
         case WM_SIZE:
             return editorctl_on_size (hwnd, wParam, lParam);
-        break;
         case WM_HSCROLL:
             return editorctl_on_hscroll (hwnd, wParam, lParam);
-        break;
         case WM_VSCROLL:
             return editorctl_on_vscroll (hwnd, wParam, lParam);
-        break;
         case WM_SETFONT:
             return editorctl_on_setfont (hwnd, wParam, lParam);
-        break;
         case WM_MOUSEWHEEL:
             return editorctl_on_mousewheel (hwnd, wParam, lParam);
-        break;
         case WM_CHAR:
             return editorctl_on_char (hwnd, wParam, lParam);
-        break;
         case WM_KEYDOWN:
             return editorctl_on_keydown (hwnd, wParam, lParam);
-        break;
         case ECM_SET_MODEL_SIZE:
             return editorctl_on_set_model_size (hwnd, wParam, lParam);
-        break;
         case ECM_GET_MODEL_SIZE:
             return editorctl_on_get_model_size (hwnd, wParam, lParam);
-        break;
         case ECM_SET_CARET_POSITION:
             return editorctl_on_set_caret_position (hwnd, wParam, lParam);
-        break;
         case ECM_GET_CARET_POSITION:
             return editorctl_on_get_caret_position (hwnd, wParam, lParam);
-        break;
         case ECM_SET_CARET_SHAPE:
             return editorctl_on_set_caret_shape (hwnd, wParam, lParam);
-        break;
         case ECM_SET_CELL_SIZE:
             return editorctl_on_set_cell_size (hwnd, wParam, lParam);
-        break;
         case ECM_GET_CELL_SIZE:
             return editorctl_on_get_cell_size (hwnd, wParam, lParam);
-        break;
         case ECM_GET_SCROLL_POSITION:
             return editorctl_on_get_scroll_position (hwnd, wParam, lParam);
-        break;
         case ECM_SET_SCROLL_POSITION:
             return editorctl_on_set_scroll_position (hwnd, wParam, lParam);
-        break;
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
     }
 }
 
-extern ATOM editorctl_register_class (HINSTANCE hInstance)
+static ATOM editorctl_register_class (HINSTANCE hInstance)
 {
     WNDCLASSEX wc;
 
