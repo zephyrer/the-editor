@@ -5,8 +5,8 @@
 #include <crtdbg.h>
 #include <malloc.h>
 
-#include "mainwnd.h"
-#include "editorctl.h"
+#include "mainwnd/mainwnd.h"
+#include "editorctl/editorctl.h"
 
 static HWND create_main_window (HINSTANCE hInstance)
 {
