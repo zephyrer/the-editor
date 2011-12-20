@@ -81,7 +81,8 @@ static BOOL draw_cr (HDC hdc, int x, int y, int w, int h)
     if (!LineTo (hdc, x + 1, y + h / 2)) goto error;
     if (!LineTo (hdc, x + 1 + e + 1, y + h / 2 + e + 1)) goto error;
     if (!MoveToEx (hdc, x + 1, y + h / 2, NULL)) goto error;
-    if (!LineTo (hdc, x + w - 1, y + h / 2)) goto error;
+    if (!LineTo (hdc, x + w - 2, y + h / 2)) goto error;
+    if (!LineTo (hdc, x + w - 2, y + h / 2 - e - 1)) goto error;
 
     return TRUE;
 error:
@@ -94,7 +95,8 @@ static BOOL draw_lf (HDC hdc, int x, int y, int w, int h)
 
     e = min (w, h) * 2 / 5;
 
-    if (!MoveToEx (hdc, x + w / 2, y + 1, NULL)) goto error;
+    if (!MoveToEx (hdc, x + w / 2 - e, y + h / 2, NULL)) goto error;
+    if (!LineTo (hdc, x + w / 2, y + h / 2)) goto error;
     if (!LineTo (hdc, x + w / 2, y + h - 2)) goto error;
     if (!LineTo (hdc, x + w / 2 - e - 1, y + h - 2 - e - 1)) goto error;
     if (!MoveToEx (hdc, x + w / 2, y + h - 2, NULL)) goto error;
