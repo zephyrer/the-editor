@@ -1,6 +1,7 @@
 #include "editorctl.h"
 
-EDITORCTL_UNICODE_CHAR editorctl_get_next_char (const char **ptr)
+EDITORCTL_UNICODE_CHAR editorctl_get_next_char (EDITORCTL_TEXT_ITERATOR *iterator)
 {
-    return *(*ptr)++;
+    iterator->offset++;
+    return *iterator->ptr++;
 }

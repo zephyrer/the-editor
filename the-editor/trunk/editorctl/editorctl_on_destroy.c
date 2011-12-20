@@ -5,9 +5,14 @@ LRESULT editorctl_on_destroy (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     EDITORCTL_EXTRA *extra;
 
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
-    HeapFree (extra->heap, 0, extra);
-    if (extra->whitespace_icons)
-        DeleteObject (extra->whitespace_icons);
+    if (extra != NULL)
+    {
+        if (extra->row_offsets != NULL)
+            HeapFree (extra->heap, 0, extra->row_offsets);
+        if (extra->whitespace_icons != NULL)
+            DeleteObject (extra->whitespace_icons);
+        HeapFree (extra->heap, 0, extra);
+    }
 
     return 0;
 error:

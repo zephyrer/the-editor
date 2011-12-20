@@ -245,6 +245,7 @@
     <ClCompile Include="editorctl\editorctl_register_class.c" />
     <ClCompile Include="editorctl\editorctl_replace_range.c" />
     <ClCompile Include="editorctl\editorctl_scroll_to.c" />
+    <ClCompile Include="editorctl\editorctl_set_iterator.c" />
     <ClCompile Include="editorctl\editorctl_set_next_char.c" />
     <ClCompile Include="editorctl\editorctl_update_caret_pos.c" />
     <ClCompile Include="editorctl\editorctl_update_scroll_range.c" />
