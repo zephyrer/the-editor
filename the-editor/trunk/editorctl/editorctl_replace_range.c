@@ -162,7 +162,7 @@ error:
     return FALSE;
 }
 
-BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buffer, int buffer_length)
+BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buffer, int buffer_length, int new_caret_offset)
 {
     EDITORCTL_EXTRA *extra = NULL;
 
@@ -189,6 +189,8 @@ BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buf
     extra->text_length = extra->text_length + buffer_length - length;
 
     if (!update (hwnd, extra, offset, length, buffer_length)) goto error;
+    if (!editorctl_move_cursor (hwnd, new_caret_offset)) goto error;
+
     if (!InvalidateRect (hwnd, NULL, TRUE)) goto error;
 
     return TRUE;

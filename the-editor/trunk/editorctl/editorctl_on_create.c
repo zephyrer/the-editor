@@ -25,7 +25,7 @@ LRESULT editorctl_on_create (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if (SetWindowLongPtr (hwnd, 0, (LONG)extra) == 0 && GetLastError () != ERROR_SUCCESS) goto error;
 
     if (!editorctl_create_whitespace_icons (hwnd)) goto error;
-    if (!editorctl_replace_range (hwnd, 0, 0, NULL, 0)) goto error;
+    if (!editorctl_replace_range (hwnd, 0, 0, NULL, 0, 0)) goto error;
 
     return 0;
 error:
