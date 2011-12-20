@@ -31,7 +31,7 @@ static BOOL left (HWND hwnd, EDITORCTL_EXTRA *extra)
     EDITORCTL_TEXT_ITERATOR it;
 
     if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-    while (editorctl_backward (&it) && it.prev_char == '\r' && it.next_char == '\n');
+    while (editorctl_backward (&it) && editorctl_get_prev_char (&it) == '\r' && editorctl_get_next_char (&it) == '\n');
     if (!editorctl_move_cursor (hwnd, it.offset)) goto error;
 
     return TRUE;
@@ -44,7 +44,7 @@ static BOOL right (HWND hwnd, EDITORCTL_EXTRA *extra)
     EDITORCTL_TEXT_ITERATOR it;
 
     if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-    while (editorctl_forward (&it) && it.prev_char == '\r' && it.next_char == '\n');
+    while (editorctl_forward (&it) && editorctl_get_prev_char (&it) == '\r' && editorctl_get_next_char (&it) == '\n');
     if (!editorctl_move_cursor (hwnd, it.offset)) goto error;
 
     return TRUE;
@@ -58,16 +58,16 @@ static BOOL home (HWND hwnd, EDITORCTL_EXTRA *extra)
     int offset;
 
     if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-    while (it.prev_char != '\r' && it.prev_char != '\n')
+    while (editorctl_get_prev_char (&it) != '\r' && editorctl_get_prev_char (&it) != '\n')
     {
         if (!editorctl_backward (&it)) break;
     }
 
     offset = it.offset;
 
-    while (it.next_char == '\t' || it.next_char == ' ') editorctl_forward (&it);
+    while (editorctl_get_next_char (&it) == '\t' || editorctl_get_next_char (&it) == ' ') editorctl_forward (&it);
 
-    if (!it.is_end && it.next_char != '\r' && it.next_char != '\n' && it.offset != extra->caret_offset) offset = it.offset;
+    if (it.offset < it.text_length && editorctl_get_next_char (&it) != '\r' && editorctl_get_next_char (&it) != '\n' && it.offset != extra->caret_offset) offset = it.offset;
 
     if (!editorctl_move_cursor (hwnd, offset)) goto error;
 
@@ -81,7 +81,7 @@ static BOOL end (HWND hwnd, EDITORCTL_EXTRA *extra)
     EDITORCTL_TEXT_ITERATOR it;
 
     if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-    while (it.next_char != '\r' && it.next_char != '\n')
+    while (editorctl_get_next_char (&it) != '\r' && editorctl_get_next_char (&it) != '\n')
     {
         if (!editorctl_forward (&it)) break;
     }
@@ -104,7 +104,7 @@ static BOOL backspace (HWND hwnd, EDITORCTL_EXTRA *extra)
         EDITORCTL_TEXT_ITERATOR it;
 
         if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-        while (editorctl_backward (&it) && it.prev_char == '\r' && it.next_char == '\n');
+        while (editorctl_backward (&it) && editorctl_get_prev_char (&it) == '\r' && editorctl_get_next_char (&it) == '\n');
         if (!editorctl_replace_range (hwnd, it.offset, extra->caret_offset - it.offset, NULL, 0, it.offset)) goto error;
     }
 
@@ -124,12 +124,39 @@ static BOOL del (HWND hwnd, EDITORCTL_EXTRA *extra)
         EDITORCTL_TEXT_ITERATOR it;
 
         if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-        while (editorctl_forward (&it) && it.prev_char == '\r' && it.next_char == '\n');
+        while (editorctl_forward (&it) && editorctl_get_prev_char (&it) == '\r' && editorctl_get_next_char (&it) == '\n');
         if (!editorctl_replace_range (hwnd, extra->caret_offset, it.offset - extra->caret_offset, NULL, 0, extra->caret_offset)) goto error;
     }
 
     return TRUE;
 error:
+    return FALSE;
+}
+
+static BOOL append (HWND hwnd, EDITORCTL_EXTRA *extra)
+{
+    char *buffer = NULL;
+    int i;
+
+    if ((buffer = (char *)HeapAlloc (extra->heap, 0, 100000000)) == NULL) goto error;
+
+    for (i = 0; i < 100000000; i++)
+    {
+        if (i % 100000 == 0)
+            buffer [i] = "\r\n" [rand () % 2];
+        else
+            buffer [i] = "abcdef \t" [rand () % 8];
+    }
+
+    if (!editorctl_replace_range (hwnd, extra->text_length, 0, buffer, 100000000, extra->caret_offset)) goto error;
+
+    HeapFree (extra->heap, 0, buffer);
+
+    return TRUE;
+error:
+    if (buffer != NULL)
+        HeapFree (extra->heap, 0, buffer);
+
     return FALSE;
 }
 
@@ -168,6 +195,9 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
         case VK_DELETE:
             if (!del (hwnd, extra)) goto error;
+            break;
+        case VK_F12:
+            if (!append (hwnd, extra)) goto error;
             break;
         }
     }

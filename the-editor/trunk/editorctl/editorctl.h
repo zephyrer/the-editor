@@ -36,6 +36,7 @@ typedef struct tagEDITORCTL_EXTRA
     int row_count;
     int column_count;
     int *row_offsets;
+    int *row_widths;
 
     int caret_offset;
 
@@ -53,13 +54,7 @@ typedef struct tagEDITORCTL_TEXT_ITERATOR
 {
     int offset;
 
-    BOOL is_begin;
-    BOOL is_end;
-
-    EDITORCTL_UNICODE_CHAR prev_char;
-    EDITORCTL_UNICODE_CHAR next_char;
-
-    char *ptr;
+    char *text;
     int text_length;
 } EDITORCTL_TEXT_ITERATOR;
 
@@ -91,12 +86,14 @@ BOOL editorctl_move_cursor (HWND hwnd, int offset);
 
 BOOL editorctl_offset_to_row (HWND hwnd, int offset, int *row);
 BOOL editorctl_offset_to_rc (HWND hwnd, int offset, int *row, int *col);
+BOOL editorctl_rc_to_offset (HWND hwnd, int row, int column, int *offset, int *real_col);
 
 BOOL editorctl_set_iterator (HWND hwnd, int offset, EDITORCTL_TEXT_ITERATOR *iterator);
 BOOL editorctl_forward (EDITORCTL_TEXT_ITERATOR *iterator);
 BOOL editorctl_backward (EDITORCTL_TEXT_ITERATOR *iterator);
+EDITORCTL_UNICODE_CHAR editorctl_get_prev_char (EDITORCTL_TEXT_ITERATOR *iterator);
+EDITORCTL_UNICODE_CHAR editorctl_get_next_char (EDITORCTL_TEXT_ITERATOR *iterator);
 
 void editorctl_set_next_char (EDITORCTL_UNICODE_CHAR ch, char **ptr);
-
 
 #endif
