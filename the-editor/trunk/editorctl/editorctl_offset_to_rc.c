@@ -16,10 +16,8 @@ BOOL editorctl_offset_to_rc (HWND hwnd, int offset, int *row, int *col)
     c = 0;
     while (it.offset < offset)
     {
-        EDITORCTL_UNICODE_CHAR ch;
-
-        ch = editorctl_get_next_char (&it);
-        if (ch == '\t')
+        editorctl_forward (&it);
+        if (it.prev_char == '\t')
             c = (c + extra->tab_width) / extra->tab_width * extra->tab_width;
         else c++;
     }

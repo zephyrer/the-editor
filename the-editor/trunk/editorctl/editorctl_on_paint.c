@@ -49,7 +49,9 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
             }
             else
             {
-                ch = editorctl_get_next_char (&it);
+                editorctl_forward (&it);
+                ch = it.prev_char;
+
                 if (ch == ' ')
                 {
                     style = STYLE_WHITESPACE;

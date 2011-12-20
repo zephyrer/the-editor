@@ -28,24 +28,11 @@ error:
 
 static BOOL left (HWND hwnd, EDITORCTL_EXTRA *extra)
 {
-    if (extra->caret_offset > 0)
-    {
-        EDITORCTL_TEXT_ITERATOR it;
-        int start_offset;
-        EDITORCTL_UNICODE_CHAR ch;
+    EDITORCTL_TEXT_ITERATOR it;
 
-        if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-        ch = editorctl_get_prev_char (&it);
-        start_offset = it.offset;
-        if (ch == '\n' && it.offset > 0)
-        {
-            ch = editorctl_get_prev_char (&it);
-            if (ch == '\r')
-                start_offset = it.offset;
-        }
-
-        if (!editorctl_move_cursor (hwnd, start_offset)) goto error;
-    }
+    if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
+    while (editorctl_backward (&it) && it.prev_char == '\r' && it.next_char == '\n');
+    if (!editorctl_move_cursor (hwnd, it.offset)) goto error;
 
     return TRUE;
 error:
@@ -54,24 +41,11 @@ error:
 
 static BOOL right (HWND hwnd, EDITORCTL_EXTRA *extra)
 {
-    if (extra->caret_offset < extra->text_length)
-    {
-        EDITORCTL_TEXT_ITERATOR it;
-        int end_offset;
-        EDITORCTL_UNICODE_CHAR ch;
+    EDITORCTL_TEXT_ITERATOR it;
 
-        if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-        ch = editorctl_get_next_char (&it);
-        end_offset = it.offset;
-        if (ch == '\r' && it.offset < extra->text_length)
-        {
-            ch = editorctl_get_next_char (&it);
-            if (ch == '\n')
-                end_offset = it.offset;
-        }
-
-        if (!editorctl_move_cursor (hwnd, end_offset)) goto error;
-    }
+    if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
+    while (editorctl_forward (&it) && it.prev_char == '\r' && it.next_char == '\n');
+    if (!editorctl_move_cursor (hwnd, it.offset)) goto error;
 
     return TRUE;
 error:
@@ -81,44 +55,21 @@ error:
 static BOOL home (HWND hwnd, EDITORCTL_EXTRA *extra)
 {
     EDITORCTL_TEXT_ITERATOR it;
-    int new_offset1, new_offset2, new_offset3;
+    int offset;
 
     if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-    new_offset1 = extra->caret_offset;
-    while (it.offset > 0)
+    while (it.prev_char != '\r' && it.prev_char != '\n')
     {
-        EDITORCTL_UNICODE_CHAR ch;
-
-        ch = editorctl_get_prev_char (&it);
-        if (ch == '\n' || ch == '\r') break;
-        else new_offset1 = it.offset;
+        if (!editorctl_backward (&it)) break;
     }
 
-    if (!editorctl_set_iterator (hwnd, new_offset1, &it)) goto error;
-    new_offset2 = new_offset1;
-    new_offset3 = new_offset1;
-    while (it.offset < extra->text_length)
-    {
-        EDITORCTL_UNICODE_CHAR ch;
+    offset = it.offset;
 
-        ch = editorctl_get_next_char (&it);
-        if (ch == '\r' || ch == '\n') break;
-        else if (!iswspace (ch))
-        {
-            new_offset3 = new_offset2;
-            break;
-        }
-        else new_offset2 = it.offset;
-    }
+    while (it.next_char == '\t' || it.next_char == ' ') editorctl_forward (&it);
 
-    if (extra->caret_offset != new_offset3)
-    {
-        if (!editorctl_move_cursor (hwnd, new_offset3)) goto error;
-    }
-    else
-    {
-        if (!editorctl_move_cursor (hwnd, new_offset1)) goto error;
-    }
+    if (!it.is_end && it.next_char != '\r' && it.next_char != '\n' && it.offset != extra->caret_offset) offset = it.offset;
+
+    if (!editorctl_move_cursor (hwnd, offset)) goto error;
 
     return TRUE;
 error:
@@ -128,20 +79,14 @@ error:
 static BOOL end (HWND hwnd, EDITORCTL_EXTRA *extra)
 {
     EDITORCTL_TEXT_ITERATOR it;
-    int new_offset;
 
     if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-    new_offset = extra->caret_offset;
-    while (it.offset < extra->text_length)
+    while (it.next_char != '\r' && it.next_char != '\n')
     {
-        EDITORCTL_UNICODE_CHAR ch;
-
-        ch = editorctl_get_next_char (&it);
-        if (ch == '\r' || ch == '\n') break;
-        else new_offset = it.offset;
+        if (!editorctl_forward (&it)) break;
     }
-
-    if (!editorctl_move_cursor (hwnd, new_offset)) goto error;
+        
+    if (!editorctl_move_cursor (hwnd, it.offset)) goto error;
 
     return TRUE;
 error:
@@ -154,23 +99,13 @@ static BOOL backspace (HWND hwnd, EDITORCTL_EXTRA *extra)
     {
         if (!delete_selection (hwnd, extra)) goto error;
     }
-    else if (extra->caret_offset > 0)
+    else
     {
         EDITORCTL_TEXT_ITERATOR it;
-        int start_offset;
-        EDITORCTL_UNICODE_CHAR ch;
 
         if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-        ch = editorctl_get_prev_char (&it);
-        start_offset = it.offset;
-        if (ch == '\n' && it.offset > 0)
-        {
-            ch = editorctl_get_prev_char (&it);
-            if (ch == '\r')
-                start_offset = it.offset;
-        }
-
-        if (!editorctl_replace_range (hwnd, start_offset, extra->caret_offset - start_offset, NULL, 0, start_offset)) goto error;
+        while (editorctl_backward (&it) && it.prev_char == '\r' && it.next_char == '\n');
+        if (!editorctl_replace_range (hwnd, it.offset, extra->caret_offset - it.offset, NULL, 0, it.offset)) goto error;
     }
 
     return TRUE;
@@ -184,23 +119,13 @@ static BOOL del (HWND hwnd, EDITORCTL_EXTRA *extra)
     {
         if (!delete_selection (hwnd, extra)) goto error;
     }
-    else if (extra->caret_offset < extra->text_length)
+    else
     {
         EDITORCTL_TEXT_ITERATOR it;
-        int end_offset;
-        EDITORCTL_UNICODE_CHAR ch;
 
         if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-        ch = editorctl_get_next_char (&it);
-        end_offset = it.offset;
-        if (ch == '\r' && it.offset < extra->text_length)
-        {
-            ch = editorctl_get_next_char (&it);
-            if (ch == '\n')
-                end_offset = it.offset;
-        }
-
-        if (!editorctl_replace_range (hwnd, extra->caret_offset, end_offset - extra->caret_offset, NULL, 0, extra->caret_offset)) goto error;
+        while (editorctl_forward (&it) && it.prev_char == '\r' && it.next_char == '\n');
+        if (!editorctl_replace_range (hwnd, extra->caret_offset, it.offset - extra->caret_offset, NULL, 0, extra->caret_offset)) goto error;
     }
 
     return TRUE;

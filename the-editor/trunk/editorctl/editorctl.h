@@ -5,6 +5,8 @@
 
 #define EDITORCTL_MAX_CHAR_WIDTH 5
 
+typedef UINT32 EDITORCTL_UNICODE_CHAR;
+
 typedef enum tagEDITORCTL_WHITESPACE
 {
     EDITORCTL_WHITESPACE_SPACE,
@@ -50,10 +52,16 @@ typedef struct tagEDITORCTL_EXTRA
 typedef struct tagEDITORCTL_TEXT_ITERATOR
 {
     int offset;
-    char *ptr;
-} EDITORCTL_TEXT_ITERATOR;
 
-typedef UINT32 EDITORCTL_UNICODE_CHAR;
+    BOOL is_begin;
+    BOOL is_end;
+
+    EDITORCTL_UNICODE_CHAR prev_char;
+    EDITORCTL_UNICODE_CHAR next_char;
+
+    char *ptr;
+    int text_length;
+} EDITORCTL_TEXT_ITERATOR;
 
 extern LPTSTR EDITORCTL_CLASS_NAME;
 
@@ -85,8 +93,8 @@ BOOL editorctl_offset_to_row (HWND hwnd, int offset, int *row);
 BOOL editorctl_offset_to_rc (HWND hwnd, int offset, int *row, int *col);
 
 BOOL editorctl_set_iterator (HWND hwnd, int offset, EDITORCTL_TEXT_ITERATOR *iterator);
-EDITORCTL_UNICODE_CHAR editorctl_get_next_char (EDITORCTL_TEXT_ITERATOR *iterator);
-EDITORCTL_UNICODE_CHAR editorctl_get_prev_char (EDITORCTL_TEXT_ITERATOR *iterator);
+BOOL editorctl_forward (EDITORCTL_TEXT_ITERATOR *iterator);
+BOOL editorctl_backward (EDITORCTL_TEXT_ITERATOR *iterator);
 
 void editorctl_set_next_char (EDITORCTL_UNICODE_CHAR ch, char **ptr);
 
