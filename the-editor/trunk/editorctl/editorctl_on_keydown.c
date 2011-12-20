@@ -19,10 +19,7 @@ error:
 
 static BOOL delete_selection (HWND hwnd, EDITORCTL_EXTRA *extra)
 {
-    if (!editorctl_replace_range (hwnd, min (extra->anchor_offset, extra->caret_offset), abs (extra->anchor_offset - extra->caret_offset), NULL, 0)) goto error;
-    extra->caret_offset = min (extra->anchor_offset, extra->caret_offset);
-    extra->anchor_offset = extra->caret_offset;
-    if (!editorctl_update_caret_pos (hwnd)) goto error;
+    if (!editorctl_replace_range (hwnd, min (extra->anchor_offset, extra->caret_offset), abs (extra->anchor_offset - extra->caret_offset), NULL, 0, min (extra->anchor_offset, extra->caret_offset))) goto error;
 
     return TRUE;
 error:
@@ -47,9 +44,7 @@ static BOOL left (HWND hwnd, EDITORCTL_EXTRA *extra)
                 start_offset = ptr - extra->text;
         }
 
-        extra->caret_offset = start_offset;
-        extra->anchor_offset = start_offset;
-        if (!editorctl_update_caret_pos (hwnd)) goto error;
+        if (!editorctl_move_cursor (hwnd, start_offset)) goto error;
     }
 
     return TRUE;
@@ -75,10 +70,78 @@ static BOOL right (HWND hwnd, EDITORCTL_EXTRA *extra)
                 end_offset = ptr - extra->text;
         }
 
-        extra->caret_offset = end_offset;
-        extra->anchor_offset = end_offset;
-        if (!editorctl_update_caret_pos (hwnd)) goto error;
+        if (!editorctl_move_cursor (hwnd, end_offset)) goto error;
     }
+
+    return TRUE;
+error:
+    return FALSE;
+}
+
+static BOOL home (HWND hwnd, EDITORCTL_EXTRA *extra)
+{
+    char *ptr;
+    int new_offset1, new_offset2, new_offset3;
+
+    ptr = extra->text + extra->caret_offset;
+    new_offset1 = extra->caret_offset;
+    while (ptr > extra->text)
+    {
+        EDITORCTL_UNICODE_CHAR ch;
+
+        ch = editorctl_get_prev_char (&ptr);
+        if (ch == '\n' || ch == '\r') break;
+        else new_offset1 = ptr - extra->text;
+    }
+
+    ptr = extra->text + new_offset1;
+    new_offset2 = new_offset1;
+    new_offset3 = new_offset1;
+    while (ptr < extra->text + extra->text_length)
+    {
+        EDITORCTL_UNICODE_CHAR ch;
+
+        ch = editorctl_get_next_char (&ptr);
+        if (ch == '\r' || ch == '\n') break;
+        else if (!iswspace (ch))
+        {
+            new_offset3 = new_offset2;
+            break;
+        }
+        else new_offset2 = ptr - extra->text;
+    }
+
+    if (extra->caret_offset != new_offset3)
+    {
+        if (!editorctl_move_cursor (hwnd, new_offset3)) goto error;
+    }
+    else
+    {
+        if (!editorctl_move_cursor (hwnd, new_offset1)) goto error;
+    }
+
+    return TRUE;
+error:
+    return FALSE;
+}
+
+static BOOL end (HWND hwnd, EDITORCTL_EXTRA *extra)
+{
+    char *ptr;
+    int new_offset;
+
+    ptr = extra->text + extra->caret_offset;
+    new_offset = extra->caret_offset;
+    while (ptr < extra->text + extra->text_length)
+    {
+        EDITORCTL_UNICODE_CHAR ch;
+
+        ch = editorctl_get_next_char (&ptr);
+        if (ch == '\r' || ch == '\n') break;
+        else new_offset = ptr - extra->text;
+    }
+
+    if (!editorctl_move_cursor (hwnd, new_offset)) goto error;
 
     return TRUE;
 error:
@@ -107,10 +170,7 @@ static BOOL backspace (HWND hwnd, EDITORCTL_EXTRA *extra)
                 start_offset = ptr - extra->text;
         }
 
-        if (!editorctl_replace_range (hwnd, start_offset, extra->caret_offset - start_offset, NULL, 0)) goto error;
-        extra->caret_offset = start_offset;
-        extra->anchor_offset = start_offset;
-        if (!editorctl_update_caret_pos (hwnd)) goto error;
+        if (!editorctl_replace_range (hwnd, start_offset, extra->caret_offset - start_offset, NULL, 0, start_offset)) goto error;
     }
 
     return TRUE;
@@ -140,7 +200,7 @@ static BOOL del (HWND hwnd, EDITORCTL_EXTRA *extra)
                 end_offset = ptr - extra->text;
         }
 
-        if (!editorctl_replace_range (hwnd, extra->caret_offset, end_offset - extra->caret_offset, NULL, 0)) goto error;
+        if (!editorctl_replace_range (hwnd, extra->caret_offset, end_offset - extra->caret_offset, NULL, 0, extra->caret_offset)) goto error;
     }
 
     return TRUE;
@@ -168,6 +228,12 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
         case VK_RIGHT:
             if (!right (hwnd, extra)) goto error;
+            break;
+        case VK_HOME:
+            if (!home (hwnd, extra)) goto error;
+            break;
+        case VK_END:
+            if (!end (hwnd, extra)) goto error;
             break;
         case VK_INSERT:
             if (!toggle_insert (hwnd, extra)) goto error;

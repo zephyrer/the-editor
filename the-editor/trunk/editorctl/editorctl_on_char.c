@@ -40,10 +40,7 @@ static BOOL insert (HWND hwnd, EDITORCTL_EXTRA *extra, char *buffer, int buffer_
         else length = 0;
     }
 
-    if (!editorctl_replace_range (hwnd, start_offset, length, buffer, buffer_length)) goto error;
-    extra->caret_offset = start_offset + buffer_length;
-    extra->anchor_offset = extra->caret_offset;
-    if (!editorctl_update_caret_pos (hwnd)) goto error;
+    if (!editorctl_replace_range (hwnd, start_offset, length, buffer, buffer_length, start_offset + buffer_length)) goto error;
 
     return TRUE;
 error:

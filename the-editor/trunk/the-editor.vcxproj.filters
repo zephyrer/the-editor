@@ -95,6 +95,9 @@
     <ClCompile Include="editorctl\editorctl_get_prev_char.c">
       <Filter>editorctl</Filter>
     </ClCompile>
+    <ClCompile Include="editorctl\editorctl_move_cursor.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">
