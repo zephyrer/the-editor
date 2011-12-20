@@ -71,84 +71,38 @@ error:
 static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_length, int new_length)
 {
     EDITORCTL_TEXT_ITERATOR it;
-    int row, row_offset;
-    int state;
-    int col;
-    int col_count;
+    int row, row_offset, col, col_count;
 
     if (!editorctl_set_iterator (hwnd, 0, &it)) goto error;
-    row = 0;
-    row_offset = 0;
-    state = 0;
-    col = 0;
-    col_count = 0;
-    while (it.offset < extra->text_length)
-    {
-        EDITORCTL_UNICODE_CHAR ch;
-        BOOL new_row;
-        int offset;
 
-        new_row = FALSE;
-        offset = it.offset;
-        ch = editorctl_get_next_char (&it);
-        switch (state)
+    row = row_offset = col = col_count = 0;
+
+    while (TRUE)
+    {
+        BOOL moved;
+
+        moved = editorctl_forward (&it);
+
+        if (moved)
         {
-        case 0: // In the middle of the line
-            if (ch == '\r') state = 1;
-            else if (ch == '\n') state = 2;
-            break;
-        case 1: // After '\r'
-            if (ch == '\r') new_row = TRUE;
-            if (ch == '\n') state = 2;
-            else
-            {
-                new_row = TRUE;
-                state = 0;
-            }
-            break;
-        case 2: // After '\n'
-            if (ch == '\r')
-            {
-                new_row = TRUE;
-                state = 1;
-            }
-            else if (ch == 'n') new_row = TRUE;
-            else
-            {
-                new_row = TRUE;
-                state = 0;
-            }
-            break;
+            if (it.prev_char == '\t')
+                col = (col + extra->tab_width) / extra->tab_width * extra->tab_width;
+            else col++;
         }
 
-        if (new_row)
+        if (!moved ||
+            it.prev_char == '\n' ||
+            (it.prev_char == '\r' && it.next_char != '\n'))
         {
             if (!ensure_row_capacity (extra, (row + 1) * sizeof (int))) goto error;
             extra->row_offsets [row] = row_offset;
             row++;
             col_count = max (col_count, col + 1);
             col = 0;
-            row_offset = offset;
+            row_offset = it.offset;
         }
 
-        if (ch == '\t')
-            col = (col + extra->tab_width) / extra->tab_width * extra->tab_width;
-        else col++;
-    }
-
-    ensure_row_capacity (extra, (row + 1) * sizeof (int));
-    extra->row_offsets [row] = row_offset;
-    row++;
-    col_count = max (col_count, col + 1);
-    row_offset = extra->text_length;
-
-    if (state != 0)
-    {
-        col = 0;
-        ensure_row_capacity (extra, (row + 1) * sizeof (int));
-        extra->row_offsets [row] = row_offset;
-        row++;
-        col_count = max (col_count, col + 1);
+        if (!moved) break;
     }
 
     extra->column_count = col_count;
