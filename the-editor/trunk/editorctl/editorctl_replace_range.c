@@ -70,28 +70,27 @@ error:
 
 static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_length, int new_length)
 {
-    char *ptr, *end_ptr;
+    EDITORCTL_TEXT_ITERATOR it;
     int row, row_offset;
     int state;
     int col;
     int col_count;
 
-    ptr = extra->text;
-    end_ptr = ptr + extra->text_length;
+    if (!editorctl_set_iterator (hwnd, 0, &it)) goto error;
     row = 0;
     row_offset = 0;
     state = 0;
     col = 0;
     col_count = 0;
-    while (ptr < end_ptr)
+    while (it.offset < extra->text_length)
     {
         EDITORCTL_UNICODE_CHAR ch;
         BOOL new_row;
         int offset;
 
         new_row = FALSE;
-        offset = ptr - extra->text;
-        ch = editorctl_get_next_char (&ptr);
+        offset = it.offset;
+        ch = editorctl_get_next_char (&it);
         switch (state)
         {
         case 0: // In the middle of the line

@@ -2,10 +2,9 @@
 
 BOOL editorctl_update_caret_pos (HWND hwnd)
 {
-    EDITORCTL_EXTRA *extra;
-
     if (GetFocus () == hwnd)
     {
+        EDITORCTL_EXTRA *extra;
         int row, col;
 
         if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;

@@ -98,6 +98,9 @@
     <ClCompile Include="editorctl\editorctl_move_cursor.c">
       <Filter>editorctl</Filter>
     </ClCompile>
+    <ClCompile Include="editorctl\editorctl_set_iterator.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">

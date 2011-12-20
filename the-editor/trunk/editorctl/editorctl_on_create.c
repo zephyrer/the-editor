@@ -35,5 +35,7 @@ error:
         HeapFree (heap, 0, extra);
     }
 
+    SetWindowLongPtr (hwnd, 0, (LPARAM)NULL);
+
     return -1;
 }

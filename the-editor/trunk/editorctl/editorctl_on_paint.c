@@ -12,22 +12,26 @@ typedef enum tagCELL_STYLE
     STYLE_WHITESPACE_SELECTED
 } CELL_STYLE;
 
-static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int width, EDITORCTL_UNICODE_CHAR chars [], CELL_STYLE styles [])
+static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_col, int width, EDITORCTL_UNICODE_CHAR chars [], CELL_STYLE styles [])
 {
     int col, end_col, state;
-    char *ptr, *end_ptr;
+    EDITORCTL_TEXT_ITERATOR it;
+    int end_offset;
 
     col = 0;
     end_col = start_col + width;
 
     if (row < extra->row_count)
     {
+        if (!editorctl_set_iterator (hwnd, extra->row_offsets [row], &it)) goto error;
+        end_offset = row < extra->row_count - 1 ? extra->row_offsets [row + 1] : extra->text_length;
         state = 0;
-        ptr = extra->text + extra->row_offsets [row];
-        end_ptr = extra->text + (row < extra->row_count - 1 ? extra->row_offsets [row + 1] : extra->text_length);
     }
     else
+    {
+        end_offset = -1;
         state = 1;
+    }
 
     while (col < end_col)
     {
@@ -37,7 +41,7 @@ static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int widt
         switch (state)
         {
         case 0: // Before char
-            if (ptr >= end_ptr)
+            if (it.offset >= end_offset)
             {
                 style = STYLE_NONE;
                 ch = 0;
@@ -45,7 +49,7 @@ static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int widt
             }
             else
             {
-                ch = editorctl_get_next_char (&ptr);
+                ch = editorctl_get_next_char (&it);
                 if (ch == ' ')
                 {
                     style = STYLE_WHITESPACE;
@@ -106,6 +110,10 @@ static void render_row (EDITORCTL_EXTRA *extra, int row, int start_col, int widt
 
         col++;
     }
+
+    return TRUE;
+error:
+    return FALSE;
 }
 
 static BOOL paint_unicode_text (HDC hdc, RECT *r, const EDITORCTL_UNICODE_CHAR chars [], int count, int w)
@@ -210,7 +218,7 @@ error:
     return FALSE;
 }
 
-static BOOL paint_rectangle (EDITORCTL_EXTRA *extra, HDC hdc, int start_col, int start_row, int end_col, int end_row)
+static BOOL paint_rectangle (EDITORCTL_EXTRA *extra, HWND hwnd, HDC hdc, int start_col, int start_row, int end_col, int end_row)
 {
     int width;
     EDITORCTL_UNICODE_CHAR *chars = NULL;
@@ -229,7 +237,7 @@ static BOOL paint_rectangle (EDITORCTL_EXTRA *extra, HDC hdc, int start_col, int
         EDITORCTL_UNICODE_CHAR *char_ptr;
         CELL_STYLE *style_ptr;
 
-        render_row (extra, row, start_col, width, chars, styles);
+        if (!render_row (extra, hwnd, row, start_col, width, chars, styles)) goto error;
 
         chunk_begin_col = start_col;
         current_style = STYLE_NONE;
@@ -286,7 +294,7 @@ LRESULT editorctl_on_paint (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     old_font = (HFONT)SelectObject (hdc, extra->font ? extra->font : GetStockObject (SYSTEM_FONT));
 
     paint_rectangle (
-        extra, hdc,
+        extra, hwnd, hdc,
         (ps.rcPaint.left + extra->scroll_location.x) / extra->cell_size.cx,
         (ps.rcPaint.top + extra->scroll_location.y) / extra->cell_size.cy,
         (ps.rcPaint.right + extra->scroll_location.x - 1) / extra->cell_size.cx + 1,
