@@ -19,7 +19,7 @@ static BOOL insert (HWND hwnd, EDITORCTL_EXTRA *extra, char *buffer, int buffer_
             EDITORCTL_TEXT_ITERATOR it;
 
             if (!editorctl_set_iterator (hwnd, start_offset, &it)) goto error;
-            if (editorctl_forward (&it) && it.prev_char != '\r' && it.prev_char != '\n')
+            if (editorctl_forward (&it) && editorctl_get_prev_char (&it) != '\r' && editorctl_get_prev_char (&it) != '\n')
                 length = it.offset - start_offset;
         }
     }

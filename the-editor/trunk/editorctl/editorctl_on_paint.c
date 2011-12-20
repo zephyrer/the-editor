@@ -18,12 +18,14 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
     EDITORCTL_TEXT_ITERATOR it;
     int end_offset;
 
-    col = 0;
     end_col = start_col + width;
 
-    if (row < extra->row_count)
+    if (row < extra->row_count && start_col < extra->row_widths [row])
     {
-        if (!editorctl_set_iterator (hwnd, extra->row_offsets [row], &it)) goto error;
+        int offset;
+
+        if (!editorctl_rc_to_offset (hwnd, row, start_col, &offset, &col)) goto error;
+        if (!editorctl_set_iterator (hwnd, offset, &it)) goto error;
         end_offset = row < extra->row_count - 1 ? extra->row_offsets [row + 1] : extra->text_length;
         state = 0;
     }
@@ -31,6 +33,7 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
     {
         end_offset = -1;
         state = 1;
+        col = start_col;
     }
 
     while (col < end_col)
@@ -46,11 +49,12 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
                 style = STYLE_NONE;
                 ch = 0;
                 state = 1;
+                if (col < start_col) col = start_col;
             }
             else
             {
                 editorctl_forward (&it);
-                ch = it.prev_char;
+                ch = editorctl_get_prev_char (&it);
 
                 if (ch == ' ')
                 {
