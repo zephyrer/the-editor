@@ -85,8 +85,8 @@ error:
 
 static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_length, int new_length)
 {
-    char *ptr, *end_ptr, *eptr;
-    int row, start_row, col, col_count, reuse_row, delta, i;
+    char *ptr, *end_ptr, *eptr, *last_wrap_ptr;
+    int row, start_row, col, col_count, reuse_row, delta, i, last_wrap_column;
     int *row_offsets = NULL, *row_widths = NULL;
     BOOL do_reuse;
 
@@ -94,6 +94,11 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
     {
         if (!editorctl_offset_to_rc (hwnd, offset, &row, &col)) goto error;
         start_row = row;
+        if (extra->word_wrap_min_column > 0 && col < extra->word_wrap_min_column)
+        {
+            if (!editorctl_rc_to_offset (hwnd, row, extra->word_wrap_min_column, &offset, &col)) goto error;
+        }
+
         if (!ensure_row_capacity (extra->heap, &row_offsets, (row - start_row + 1) * sizeof (int))) goto error;
         row_offsets [row - start_row] = extra->row_offsets [row];
         row++;
@@ -115,10 +120,12 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
     reuse_row = start_row;
     delta = new_length - old_length;
     do_reuse = FALSE;
+    last_wrap_ptr = NULL;
 
     while (ptr < end_ptr)
     {
         EDITORCTL_UNICODE_CHAR pch;
+        BOOL wrap = FALSE;
 
         pch = *ptr++;
 
@@ -126,8 +133,26 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
             col = (col + extra->tab_width) / extra->tab_width * extra->tab_width;
         else col++;
 
+        if (extra->word_wrap_min_column > 0 && col >= extra->word_wrap_min_column && (pch == ' ' || pch == '\t'))
+        {
+            last_wrap_ptr = ptr;
+            last_wrap_column = col;
+        }
+
+        if (extra->word_wrap_column > 0 && col >= extra->word_wrap_column && pch != '\n' && pch != '\r')
+        {
+            if (last_wrap_ptr != NULL)
+            {
+                ptr = last_wrap_ptr;
+                col = last_wrap_column;
+            }
+
+            wrap = TRUE;
+        }
+
         if (pch == '\n' ||
-            (pch == '\r' && (ptr == end_ptr || *ptr != '\n')))
+            (pch == '\r' && (ptr == end_ptr || *ptr != '\n')) ||
+            wrap)
         {
             if (!ensure_row_capacity (extra->heap, &row_widths, (row - start_row) * sizeof (int))) goto error;
             row_widths [row - start_row - 1] = col + 1;
@@ -150,6 +175,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
             row_offsets [row - start_row] = ptr - extra->text;
             col = 0;
             row++;
+            last_wrap_ptr = NULL;
         }
     }
 
