@@ -26,12 +26,12 @@ error:
     return FALSE;
 }
 
-static BOOL left (HWND hwnd, EDITORCTL_EXTRA *extra, BOOL selecting)
+static BOOL hmove (HWND hwnd, EDITORCTL_EXTRA *extra, BOOL forward, BOOL selecting)
 {
     EDITORCTL_TEXT_ITERATOR it;
 
     if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-    while (editorctl_backward (&it) && editorctl_get_prev_char (&it) == '\r' && editorctl_get_next_char (&it) == '\n');
+    while ((forward ? editorctl_forward (&it) : editorctl_backward (&it)) && editorctl_get_prev_char (&it) == '\r' && editorctl_get_next_char (&it) == '\n');
     if (!editorctl_move_cursor (hwnd, it.offset, selecting)) goto error;
 
     return TRUE;
@@ -39,13 +39,39 @@ error:
     return FALSE;
 }
 
-static BOOL right (HWND hwnd, EDITORCTL_EXTRA *extra, BOOL selecting)
+static BOOL vmove (HWND hwnd, EDITORCTL_EXTRA *extra, int delta, BOOL selecting)
 {
-    EDITORCTL_TEXT_ITERATOR it;
+    int row, col, offset, real_col;
 
-    if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-    while (editorctl_forward (&it) && editorctl_get_prev_char (&it) == '\r' && editorctl_get_next_char (&it) == '\n');
-    if (!editorctl_move_cursor (hwnd, it.offset, selecting)) goto error;
+    if (extra->caret_column >= 0)
+    {
+        if (!editorctl_offset_to_row (hwnd, extra->caret_offset, &row)) goto error;
+        col = extra->caret_column;
+    }
+    else if (!editorctl_offset_to_rc (hwnd, extra->caret_offset, &row, &col)) goto error;
+
+    if (delta > 0 && row == extra->row_count - 1)
+    {
+        if (!editorctl_offset_to_rc (hwnd, extra->text_length, &row, &col)) goto error;
+    }
+    else if (delta < 0 && row == 0)
+    {
+        col = 0;
+    }
+    else
+    {
+        row += delta;
+        if (row >= extra->row_count)
+        {
+            row = extra->row_count - 1;
+        }
+        if (row < 0) row = 0;
+    }
+
+    if (!editorctl_rc_to_offset (hwnd, row, col, &offset, &real_col)) goto error;
+
+    if (!editorctl_move_cursor (hwnd, offset, selecting)) goto error;
+    extra->caret_column = col;
 
     return TRUE;
 error:
@@ -164,8 +190,14 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     EDITORCTL_EXTRA *extra;
     BOOL control, alt, shift;
+    int page;
+    RECT r;
 
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
+
+    if (!GetClientRect (hwnd, &r)) goto error;
+    page = (r.bottom - r.top) / extra->cell_size.cy;
+    page = max (page, 1);
 
     control = (GetKeyState (VK_CONTROL) & 0x8000) != 0;
     alt = (GetKeyState (VK_MENU) & 0x8000) != 0;
@@ -176,16 +208,28 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         switch (wParam)
         {
         case VK_LEFT:
-            if (!left (hwnd, extra, shift)) goto error;
+            if (!hmove (hwnd, extra, FALSE, shift)) goto error;
             break;
         case VK_RIGHT:
-            if (!right (hwnd, extra, shift)) goto error;
+            if (!hmove (hwnd, extra, TRUE, shift)) goto error;
             break;
         case VK_HOME:
             if (!home (hwnd, extra, shift)) goto error;
             break;
         case VK_END:
             if (!end (hwnd, extra, shift)) goto error;
+            break;
+        case VK_UP:
+            if (!vmove (hwnd, extra, -1, shift)) goto error;
+            break;
+        case VK_DOWN:
+            if (!vmove (hwnd, extra, 1, shift)) goto error;
+            break;
+        case VK_PRIOR:
+            if (!vmove (hwnd, extra, -page, shift)) goto error;
+            break;
+        case VK_NEXT:
+            if (!vmove (hwnd, extra, page, shift)) goto error;
             break;
         case VK_INSERT:
             if (!shift)

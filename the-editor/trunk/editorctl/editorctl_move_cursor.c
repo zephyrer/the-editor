@@ -3,6 +3,8 @@
 BOOL editorctl_move_cursor (HWND hwnd, int offset, BOOL selecting)
 {
     EDITORCTL_EXTRA *extra;
+    int row, col, x, y, sx, sy;
+    RECT r;
 
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
 
@@ -34,6 +36,32 @@ BOOL editorctl_move_cursor (HWND hwnd, int offset, BOOL selecting)
         extra->caret_offset = offset;
         extra->anchor_offset = offset;
     }
+
+    extra->caret_column = -1;
+
+    if (!editorctl_offset_to_rc (hwnd, offset, &row, &col)) goto error;
+
+    x = col * extra->cell_size.cx;
+    y = row * extra->cell_size.cy;
+    sx = extra->scroll_location.x;
+    sy = extra->scroll_location.y;
+
+    if (!GetClientRect (hwnd, &r)) goto error;
+
+    if (x + extra->cell_size.cx > r.right + sx)
+        sx = x + extra->cell_size.cx - r.right;
+
+    if (x < r.left + sx)
+        sx = x - r.left;
+
+    if (y + extra->cell_size.cy > r.bottom + sy)
+        sy = y + extra->cell_size.cy - r.bottom;
+
+    if (y < r.top + sy)
+        sy = y - r.top;
+
+    if (!editorctl_scroll_to (hwnd, sx, sy)) goto error;
+
     if (!editorctl_update_caret_pos (hwnd)) goto error;
 
     return TRUE;

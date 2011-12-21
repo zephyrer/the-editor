@@ -110,6 +110,9 @@
     <ClCompile Include="editorctl\editorctl_rc_to_offset.c">
       <Filter>editorctl</Filter>
     </ClCompile>
+    <ClCompile Include="editorctl\editorctl_invalidate_rows.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">
