@@ -46,8 +46,20 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
         case 0: // Before char
             if (it.offset >= end_offset)
             {
-                style = STYLE_NONE;
-                ch = 0;
+                EDITORCTL_UNICODE_CHAR pch;
+
+                pch = editorctl_get_prev_char (&it);
+                if (pch != '\n' && pch != '\r' && row < extra->row_count - 1)
+                {
+                    style = STYLE_WHITESPACE;
+                    ch = EDITORCTL_WHITESPACE_WRAP;
+                }
+                else
+                {
+                    style = STYLE_NONE;
+                    ch = 0;
+                }
+
                 state = 1;
                 if (col < start_col) col = start_col;
             }
