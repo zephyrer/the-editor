@@ -68,9 +68,24 @@ error:
     return FALSE;
 }
 
+static BOOL invalidate_rows (HWND hwnd, EDITORCTL_EXTRA *extra, int start_row, int end_row)
+{
+    RECT r;
+
+    if (!GetClientRect (hwnd, &r)) goto error;
+    r.top = start_row * extra->cell_size.cy - extra->scroll_location.y;
+    r.bottom = end_row * extra->cell_size.cy - extra->scroll_location.y;
+
+    if (!InvalidateRect (hwnd, &r, FALSE)) goto error;
+
+    return TRUE;
+error:
+    return FALSE;
+}
+
 static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_length, int new_length)
 {
-    EDITORCTL_TEXT_ITERATOR it;
+    char *ptr, *end_ptr, *eptr;
     int row, start_row, col, col_count, reuse_row, delta, i;
     int *row_offsets = NULL, *row_widths = NULL;
     BOOL do_reuse;
@@ -92,32 +107,39 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
         row_offsets [row - start_row] = 0;
         row++;
     }
-    if (!editorctl_set_iterator (hwnd, offset, &it)) goto error;
+
+    ptr = extra->text + offset;
+    end_ptr = extra->text + extra->text_length;
+    eptr = ptr + new_length;
 
     reuse_row = start_row;
     delta = new_length - old_length;
     do_reuse = FALSE;
 
-    while (editorctl_forward (&it))
+    while (ptr < end_ptr)
     {
         EDITORCTL_UNICODE_CHAR pch;
 
-        pch = editorctl_get_prev_char (&it);
+        pch = *ptr++;
 
         if (pch == '\t')
             col = (col + extra->tab_width) / extra->tab_width * extra->tab_width;
         else col++;
 
         if (pch == '\n' ||
-            (pch == '\r' && editorctl_get_next_char (&it) != '\n'))
+            (pch == '\r' && (ptr == end_ptr || *ptr != '\n')))
         {
             if (!ensure_row_capacity (extra->heap, &row_widths, (row - start_row) * sizeof (int))) goto error;
             row_widths [row - start_row - 1] = col + 1;
 
-            if (it.offset >= offset + new_length)
+            if (ptr >= eptr)
             {
-                while (reuse_row < extra->row_count && extra->row_offsets [reuse_row] < it.offset - delta) reuse_row++;
-                if (reuse_row < extra->row_count && extra->row_offsets [reuse_row] == it.offset - delta)
+                int o;
+
+                o = ptr - extra->text - delta;
+
+                while (reuse_row < extra->row_count && extra->row_offsets [reuse_row] < o) reuse_row++;
+                if (reuse_row < extra->row_count && extra->row_offsets [reuse_row] == o)
                 {
                     do_reuse = TRUE;
                     break;
@@ -125,7 +147,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
             }
 
             if (!ensure_row_capacity (extra->heap, &row_offsets, (row - start_row + 1) * sizeof (int))) goto error;
-            row_offsets [row - start_row] = it.offset;
+            row_offsets [row - start_row] = ptr - extra->text;
             col = 0;
             row++;
         }
@@ -153,14 +175,14 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
         (extra->row_count - reuse_row) * sizeof (int));
 
     CopyMemory (
-        extra->row_offsets + start_row,
-        row_offsets,
-        (row - start_row) * sizeof (int));
-
-    CopyMemory (
         extra->row_widths + row,
         extra->row_widths + reuse_row,
         (extra->row_count - reuse_row) * sizeof (int));
+
+    CopyMemory (
+        extra->row_offsets + start_row,
+        row_offsets,
+        (row - start_row) * sizeof (int));
 
     CopyMemory (
         extra->row_widths + start_row,
@@ -174,6 +196,15 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
     extra->column_count = col_count;
 
     if (!editorctl_update_scroll_range (hwnd)) goto error;
+
+    if (row != reuse_row)
+    {
+        if (!invalidate_rows (hwnd, extra, start_row, extra->row_count)) goto error;
+    }
+    else
+    {
+        if (!invalidate_rows (hwnd, extra, start_row, row)) goto error;
+    }
 
     HeapFree (extra->heap, 0, row_offsets);
 
@@ -213,8 +244,6 @@ BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buf
 
     if (!update (hwnd, extra, offset, length, buffer_length)) goto error;
     if (!editorctl_move_cursor (hwnd, new_caret_offset)) goto error;
-
-    if (!InvalidateRect (hwnd, NULL, TRUE)) goto error;
 
     return TRUE;
 error:
