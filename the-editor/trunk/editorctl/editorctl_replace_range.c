@@ -155,7 +155,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
             wrap)
         {
             if (!ensure_row_capacity (extra->heap, &row_widths, (row - start_row) * sizeof (int))) goto error;
-            row_widths [row - start_row - 1] = col + 1;
+            row_widths [row - start_row - 1] = col + (wrap ? 1 : 0);
 
             if (ptr >= eptr)
             {
