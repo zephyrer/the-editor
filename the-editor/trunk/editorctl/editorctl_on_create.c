@@ -20,6 +20,8 @@ LRESULT editorctl_on_create (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     extra->tab_width = 8;
     extra->new_line = "\r\n";
     extra->new_line_length = 2;
+    extra->word_wrap_column = 80;
+    extra->word_wrap_min_column = 70;
 
     SetLastError (ERROR_SUCCESS);
     if (SetWindowLongPtr (hwnd, 0, (LONG)extra) == 0 && GetLastError () != ERROR_SUCCESS) goto error;

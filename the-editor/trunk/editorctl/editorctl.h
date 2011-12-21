@@ -43,6 +43,8 @@ typedef struct tagEDITORCTL_EXTRA
     int tab_width;
     char *new_line;
     int new_line_length;
+    int word_wrap_column;
+    int word_wrap_min_column;
 
     char *text;
     int text_length;
