@@ -17,6 +17,10 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
     int col, end_col, state;
     EDITORCTL_TEXT_ITERATOR it;
     int end_offset;
+    int sel_begin, sel_end;
+
+    sel_begin = min (extra->anchor_offset, extra->caret_offset);
+    sel_end = max (extra->anchor_offset, extra->caret_offset);
 
     end_col = start_col + width;
 
@@ -40,6 +44,14 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
     {
         EDITORCTL_UNICODE_CHAR ch;
         CELL_STYLE style;
+        BOOL selected;
+        CELL_STYLE whitespace_style;
+
+        if (state != 1)
+        {
+            selected = (it.offset >= sel_begin && it.offset < sel_end);
+            whitespace_style = selected ? STYLE_WHITESPACE_SELECTED : STYLE_WHITESPACE;
+        }
 
         switch (state)
         {
@@ -70,22 +82,22 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
 
                 if (ch == ' ')
                 {
-                    style = STYLE_WHITESPACE;
+                    style = whitespace_style;
                     ch = EDITORCTL_WHITESPACE_SPACE;
                 }
                 else if (ch == '\r')
                 {
-                    style = STYLE_WHITESPACE;
+                    style = whitespace_style;
                     ch = EDITORCTL_WHITESPACE_CR;
                 }
                 else if (ch == '\n')
                 {
-                    style = STYLE_WHITESPACE;
+                    style = whitespace_style;
                     ch = EDITORCTL_WHITESPACE_LF;
                 }
                 else if (ch == '\t')
                 {
-                    style = STYLE_WHITESPACE;
+                    style = whitespace_style;
                     if ((col + 1) % extra->tab_width == 0)
                     {
                         ch = EDITORCTL_WHITESPACE_TAB;
@@ -98,7 +110,7 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
                 }
                 else
                 {
-                    style = STYLE_NORMAL;
+                    style = selected ? STYLE_SELECTED : STYLE_NORMAL;
                 }
             }
             break;
@@ -107,7 +119,7 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
             ch = 0;
             break;
         case 2: // Inside the tab
-            style = STYLE_WHITESPACE;
+            style = whitespace_style;
             if ((col + 1) % extra->tab_width == 0)
             {
                 ch = EDITORCTL_WHITESPACE_TAB_END;

@@ -84,7 +84,8 @@ BOOL editorctl_scroll_to (HWND hwnd, int x, int y);
 BOOL editorctl_update_scroll_range (HWND hwnd);
 
 BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buffer, int buffer_length, int new_caret_offset);
-BOOL editorctl_move_cursor (HWND hwnd, int offset);
+BOOL editorctl_move_cursor (HWND hwnd, int offset, BOOL selecting);
+BOOL editorctl_invalidate_rows (HWND hwnd, int start_row, int end_row);
 
 BOOL editorctl_offset_to_row (HWND hwnd, int offset, int *row);
 BOOL editorctl_offset_to_rc (HWND hwnd, int offset, int *row, int *col);

@@ -68,21 +68,6 @@ error:
     return FALSE;
 }
 
-static BOOL invalidate_rows (HWND hwnd, EDITORCTL_EXTRA *extra, int start_row, int end_row)
-{
-    RECT r;
-
-    if (!GetClientRect (hwnd, &r)) goto error;
-    r.top = start_row * extra->cell_size.cy - extra->scroll_location.y;
-    r.bottom = end_row * extra->cell_size.cy - extra->scroll_location.y;
-
-    if (!InvalidateRect (hwnd, &r, FALSE)) goto error;
-
-    return TRUE;
-error:
-    return FALSE;
-}
-
 static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_length, int new_length)
 {
     char *ptr, *end_ptr, *eptr, *last_wrap_ptr;
@@ -225,11 +210,11 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
 
     if (row != reuse_row)
     {
-        if (!invalidate_rows (hwnd, extra, start_row, extra->row_count)) goto error;
+        if (!editorctl_invalidate_rows (hwnd, start_row, extra->row_count)) goto error;
     }
     else
     {
-        if (!invalidate_rows (hwnd, extra, start_row, row)) goto error;
+        if (!editorctl_invalidate_rows (hwnd, start_row, row)) goto error;
     }
 
     HeapFree (extra->heap, 0, row_offsets);
@@ -269,7 +254,7 @@ BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buf
     extra->text_length = extra->text_length + buffer_length - length;
 
     if (!update (hwnd, extra, offset, length, buffer_length)) goto error;
-    if (!editorctl_move_cursor (hwnd, new_caret_offset)) goto error;
+    if (!editorctl_move_cursor (hwnd, new_caret_offset, FALSE)) goto error;
 
     return TRUE;
 error:
