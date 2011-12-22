@@ -74,6 +74,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
     int row, start_row, col, col_count, reuse_row, delta, i, last_wrap_column;
     int *row_offsets = NULL, *row_widths = NULL;
     BOOL do_reuse;
+    int old_width, new_width;
 
     if (!editorctl_offset_to_rc (hwnd, offset, &row, &col)) goto error;
     start_row = row;
@@ -168,6 +169,14 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
             extra->row_offsets [i] += delta;
     }
 
+    old_width = 0;
+    for (i = start_row; i < reuse_row; i++)
+        old_width = max (old_width, extra->row_widths [i]);
+
+    new_width = 0;
+    for (i = start_row; i < row; i++)
+        new_width = max (new_width, row_widths [i - start_row]);
+
     CopyMemory (
         extra->row_offsets + row,
         extra->row_offsets + reuse_row,
@@ -189,10 +198,16 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
         (row - start_row) * sizeof (int));
 
     extra->row_count = row + extra->row_count - reuse_row;
-    col_count = 0;
-    for (i = 0; i < extra->row_count; i++)
-        col_count = max (col_count, extra->row_widths [i]);
-    extra->column_count = col_count;
+
+    if (new_width >= extra->column_count)
+        extra->column_count = new_width;
+    else if (old_width >= extra->column_count)
+    {
+        col_count = 0;
+        for (i = 0; i < extra->row_count; i++)
+            col_count = max (col_count, extra->row_widths [i]);
+        extra->column_count = col_count;
+    }
 
     if (!editorctl_update_scroll_range (hwnd)) goto error;
 
