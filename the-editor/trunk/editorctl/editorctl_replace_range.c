@@ -1,5 +1,98 @@
 #include "editorctl.h"
 
+static const char *advance_to_next_row (const char *ptr, const char *end_ptr, int *col, int tab_width)
+{
+    int c;
+    
+    c = *col;
+    while (ptr < end_ptr)
+    {
+        char ch;
+
+        ch = *ptr++;
+        if (ch == '\t')
+            c += tab_width - c % tab_width;
+        else
+        {
+            c++;
+            if (ch == '\r')
+            {
+                if (ptr >= end_ptr || *ptr != '\n') break;
+            }
+            else if (ch == '\n') break;
+        }
+    }
+    *col = c;
+
+    return ptr;
+}
+
+static const char *advance_to_next_row_wrap (const char *ptr, const char *end_ptr, int *col, int tab_width, int wrap_col, int min_wrap_col, BOOL *wrap)
+{
+    int c;
+    int last_wrap_col;
+    const char *last_wrap_ptr;
+    BOOL w = FALSE;
+    
+    c = *col;
+    last_wrap_col = -1;
+    last_wrap_ptr = NULL;
+    while (ptr < end_ptr)
+    {
+        char ch;
+        int last_col;
+        const char *last_ptr;
+
+        last_col = c;
+        last_ptr = ptr;
+
+        ch = *ptr++;
+
+        if (ch == '\t')
+            c += tab_width - c % tab_width;
+        else
+        {
+            c++;
+            if (ch == '\r')
+            {
+                if (ptr >= end_ptr || *ptr != '\n') break;
+            }
+            else if (ch == '\n') break;
+        }
+
+        if (c >= wrap_col)
+        {
+            if (last_wrap_col < 0)
+            {
+                last_wrap_col = last_col;
+                last_wrap_ptr = last_ptr;
+            }
+
+            w = TRUE;
+            break;
+        }
+
+        if (c >= min_wrap_col && (ch == ' ' || ch == '\t'))
+        {
+            last_wrap_col = c;
+            last_wrap_ptr = ptr;
+        }
+    }
+
+    if (w)
+    {
+        *col = last_wrap_col;
+        *wrap = TRUE;
+        return last_wrap_ptr;
+    }
+    else
+    {
+        *col = c;
+        *wrap = FALSE;
+        return ptr;
+    }
+}
+
 static BOOL ensure_text_capacity (EDITORCTL_EXTRA *extra, int required_capacity)
 {
     int current_capacity;
@@ -70,8 +163,8 @@ error:
 
 static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_length, int new_length)
 {
-    char *ptr, *end_ptr, *eptr, *last_wrap_ptr;
-    int row, start_row, col, col_count, reuse_row, delta, i, last_wrap_column;
+    const char *ptr, *end_ptr, *eptr;
+    int row, start_row, col, col_count, reuse_row, delta, i;
     int *row_offsets = NULL, *row_widths = NULL;
     BOOL do_reuse;
     int old_width, new_width;
@@ -94,63 +187,42 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
     reuse_row = start_row;
     delta = new_length - old_length;
     do_reuse = FALSE;
-    last_wrap_ptr = NULL;
 
     while (ptr < end_ptr)
     {
-        EDITORCTL_UNICODE_CHAR pch;
-        BOOL wrap = FALSE;
+        BOOL wrap;
 
-        pch = *ptr++;
-
-        if (pch == '\t')
-            col = (col + extra->tab_width) / extra->tab_width * extra->tab_width;
-        else col++;
-
-        if (extra->word_wrap_min_column > 0 && col >= extra->word_wrap_min_column && (pch == ' ' || pch == '\t'))
+        if (extra->word_wrap_column > 0)
         {
-            last_wrap_ptr = ptr;
-            last_wrap_column = col;
+            ptr = advance_to_next_row_wrap (ptr, end_ptr, &col, extra->tab_width, extra->word_wrap_column, extra->word_wrap_min_column, &wrap);
+        }
+        else
+        {
+            ptr = advance_to_next_row (ptr, end_ptr, &col, extra->tab_width);
+            wrap = FALSE;
         }
 
-        if (extra->word_wrap_column > 0 && col >= extra->word_wrap_column && pch != '\n' && pch != '\r')
+        if (!ensure_row_capacity (extra->heap, &row_widths, (row - start_row) * sizeof (int))) goto error;
+        row_widths [row - start_row - 1] = col + (wrap ? 1 : 0);
+
+        if (ptr >= eptr)
         {
-            if (last_wrap_ptr != NULL)
+            int o;
+
+            o = ptr - extra->text - delta;
+
+            while (reuse_row < extra->row_count && extra->row_offsets [reuse_row] < o) reuse_row++;
+            if (reuse_row < extra->row_count && extra->row_offsets [reuse_row] == o)
             {
-                ptr = last_wrap_ptr;
-                col = last_wrap_column;
+                do_reuse = TRUE;
+                break;
             }
-
-            wrap = TRUE;
         }
 
-        if (pch == '\n' ||
-            (pch == '\r' && (ptr == end_ptr || *ptr != '\n')) ||
-            wrap)
-        {
-            if (!ensure_row_capacity (extra->heap, &row_widths, (row - start_row) * sizeof (int))) goto error;
-            row_widths [row - start_row - 1] = col + (wrap ? 1 : 0);
-
-            if (ptr >= eptr)
-            {
-                int o;
-
-                o = ptr - extra->text - delta;
-
-                while (reuse_row < extra->row_count && extra->row_offsets [reuse_row] < o) reuse_row++;
-                if (reuse_row < extra->row_count && extra->row_offsets [reuse_row] == o)
-                {
-                    do_reuse = TRUE;
-                    break;
-                }
-            }
-
-            if (!ensure_row_capacity (extra->heap, &row_offsets, (row - start_row + 1) * sizeof (int))) goto error;
-            row_offsets [row - start_row] = ptr - extra->text;
-            col = 0;
-            row++;
-            last_wrap_ptr = NULL;
-        }
+        if (!ensure_row_capacity (extra->heap, &row_offsets, (row - start_row + 1) * sizeof (int))) goto error;
+        row_offsets [row - start_row] = ptr - extra->text;
+        col = 0;
+        row++;
     }
 
     if (!do_reuse)

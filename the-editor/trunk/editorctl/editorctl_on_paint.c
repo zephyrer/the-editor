@@ -18,6 +18,9 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
     EDITORCTL_TEXT_ITERATOR it;
     int end_offset;
     int sel_begin, sel_end;
+    BOOL selected;
+    CELL_STYLE whitespace_style;
+
 
     sel_begin = min (extra->anchor_offset, extra->caret_offset);
     sel_end = max (extra->anchor_offset, extra->caret_offset);
@@ -44,14 +47,6 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
     {
         EDITORCTL_UNICODE_CHAR ch;
         CELL_STYLE style;
-        BOOL selected;
-        CELL_STYLE whitespace_style;
-
-        if (state != 1)
-        {
-            selected = (it.offset >= sel_begin && it.offset < sel_end);
-            whitespace_style = selected ? STYLE_WHITESPACE_SELECTED : STYLE_WHITESPACE;
-        }
 
         switch (state)
         {
@@ -77,6 +72,9 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
             }
             else
             {
+                selected = (it.offset >= sel_begin && it.offset < sel_end);
+                whitespace_style = selected ? STYLE_WHITESPACE_SELECTED : STYLE_WHITESPACE;
+
                 editorctl_forward (&it);
                 ch = editorctl_get_prev_char (&it);
 
