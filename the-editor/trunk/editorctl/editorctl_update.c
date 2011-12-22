@@ -149,21 +149,23 @@ BOOL editorctl_update (HWND hwnd, int offset, int old_length, int new_length)
     int *row_offsets = NULL, *row_widths = NULL;
     BOOL do_reuse;
     int old_width, new_width, old_row_count;
+    int start_offset;
 
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
 
     if (!editorctl_offset_to_rc (hwnd, offset, &row, &col)) goto error;
 
+    start_offset = offset;
     if (extra->word_wrap_min_column > 0)
     {
         if (col < extra->word_wrap_column - extra->word_wrap_min_column && row > 0)
         {
             row = row - 1;
-            if (!editorctl_rc_to_offset (hwnd, row, extra->word_wrap_min_column, &offset, &col)) goto error;
+            if (!editorctl_rc_to_offset (hwnd, row, extra->word_wrap_min_column, &start_offset, &col)) goto error;
         }
         else if (col > extra->word_wrap_min_column)
         {
-            if (!editorctl_rc_to_offset (hwnd, row, extra->word_wrap_min_column, &offset, &col)) goto error;
+            if (!editorctl_rc_to_offset (hwnd, row, extra->word_wrap_min_column, &start_offset, &col)) goto error;
         }
     }
 
@@ -173,9 +175,9 @@ BOOL editorctl_update (HWND hwnd, int offset, int old_length, int new_length)
     row_offsets [row - start_row] = extra->row_offsets [row];
     row++;
 
-    ptr = extra->text + offset;
+    ptr = extra->text + start_offset;
     end_ptr = extra->text + extra->text_length;
-    eptr = ptr + new_length;
+    eptr = extra->text + offset + new_length;
 
     reuse_row = start_row;
     delta = new_length - old_length;
