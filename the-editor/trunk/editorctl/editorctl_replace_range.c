@@ -75,28 +75,16 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
     int *row_offsets = NULL, *row_widths = NULL;
     BOOL do_reuse;
 
-    if (offset > 0)
+    if (!editorctl_offset_to_rc (hwnd, offset, &row, &col)) goto error;
+    start_row = row;
+    if (extra->word_wrap_min_column > 0 && col < extra->word_wrap_min_column)
     {
-        if (!editorctl_offset_to_rc (hwnd, offset, &row, &col)) goto error;
-        start_row = row;
-        if (extra->word_wrap_min_column > 0 && col < extra->word_wrap_min_column)
-        {
-            if (!editorctl_rc_to_offset (hwnd, row, extra->word_wrap_min_column, &offset, &col)) goto error;
-        }
+        if (!editorctl_rc_to_offset (hwnd, row, extra->word_wrap_min_column, &offset, &col)) goto error;
+    }
 
-        if (!ensure_row_capacity (extra->heap, &row_offsets, (row - start_row + 1) * sizeof (int))) goto error;
-        row_offsets [row - start_row] = extra->row_offsets [row];
-        row++;
-    }
-    else
-    {
-        row = 0;
-        col = 0;
-        start_row = 0;
-        if (!ensure_row_capacity (extra->heap, &row_offsets, (row - start_row + 1) * sizeof (int))) goto error;
-        row_offsets [row - start_row] = 0;
-        row++;
-    }
+    if (!ensure_row_capacity (extra->heap, &row_offsets, (row - start_row + 1) * sizeof (int))) goto error;
+    row_offsets [row - start_row] = extra->row_offsets [row];
+    row++;
 
     ptr = extra->text + offset;
     end_ptr = extra->text + extra->text_length;
