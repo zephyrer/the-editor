@@ -190,7 +190,7 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     EDITORCTL_EXTRA *extra;
     BOOL control, alt, shift;
-    int page;
+    int page, first, last, caret_row;
     RECT r;
 
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
@@ -199,62 +199,100 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     page = (r.bottom - r.top) / extra->cell_size.cy;
     page = max (page, 1);
 
+    first = (r.top + extra->scroll_location.y + extra->cell_size.cy - 1) / extra->cell_size.cy;
+    last = (r.bottom + extra->scroll_location.y) / extra->cell_size.cy - 1;
+
+    if (first > last)
+    {
+        first = (r.top + extra->scroll_location.y) / extra->cell_size.cy;
+        last = (r.bottom + extra->scroll_location.y - 1) / extra->cell_size.cy;
+    }
+
+    if (!editorctl_offset_to_row (hwnd, extra->caret_offset, &caret_row)) goto error;
+
     control = (GetKeyState (VK_CONTROL) & 0x8000) != 0;
     alt = (GetKeyState (VK_MENU) & 0x8000) != 0;
     shift = (GetKeyState (VK_SHIFT) & 0x8000) != 0;
 
-    if (!control && !alt)
+    if (!alt)
     {
-        switch (wParam)
+        if (control)
         {
-        case VK_LEFT:
-            if (!hmove (hwnd, extra, FALSE, shift)) goto error;
-            break;
-        case VK_RIGHT:
-            if (!hmove (hwnd, extra, TRUE, shift)) goto error;
-            break;
-        case VK_HOME:
-            if (!home (hwnd, extra, shift)) goto error;
-            break;
-        case VK_END:
-            if (!end (hwnd, extra, shift)) goto error;
-            break;
-        case VK_UP:
-            if (!vmove (hwnd, extra, -1, shift)) goto error;
-            break;
-        case VK_DOWN:
-            if (!vmove (hwnd, extra, 1, shift)) goto error;
-            break;
-        case VK_PRIOR:
-            if (!vmove (hwnd, extra, -page, shift)) goto error;
-            break;
-        case VK_NEXT:
-            if (!vmove (hwnd, extra, page, shift)) goto error;
-            break;
-        case VK_INSERT:
-            if (!shift)
+            switch (wParam)
             {
-                if (!toggle_insert (hwnd, extra)) goto error;
+            case VK_UP:
+                if (!editorctl_scroll_to (hwnd, extra->scroll_location.x, max (0, extra->scroll_location.y - extra->cell_size.cy))) goto error;
+                break;
+            case VK_DOWN:
+                if (!editorctl_scroll_to (hwnd, extra->scroll_location.x, max (0, min (extra->row_count * extra->cell_size.cy - r.bottom + r.top, extra->scroll_location.y + extra->cell_size.cy)))) goto error;
+                break;
+            case VK_HOME:
+                if (!editorctl_move_cursor (hwnd, 0, shift)) goto error;
+                break;
+            case VK_END:
+                if (!editorctl_move_cursor (hwnd, extra->text_length, shift)) goto error;
+                break;
+            case VK_PRIOR:
+                if (!vmove (hwnd, extra, first - caret_row, shift)) goto error;
+                break;
+            case VK_NEXT:
+                if (!vmove (hwnd, extra, last - caret_row, shift)) goto error;
+                break;
             }
-            break;
-        case VK_BACK:
-            if (!shift)
+        }
+        else
+        {
+            switch (wParam)
             {
-                if (!backspace (hwnd, extra)) goto error;
+            case VK_LEFT:
+                if (!hmove (hwnd, extra, FALSE, shift)) goto error;
+                break;
+            case VK_RIGHT:
+                if (!hmove (hwnd, extra, TRUE, shift)) goto error;
+                break;
+            case VK_HOME:
+                if (!home (hwnd, extra, shift)) goto error;
+                break;
+            case VK_END:
+                if (!end (hwnd, extra, shift)) goto error;
+                break;
+            case VK_UP:
+                if (!vmove (hwnd, extra, -1, shift)) goto error;
+                break;
+            case VK_DOWN:
+                if (!vmove (hwnd, extra, 1, shift)) goto error;
+                break;
+            case VK_PRIOR:
+                if (!vmove (hwnd, extra, -page, shift)) goto error;
+                break;
+            case VK_NEXT:
+                if (!vmove (hwnd, extra, page, shift)) goto error;
+                break;
+            case VK_INSERT:
+                if (!shift)
+                {
+                    if (!toggle_insert (hwnd, extra)) goto error;
+                }
+                break;
+            case VK_BACK:
+                if (!shift)
+                {
+                    if (!backspace (hwnd, extra)) goto error;
+                }
+                break;
+            case VK_DELETE:
+                if (!shift)
+                {
+                    if (!del (hwnd, extra)) goto error;
+                }
+                break;
+            case VK_F12:
+                if (!shift)
+                {
+                    if (!append (hwnd, extra)) goto error;
+                }
+                break;
             }
-            break;
-        case VK_DELETE:
-            if (!shift)
-            {
-                if (!del (hwnd, extra)) goto error;
-            }
-            break;
-        case VK_F12:
-            if (!shift)
-            {
-                if (!append (hwnd, extra)) goto error;
-            }
-            break;
         }
     }
 
