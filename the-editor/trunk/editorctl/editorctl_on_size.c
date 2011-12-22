@@ -25,12 +25,16 @@ LRESULT editorctl_on_size (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         sy = max (0, height - h);
 
     si.cbSize = sizeof (SCROLLINFO);
-    si.fMask = SIF_PAGE;
+    si.fMask = SIF_PAGE | SIF_RANGE | SIF_PAGE;
+    si.nMin = 0;
+    si.nMax = extra->column_count * extra->cell_size.cx;
     si.nPage = w;
     SetScrollInfo (hwnd, SB_HORZ, &si, TRUE);
 
     si.cbSize = sizeof (SCROLLINFO);
-    si.fMask = SIF_PAGE;
+    si.fMask = SIF_PAGE | SIF_RANGE | SIF_PAGE;
+    si.nMin = 0;
+    si.nMax = extra->row_count * extra->cell_size.cy;
     si.nPage = h;
     SetScrollInfo (hwnd, SB_VERT, &si, TRUE);
 

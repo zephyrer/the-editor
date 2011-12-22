@@ -5,9 +5,15 @@ static const char *advance_to_next_row (const char *ptr, const char *end_ptr, in
     int c;
     
     c = *col;
-    while (ptr < end_ptr)
+    while (TRUE)
     {
         char ch;
+
+        if (ptr >= end_ptr)
+        {
+            ptr = NULL;
+            break;
+        }
 
         ch = *ptr++;
         if (ch == '\t')
@@ -37,11 +43,17 @@ static const char *advance_to_next_row_wrap (const char *ptr, const char *end_pt
     c = *col;
     last_wrap_col = -1;
     last_wrap_ptr = NULL;
-    while (ptr < end_ptr)
+    while (TRUE)
     {
         char ch;
         int last_col;
         const char *last_ptr;
+
+        if (ptr >= end_ptr)
+        {
+            ptr = NULL;
+            break;
+        }
 
         last_col = c;
         last_ptr = ptr;
@@ -171,7 +183,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
 
     if (!editorctl_offset_to_rc (hwnd, offset, &row, &col)) goto error;
     start_row = row;
-    if (extra->word_wrap_min_column > 0 && col < extra->word_wrap_min_column)
+    if (extra->word_wrap_min_column > 0 && col > extra->word_wrap_min_column)
     {
         if (!editorctl_rc_to_offset (hwnd, row, extra->word_wrap_min_column, &offset, &col)) goto error;
     }
@@ -188,7 +200,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
     delta = new_length - old_length;
     do_reuse = FALSE;
 
-    while (ptr < end_ptr)
+    while (TRUE)
     {
         BOOL wrap;
 
@@ -203,7 +215,14 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
         }
 
         if (!ensure_row_capacity (extra->heap, &row_widths, (row - start_row) * sizeof (int))) goto error;
-        row_widths [row - start_row - 1] = col + (wrap ? 1 : 0);
+
+        row_widths [row - start_row - 1] = col + ((wrap || ptr == NULL) ? 1 : 0);
+
+        if (ptr == NULL)
+        {
+            reuse_row = extra->row_count;
+            break;
+        }
 
         if (ptr >= eptr)
         {
@@ -223,13 +242,6 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
         row_offsets [row - start_row] = ptr - extra->text;
         col = 0;
         row++;
-    }
-
-    if (!do_reuse)
-    {
-        reuse_row = extra->row_count;
-        if (!ensure_row_capacity (extra->heap, &row_widths, (row - start_row) * sizeof (int))) goto error;
-        row_widths [row - start_row - 1] = col + 1;
     }
 
     if (!ensure_row_capacity (extra->heap, &extra->row_offsets, (row + extra->row_count - reuse_row) * sizeof (int))) goto error;
@@ -281,8 +293,6 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
             col_count = max (col_count, extra->row_widths [i]);
         extra->column_count = col_count;
     }
-
-    if (!editorctl_update_scroll_range (hwnd)) goto error;
 
     if (row != reuse_row)
     {
@@ -348,6 +358,7 @@ BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buf
         sy = max (0, height - h);
 
     if (!editorctl_scroll_to (hwnd, sx, sy)) goto error;
+    if (!editorctl_update_scroll_range (hwnd)) goto error;
 
     if (!editorctl_move_cursor (hwnd, new_caret_offset, FALSE)) goto error;
 

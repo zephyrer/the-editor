@@ -27,7 +27,7 @@ static BOOL render_row (EDITORCTL_EXTRA *extra, HWND hwnd, int row, int start_co
 
     end_col = start_col + width;
 
-    if (row < extra->row_count && start_col <= extra->row_widths [row])
+    if (row < extra->row_count && start_col < extra->row_widths [row])
     {
         int offset;
 
