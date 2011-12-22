@@ -230,6 +230,8 @@ error:
 BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buffer, int buffer_length, int new_caret_offset)
 {
     EDITORCTL_EXTRA *extra = NULL;
+    RECT r;
+    int w, h, width, height, sx, sy;
 
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
 
@@ -254,6 +256,23 @@ BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buf
     extra->text_length = extra->text_length + buffer_length - length;
 
     if (!update (hwnd, extra, offset, length, buffer_length)) goto error;
+
+    if (!GetClientRect (hwnd, &r)) goto error;
+
+    w = r.right - r.left;
+    width = extra->column_count * extra->cell_size.cx;
+    sx = extra->scroll_location.x;
+    if (sx + w > width)
+        sx = max (0, width - w);
+
+    h = r.bottom - r.top;
+    height = extra->row_count * extra->cell_size.cy;
+    sy = extra->scroll_location.y;
+    if (sy + h > height)
+        sy = max (0, height - h);
+
+    if (!editorctl_scroll_to (hwnd, sx, sy)) goto error;
+
     if (!editorctl_move_cursor (hwnd, new_caret_offset, FALSE)) goto error;
 
     return TRUE;
