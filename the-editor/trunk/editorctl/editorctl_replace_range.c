@@ -167,7 +167,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
     int row, start_row, col, col_count, reuse_row, delta, i;
     int *row_offsets = NULL, *row_widths = NULL;
     BOOL do_reuse;
-    int old_width, new_width;
+    int old_width, new_width, old_row_count;
 
     if (!editorctl_offset_to_rc (hwnd, offset, &row, &col)) goto error;
     start_row = row;
@@ -269,6 +269,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
         row_widths,
         (row - start_row) * sizeof (int));
 
+    old_row_count = extra->row_count;
     extra->row_count = row + extra->row_count - reuse_row;
 
     if (new_width >= extra->column_count)
@@ -285,7 +286,7 @@ static BOOL update (HWND hwnd, EDITORCTL_EXTRA *extra, int offset, int old_lengt
 
     if (row != reuse_row)
     {
-        if (!editorctl_invalidate_rows (hwnd, start_row, extra->row_count)) goto error;
+        if (!editorctl_invalidate_rows (hwnd, start_row, max (extra->row_count, old_row_count))) goto error;
     }
     else
     {

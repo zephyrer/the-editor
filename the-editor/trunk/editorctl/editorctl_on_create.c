@@ -16,8 +16,8 @@ LRESULT editorctl_on_create (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     extra->tab_width = 8;
     extra->new_line = "\r\n";
     extra->new_line_length = 2;
-//    extra->word_wrap_column = 85;
-//    extra->word_wrap_min_column = 75;
+    extra->word_wrap_column = 85;
+    extra->word_wrap_min_column = 85;
 
     extra->row_count = 1;
     extra->column_count = 1;
