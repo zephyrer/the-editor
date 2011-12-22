@@ -9,6 +9,8 @@ LRESULT editorctl_on_destroy (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         if (extra->row_offsets != NULL)
             HeapFree (extra->heap, 0, extra->row_offsets);
+        if (extra->row_widths != NULL)
+            HeapFree (extra->heap, 0, extra->row_widths);
         if (extra->whitespace_icons != NULL)
             DeleteObject (extra->whitespace_icons);
         HeapFree (extra->heap, 0, extra);

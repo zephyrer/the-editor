@@ -78,6 +78,8 @@ LRESULT editorctl_on_setfont (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LRESULT editorctl_on_char (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+BOOL editorctl_update (HWND hwnd, int offset, int old_length, int new_length);
+
 BOOL editorctl_create_whitespace_icons (HWND hwnd);
 
 BOOL editorctl_update_caret_pos (HWND hwnd);
