@@ -1,5 +1,30 @@
 #include "editorctl.h"
 
+static BOOL is_word_boundary (EDITORCTL_TEXT_ITERATOR *it)
+{
+    EDITORCTL_UNICODE_CHAR pch, nch;
+
+    pch = editorctl_get_prev_char (it);
+    nch = editorctl_get_next_char (it);
+
+    if (pch == '\r' && nch == '\n') return FALSE;
+    else if (pch == '\r' || pch == '\n' || nch == '\r' || nch == '\n'|| nch == 0 || nch == 0) return TRUE;
+    else if (iswalnum (pch) && iswalnum (nch)) return FALSE;
+    else if (iswspace (pch) && iswspace (nch)) return FALSE;
+    else return TRUE;
+}
+
+static BOOL is_boundary (EDITORCTL_TEXT_ITERATOR *it)
+{
+    EDITORCTL_UNICODE_CHAR pch, nch;
+
+    pch = editorctl_get_prev_char (it);
+    nch = editorctl_get_next_char (it);
+
+    if (pch == '\r' && nch == '\n') return FALSE;
+    else return TRUE;
+}
+
 static BOOL toggle_insert (HWND hwnd, EDITORCTL_EXTRA *extra)
 {
     extra->overwrite = !extra->overwrite;
@@ -26,12 +51,15 @@ error:
     return FALSE;
 }
 
-static BOOL hmove (HWND hwnd, EDITORCTL_EXTRA *extra, BOOL forward, BOOL selecting)
+static BOOL hmove (HWND hwnd, EDITORCTL_EXTRA *extra, BOOL forward, BOOL word, BOOL selecting)
 {
     EDITORCTL_TEXT_ITERATOR it;
 
     if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-    while ((forward ? editorctl_forward (&it) : editorctl_backward (&it)) && editorctl_get_prev_char (&it) == '\r' && editorctl_get_next_char (&it) == '\n');
+    while (forward ? editorctl_forward (&it) : editorctl_backward (&it))
+    {
+        if (word ? is_word_boundary (&it) : is_boundary (&it)) break;
+    }
     if (!editorctl_move_cursor (hwnd, it.offset, selecting)) goto error;
 
     return TRUE;
@@ -119,7 +147,7 @@ error:
     return FALSE;
 }
 
-static BOOL backspace (HWND hwnd, EDITORCTL_EXTRA *extra)
+static BOOL del (HWND hwnd, EDITORCTL_EXTRA *extra, BOOL word, BOOL forward)
 {
     if (extra->anchor_offset != extra->caret_offset)
     {
@@ -128,30 +156,18 @@ static BOOL backspace (HWND hwnd, EDITORCTL_EXTRA *extra)
     else
     {
         EDITORCTL_TEXT_ITERATOR it;
+        int offset, length;
 
         if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-        while (editorctl_backward (&it) && editorctl_get_prev_char (&it) == '\r' && editorctl_get_next_char (&it) == '\n');
-        if (!editorctl_replace_range (hwnd, it.offset, extra->caret_offset - it.offset, NULL, 0, it.offset)) goto error;
-    }
+        while (forward ? editorctl_forward (&it) : editorctl_backward (&it))
+        {
+            if (word ? is_word_boundary (&it) : is_boundary (&it)) break;
+        }
 
-    return TRUE;
-error:
-    return FALSE;
-}
+        offset = forward ? extra->caret_offset : it.offset;
+        length = (forward ? it.offset : extra->caret_offset) - offset;
 
-static BOOL del (HWND hwnd, EDITORCTL_EXTRA *extra)
-{
-    if (extra->anchor_offset != extra->caret_offset)
-    {
-        if (!delete_selection (hwnd, extra)) goto error;
-    }
-    else
-    {
-        EDITORCTL_TEXT_ITERATOR it;
-
-        if (!editorctl_set_iterator (hwnd, extra->caret_offset, &it)) goto error;
-        while (editorctl_forward (&it) && editorctl_get_prev_char (&it) == '\r' && editorctl_get_next_char (&it) == '\n');
-        if (!editorctl_replace_range (hwnd, extra->caret_offset, it.offset - extra->caret_offset, NULL, 0, extra->caret_offset)) goto error;
+        if (!editorctl_replace_range (hwnd, offset, length, NULL, 0, offset)) goto error;
     }
 
     return TRUE;
@@ -220,6 +236,12 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             switch (wParam)
             {
+            case VK_LEFT:
+                if (!hmove (hwnd, extra, FALSE, TRUE, shift)) goto error;
+                break;
+            case VK_RIGHT:
+                if (!hmove (hwnd, extra, TRUE, TRUE, shift)) goto error;
+                break;
             case VK_UP:
                 if (!editorctl_scroll_to (hwnd, extra->scroll_location.x, max (0, extra->scroll_location.y - extra->cell_size.cy))) goto error;
                 break;
@@ -238,6 +260,18 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             case VK_NEXT:
                 if (!vmove (hwnd, extra, last - caret_row, shift)) goto error;
                 break;
+            case VK_BACK:
+                if (!shift)
+                {
+                    if (!del (hwnd, extra, TRUE, FALSE)) goto error;
+                }
+                break;
+            case VK_DELETE:
+                if (!shift)
+                {
+                    if (!del (hwnd, extra, TRUE, TRUE)) goto error;
+                }
+                break;
             }
         }
         else
@@ -245,10 +279,10 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             switch (wParam)
             {
             case VK_LEFT:
-                if (!hmove (hwnd, extra, FALSE, shift)) goto error;
+                if (!hmove (hwnd, extra, FALSE, FALSE, shift)) goto error;
                 break;
             case VK_RIGHT:
-                if (!hmove (hwnd, extra, TRUE, shift)) goto error;
+                if (!hmove (hwnd, extra, TRUE, FALSE, shift)) goto error;
                 break;
             case VK_HOME:
                 if (!home (hwnd, extra, shift)) goto error;
@@ -277,13 +311,13 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             case VK_BACK:
                 if (!shift)
                 {
-                    if (!backspace (hwnd, extra)) goto error;
+                    if (!del (hwnd, extra, FALSE, FALSE)) goto error;
                 }
                 break;
             case VK_DELETE:
                 if (!shift)
                 {
-                    if (!del (hwnd, extra)) goto error;
+                    if (!del (hwnd, extra, FALSE, TRUE)) goto error;
                 }
                 break;
             case VK_F12:
