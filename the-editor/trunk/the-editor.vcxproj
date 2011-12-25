@@ -228,12 +228,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="editorctl\editorctl_create_whitespace_icons.c" />
+    <ClCompile Include="editorctl\editorctl_ensure_cell_visible.c" />
     <ClCompile Include="editorctl\editorctl_forward.c" />
     <ClCompile Include="editorctl\editorctl_backward.c" />
     <ClCompile Include="editorctl\editorctl_get_next_char.c" />
     <ClCompile Include="editorctl\editorctl_get_prev_char.c" />
     <ClCompile Include="editorctl\editorctl_invalidate_rows.c" />
     <ClCompile Include="editorctl\editorctl_move_cursor.c" />
+    <ClCompile Include="editorctl\editorctl_move_mouse_cursor.c" />
     <ClCompile Include="editorctl\editorctl_offset_to_rc.c" />
     <ClCompile Include="editorctl\editorctl_offset_to_row.c" />
     <ClCompile Include="editorctl\editorctl_on_char.c" />
@@ -242,6 +244,9 @@
     <ClCompile Include="editorctl\editorctl_on_hscroll.c" />
     <ClCompile Include="editorctl\editorctl_on_keydown.c" />
     <ClCompile Include="editorctl\editorctl_on_killfocus.c" />
+    <ClCompile Include="editorctl\editorctl_on_lbuttondown.c" />
+    <ClCompile Include="editorctl\editorctl_on_lbuttonup.c" />
+    <ClCompile Include="editorctl\editorctl_on_mousemove.c" />
     <ClCompile Include="editorctl\editorctl_on_mousewheel.c" />
     <ClCompile Include="editorctl\editorctl_on_paint.c" />
     <ClCompile Include="editorctl\editorctl_on_setfocus.c" />

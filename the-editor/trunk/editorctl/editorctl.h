@@ -21,6 +21,13 @@ typedef enum tagEDITORCTL_WHITESPACE
     EDITORCTL_WHITESPACE_LAST
 } EDITORCTL_WHITESPACE;
 
+typedef enum tagEDITORCTL_MOUSE_SELECT_MODE
+{
+    EDITORCTL_MSM_CHAR = 0,
+    EDITORCTL_MSM_WORD = 1,
+    EDITORCTL_MSM_ROW = 2
+} EDITORCTL_MOUSE_SELECT_MODE;
+
 typedef struct tagEDITORCTL_EXTRA
 {
     HANDLE heap;
@@ -51,6 +58,12 @@ typedef struct tagEDITORCTL_EXTRA
     int text_length;
 
     int anchor_offset;
+
+    int mouse_anchor_offset;
+    EDITORCTL_MOUSE_SELECT_MODE mouse_select_mode;
+    ULONGLONG last_click_time;
+    int last_click_x;
+    int last_click_y;
 } EDITORCTL_EXTRA;
 
 typedef struct tagEDITORCTL_TEXT_ITERATOR
@@ -77,6 +90,9 @@ LRESULT editorctl_on_mousewheel (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 LRESULT editorctl_on_setfont (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT editorctl_on_char (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT editorctl_on_lbuttondown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT editorctl_on_mousemove (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT editorctl_on_lbuttonup (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 BOOL editorctl_update (HWND hwnd, int offset, int old_length, int new_length);
 
@@ -85,9 +101,11 @@ BOOL editorctl_create_whitespace_icons (HWND hwnd);
 BOOL editorctl_update_caret_pos (HWND hwnd);
 BOOL editorctl_scroll_to (HWND hwnd, int x, int y);
 BOOL editorctl_update_scroll_range (HWND hwnd);
+BOOL editorctl_ensure_cell_visible (HWND hwnd, int row, int col);
 
 BOOL editorctl_replace_range (HWND hwnd, int offset, int length, const char *buffer, int buffer_length, int new_caret_offset);
 BOOL editorctl_move_cursor (HWND hwnd, int offset, BOOL selecting);
+BOOL editorctl_move_mouse_cursor (HWND hwnd, int x, int y, BOOL selecting);
 BOOL editorctl_invalidate_rows (HWND hwnd, int start_row, int end_row);
 
 BOOL editorctl_offset_to_row (HWND hwnd, int offset, int *row);

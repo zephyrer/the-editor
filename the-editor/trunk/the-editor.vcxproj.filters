@@ -116,6 +116,21 @@
     <ClCompile Include="editorctl\editorctl_update.c">
       <Filter>editorctl</Filter>
     </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_lbuttondown.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_mousemove.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_lbuttonup.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_move_mouse_cursor.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_ensure_cell_visible.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">
