@@ -31,6 +31,12 @@ LRESULT editorctl_on_lbuttondown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         }
         selecting = TRUE;
     }
+    else if (wParam & MK_SHIFT)
+    {
+        extra->mouse_anchor_offset = extra->anchor_offset;
+        extra->mouse_select_mode = (wParam & MK_CONTROL) ? EDITORCTL_MSM_WORD : EDITORCTL_MSM_CHAR;
+        selecting = TRUE;
+    }
     else
     {
         extra->mouse_select_mode = (wParam & MK_CONTROL) ? EDITORCTL_MSM_WORD : EDITORCTL_MSM_CHAR;
