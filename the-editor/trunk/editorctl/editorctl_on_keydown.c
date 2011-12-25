@@ -272,6 +272,13 @@ LRESULT editorctl_on_keydown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if (!del (hwnd, extra, TRUE, TRUE)) goto error;
                 }
                 break;
+            case 0x41: // key `A'
+                if (!shift)
+                {
+                    if (!editorctl_move_cursor (hwnd, 0, FALSE)) goto error;
+                    if (!editorctl_move_cursor (hwnd, extra->text_length, TRUE)) goto error;
+                }
+                break;
             }
         }
         else

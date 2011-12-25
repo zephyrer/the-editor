@@ -39,20 +39,23 @@ LRESULT editorctl_on_char (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
 
-    switch (wParam)
+    if ((GetKeyState (VK_CONTROL) & 0x8000) == 0 && (GetKeyState (VK_MENU) & 0x8000) == 0)
     {
-    case 0x0A: 
-    case 0x0D: 
-        if (!insert (hwnd, extra, extra->new_line, extra->new_line_length, FALSE)) goto error;
-        break;
-    case 0x08: 
-    case 0x1B: 
-    case 0x7F:
-        break;
-    default:
-        ptr = buffer;
-        editorctl_set_next_char (wParam, &ptr);
-        if (!insert (hwnd, extra, buffer, ptr - buffer, extra->overwrite)) goto error;
+        switch (wParam)
+        {
+        case 0x0A: 
+        case 0x0D: 
+            if (!insert (hwnd, extra, extra->new_line, extra->new_line_length, FALSE)) goto error;
+            break;
+        case 0x08: 
+        case 0x1B: 
+        case 0x7F:
+            break;
+        default:
+            ptr = buffer;
+            editorctl_set_next_char (wParam, &ptr);
+            if (!insert (hwnd, extra, buffer, ptr - buffer, extra->overwrite)) goto error;
+        }
     }
 
     return 0;
