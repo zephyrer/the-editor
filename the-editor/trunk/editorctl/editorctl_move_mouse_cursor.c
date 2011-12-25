@@ -112,7 +112,7 @@ BOOL editorctl_move_mouse_cursor (HWND hwnd, int x, int y, BOOL selecting)
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
 
     row = (y + extra->scroll_location.y) / extra->cell_size.cy;
-    col = (x + extra->scroll_location.x) / extra->cell_size.cx;
+    col = (x + extra->scroll_location.x + extra->cell_size.cx * 2 / 3) / extra->cell_size.cx;
 
     if (row >= extra->row_count)
         row = extra->row_count - 1;
