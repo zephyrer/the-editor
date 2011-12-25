@@ -13,7 +13,7 @@ ATOM editorctl_register_class (HINSTANCE hInstance)
     wc.cbWndExtra    = sizeof (LONG_PTR);
     wc.hInstance     = hInstance;
     wc.hIcon         = LoadIcon (NULL, IDI_APPLICATION);
-    wc.hCursor       = LoadCursor (NULL, IDC_ARROW);
+    wc.hCursor       = LoadCursor (NULL, IDC_IBEAM);
     wc.hbrBackground = NULL;
     wc.lpszMenuName  = NULL;
     wc.lpszClassName = EDITORCTL_CLASS_NAME;
