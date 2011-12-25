@@ -28,24 +28,12 @@ LRESULT CALLBACK editorctl_wnd_proc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             return editorctl_on_char (hwnd, msg, wParam, lParam);
         case WM_KEYDOWN:
             return editorctl_on_keydown (hwnd, msg, wParam, lParam);
-/*        case ECM_SET_MODEL_SIZE:
-            return editorctl_on_set_model_size (hwnd, wParam, lParam);
-        case ECM_GET_MODEL_SIZE:
-            return editorctl_on_get_model_size (hwnd, wParam, lParam);
-        case ECM_SET_CARET_POSITION:
-            return editorctl_on_set_caret_position (hwnd, wParam, lParam);
-        case ECM_GET_CARET_POSITION:
-            return editorctl_on_get_caret_position (hwnd, wParam, lParam);
-        case ECM_SET_CARET_SHAPE:
-            return editorctl_on_set_caret_shape (hwnd, wParam, lParam);
-        case ECM_SET_CELL_SIZE:
-            return editorctl_on_set_cell_size (hwnd, wParam, lParam);
-        case ECM_GET_CELL_SIZE:
-            return editorctl_on_get_cell_size (hwnd, wParam, lParam);
-        case ECM_GET_SCROLL_POSITION:
-            return editorctl_on_get_scroll_position (hwnd, wParam, lParam);
-        case ECM_SET_SCROLL_POSITION:
-            return editorctl_on_set_scroll_position (hwnd, wParam, lParam);*/
+        case WM_LBUTTONDOWN:
+            return editorctl_on_lbuttondown (hwnd, msg, wParam, lParam);
+        case WM_MOUSEMOVE:
+            return editorctl_on_mousemove (hwnd, msg, wParam, lParam);
+        case WM_LBUTTONUP:
+            return editorctl_on_lbuttonup (hwnd, msg, wParam, lParam);
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
     }
