@@ -145,8 +145,8 @@ BOOL editorctl_update (HWND hwnd, int offset, int old_length, int new_length)
 {
     EDITORCTL_EXTRA *extra;
     const char *ptr, *end_ptr, *eptr;
-    int row, start_row, col, col_count, reuse_row, delta, i;
-    int *row_offsets = NULL, *row_widths = NULL;
+    int row, start_row, line, start_line, col, col_count, reuse_row, delta, i;
+    int *row_offsets = NULL, *row_widths = NULL, *line_rows = NULL;
     BOOL do_reuse;
     int old_width, new_width, old_row_count;
     int start_offset;
@@ -154,6 +154,7 @@ BOOL editorctl_update (HWND hwnd, int offset, int old_length, int new_length)
     if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
 
     if (!editorctl_offset_to_rc (hwnd, offset, &row, &col)) goto error;
+    if (!editorctl_offset_to_line (hwnd, offset, &line)) goto error;
 
     start_offset = offset;
     if (extra->word_wrap_min_column > 0)
@@ -170,6 +171,7 @@ BOOL editorctl_update (HWND hwnd, int offset, int old_length, int new_length)
     }
 
     start_row = row;
+    start_line = line;
 
     if (!ensure_row_capacity (extra->heap, &row_offsets, (row - start_row + 1) * sizeof (int))) goto error;
     row_offsets [row - start_row] = extra->row_offsets [row];
