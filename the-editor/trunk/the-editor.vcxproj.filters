@@ -131,6 +131,72 @@
     <ClCompile Include="editorctl\editorctl_ensure_cell_visible.c">
       <Filter>editorctl</Filter>
     </ClCompile>
+    <ClCompile Include="editorctl\editorctl_offset_to_line.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\utils_bsearch_int.c">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="intlist\intlist_append.c">
+      <Filter>intlist</Filter>
+    </ClCompile>
+    <ClCompile Include="intlist\intlist_destroy.c">
+      <Filter>intlist</Filter>
+    </ClCompile>
+    <ClCompile Include="intlist\intlist_initialize.c">
+      <Filter>intlist</Filter>
+    </ClCompile>
+    <ClCompile Include="intlist\intlist_replace_range.c">
+      <Filter>intlist</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_initialize.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_destroy.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_replace_range.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_prev_offset.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_next_offset.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_prev_position.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_next_position.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_next_line.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_next_row_wrap.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_next_row.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="layout\layout_initialize.c">
+      <Filter>layout</Filter>
+    </ClCompile>
+    <ClCompile Include="layout\layout_destroy.c">
+      <Filter>layout</Filter>
+    </ClCompile>
+    <ClCompile Include="layout\layout_update.c">
+      <Filter>layout</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_move_to_column.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="layout\layout_offset_to_row.c">
+      <Filter>layout</Filter>
+    </ClCompile>
+    <ClCompile Include="layout\layout_offset_to_line.c">
+      <Filter>layout</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">
@@ -138,6 +204,18 @@
     </ClInclude>
     <ClInclude Include="mainwnd\mainwnd.h">
       <Filter>mainwnd</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\utils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="intlist\intlist.h">
+      <Filter>intlist</Filter>
+    </ClInclude>
+    <ClInclude Include="text\text.h">
+      <Filter>text</Filter>
+    </ClInclude>
+    <ClInclude Include="layout\layout.h">
+      <Filter>layout</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -149,6 +227,18 @@
     </Filter>
     <Filter Include="mainwnd">
       <UniqueIdentifier>{a7c00512-74b4-4698-932c-43fe83158590}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{d6fe85ea-f9af-45f3-b005-4e8e3d6ca4d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="intlist">
+      <UniqueIdentifier>{25ecbc99-010f-4a01-bce8-2f4e9eb7f7f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="text">
+      <UniqueIdentifier>{615348d9-136a-4799-bae6-451c373e3378}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="layout">
+      <UniqueIdentifier>{6fe37ae4-aff0-4ebb-9ea2-2bd27482d635}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -224,7 +224,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h" />
+    <ClInclude Include="intlist\intlist.h" />
+    <ClInclude Include="layout\layout.h" />
     <ClInclude Include="mainwnd\mainwnd.h" />
+    <ClInclude Include="text\text.h" />
+    <ClInclude Include="utils\utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="editorctl\editorctl_create_whitespace_icons.c" />
@@ -236,6 +240,7 @@
     <ClCompile Include="editorctl\editorctl_invalidate_rows.c" />
     <ClCompile Include="editorctl\editorctl_move_cursor.c" />
     <ClCompile Include="editorctl\editorctl_move_mouse_cursor.c" />
+    <ClCompile Include="editorctl\editorctl_offset_to_line.c" />
     <ClCompile Include="editorctl\editorctl_offset_to_rc.c" />
     <ClCompile Include="editorctl\editorctl_offset_to_row.c" />
     <ClCompile Include="editorctl\editorctl_on_char.c" />
@@ -263,6 +268,15 @@
     <ClCompile Include="editorctl\editorctl_update_caret_pos.c" />
     <ClCompile Include="editorctl\editorctl_update_scroll_range.c" />
     <ClCompile Include="editorctl\editorctl_wnd_proc.c" />
+    <ClCompile Include="intlist\intlist_append.c" />
+    <ClCompile Include="intlist\intlist_destroy.c" />
+    <ClCompile Include="intlist\intlist_initialize.c" />
+    <ClCompile Include="intlist\intlist_replace_range.c" />
+    <ClCompile Include="layout\layout_destroy.c" />
+    <ClCompile Include="layout\layout_initialize.c" />
+    <ClCompile Include="layout\layout_offset_to_line.c" />
+    <ClCompile Include="layout\layout_offset_to_row.c" />
+    <ClCompile Include="layout\layout_update.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="mainwnd\mainwnd_on_close.c" />
     <ClCompile Include="mainwnd\mainwnd_on_create.c" />
@@ -271,6 +285,18 @@
     <ClCompile Include="mainwnd\mainwnd_on_size.c" />
     <ClCompile Include="mainwnd\mainwnd_register_class.c" />
     <ClCompile Include="mainwnd\mainwnd_wnd_proc.c" />
+    <ClCompile Include="text\text_destroy.c" />
+    <ClCompile Include="text\text_initialize.c" />
+    <ClCompile Include="text\text_move_to_column.c" />
+    <ClCompile Include="text\text_next_line.c" />
+    <ClCompile Include="text\text_next_offset.c" />
+    <ClCompile Include="text\text_next_position.c" />
+    <ClCompile Include="text\text_next_row.c" />
+    <ClCompile Include="text\text_next_row_wrap.c" />
+    <ClCompile Include="text\text_prev_offset.c" />
+    <ClCompile Include="text\text_prev_position.c" />
+    <ClCompile Include="text\text_replace_range.c" />
+    <ClCompile Include="utils\utils_bsearch_int.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CHANGELOG.txt" />

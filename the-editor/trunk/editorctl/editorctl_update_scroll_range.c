@@ -1,15 +1,18 @@
+#include <assert.h>
+#include <windows.h>
+
 #include "editorctl.h"
 
-static BOOL do_update_range (HWND hwnd)
+static BOOL do_update_range (EDITORCTL_EXTRA *extra)
 {
-    EDITORCTL_EXTRA *extra;
     RECT r;
     SCROLLINFO si;
     int w, h;
     int width, height;
     int sx, sy;
 
-    if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
+    assert (extra != NULL);
+
     if (!GetClientRect (hwnd, &r)) goto error;
 
     w = r.right - r.left;
@@ -38,26 +41,26 @@ static BOOL do_update_range (HWND hwnd)
     si.nPage = h;
     SetScrollInfo (hwnd, SB_VERT, &si, TRUE);
 
-    if (!editorctl_scroll_to (hwnd, sx, sy)) goto error;
+    if (!editorctl_scroll_to (extra, sx, sy)) goto error;
 
     return TRUE;
 error:
     return FALSE;
 }
 
-BOOL editorctl_update_scroll_range (HWND hwnd)
+BOOL editorctl_update_scroll_range (EDITORCTL_EXTRA *extra)
 {
-    RECT r, r1;
+    RECT r1, r2;
 
-    if (!GetClientRect (hwnd, &r)) goto error;
+    assert (extra != NULL);
 
-    if (!do_update_range (hwnd)) goto error;
+    if (!GetClientRect (extra->hwnd, &r1)) goto error;
+    if (!do_update_range (extra)) goto error;
+    if (!GetClientRect (extra->hwnd, &r2)) goto error;
 
-    if (!GetClientRect (hwnd, &r1)) goto error;
-
-    if (r.left != r1.left || r.top != r1.top || r.right != r1.right || r.bottom != r1.bottom)
+    if (r1.left != r2.left || r1.top != r2.top || r1.right != r2.right || r1.bottom != r2.bottom)
     {
-        if (!do_update_range (hwnd)) goto error;
+        if (!do_update_range (extra)) goto error;
     }
 
     return TRUE;
