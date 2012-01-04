@@ -6,12 +6,12 @@
 #include "../utils/utils.h"
 #include "layout.h"
 
-static BOOL update_wrap (LAYOUT *layout, int offset, int old_length, int new_length)
+static BOOL update_wrap (LAYOUT *layout, int offset, int old_length, int new_length, int *first_dirty_row, int *dirty_row_count)
 {
     return FALSE;
 }
 
-static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_length)
+static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_length, int *first_dirty_row, int *dirty_row_count)
 {
     int start_row, o, l, c, row_after;
     INTLIST row_offsets;
@@ -23,6 +23,8 @@ static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_l
     assert (old_length >= 0);
     assert (offset + old_length <= layout->text->length);
     assert (new_length >= 0);
+    assert (first_dirty_row != NULL);
+    assert (dirty_row_count != NULL);
 
     row_offsets.data = NULL;
     row_widths.data = NULL;
@@ -106,6 +108,12 @@ static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_l
         start_row, row_after - start_row,
         row_widths.length, row_widths.data)) goto error;
 
+    *first_dirty_row = start_row;
+    if (row_after - start_row <= row_widths.length)
+        *dirty_row_count = row_widths.length;
+    else
+        *dirty_row_count = row_after - start_row;
+
     if (!intlist_destroy (&row_offsets)) goto error;
     row_offsets.data = NULL;
 
@@ -122,13 +130,15 @@ error:
     return FALSE;
 }
 
-BOOL layout_update (LAYOUT *layout, int offset, int old_length, int new_length)
+BOOL layout_update (LAYOUT *layout, int offset, int old_length, int new_length, int *first_dirty_row, int *dirty_row_count)
 {
     assert (layout != NULL);
     assert (offset >= 0);
     assert (old_length >= 0);
     assert (offset + old_length <= layout->text->length);
     assert (new_length >= 0);
+    assert (first_dirty_row != NULL);
+    assert (dirty_row_count != NULL);
 
-    return layout->wrap == -1 ? update_wrap (layout, offset, old_length, new_length) : update_nowrap (layout, offset, old_length, new_length);
+    return layout->wrap == -1 ? update_wrap (layout, offset, old_length, new_length, first_dirty_row, dirty_row_count) : update_nowrap (layout, offset, old_length, new_length, first_dirty_row, dirty_row_count);
 }
