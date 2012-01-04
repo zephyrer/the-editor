@@ -3,7 +3,7 @@
 
 #include "text.h"
 
-BOOL text_move_to_column (TEXT *text, int *offset, int *column, int to_column, int tab_width)
+void text_move_to_column (TEXT *text, int *offset, int *column, int to_column, int tab_width)
 {
     int o, l, c;
 
@@ -25,27 +25,18 @@ BOOL text_move_to_column (TEXT *text, int *offset, int *column, int to_column, i
         int nc;
 
         ch = text->data [o];
-        if (ch == '\t')
+
+        if (ch == '\n' || ch == '\r') break;
+        else if (ch == '\t')
             nc = c + tab_width - c % tab_width;
         else nc = c + 1;
 
-        if (nc > to_column)
-        {
-            *offset = o;
-            *column = c;
-            return TRUE;
-        }
+        if (nc > to_column) break;
 
         o += 1;
         c = nc;
-
-        if (o >= l || ch == '\n' || (ch == '\r' && (o >= l || text->data [o] != '\n')))
-        {
-            *offset = o;
-            *col = c;
-            return TRUE;
-        }
     }
 
-    return FALSE;
+    *offset = o;
+    *column = c;
 }

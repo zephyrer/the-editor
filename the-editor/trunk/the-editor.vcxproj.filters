@@ -227,6 +227,57 @@
     <ClCompile Include="layout\layout_line_count.c">
       <Filter>layout</Filter>
     </ClCompile>
+    <ClCompile Include="editor\editor_begin_text.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_end_text.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_up.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="layout\layout_offset_to_column.c">
+      <Filter>layout</Filter>
+    </ClCompile>
+    <ClCompile Include="layout\layout_row_column_to_offset.c">
+      <Filter>layout</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_down.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_move_caret.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_set_selection.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_insert.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_replace_range.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_overwrite.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_delete.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_replace_selection.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_delete_selection.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_backspace.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_delete_word.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_backspace_word.c">
+      <Filter>editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">

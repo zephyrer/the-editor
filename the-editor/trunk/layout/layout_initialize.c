@@ -7,6 +7,8 @@
 
 BOOL layout_initialize (LAYOUT *layout, HANDLE heap, TEXT *text, int tab_width, int wrap, int min_wrap)
 {
+    int fake;
+
     assert (layout != NULL);
     assert (heap != NULL);
     assert (text != NULL);
@@ -33,7 +35,7 @@ BOOL layout_initialize (LAYOUT *layout, HANDLE heap, TEXT *text, int tab_width, 
     if (!intlist_append (&layout->row_widths, 0)) goto error;
     if (wrap != -1 && !intlist_append (&layout->line_rows, 0)) goto error;
 
-    if (!layout_update (layout, 0, 0, text->length)) goto error;
+    if (!layout_update (layout, 0, 0, text->length, &fake, &fake)) goto error;
 
     return TRUE;
 
