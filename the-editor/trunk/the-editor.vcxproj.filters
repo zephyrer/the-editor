@@ -50,9 +50,6 @@
     <ClCompile Include="editorctl\editorctl_scroll_to.c">
       <Filter>editorctl</Filter>
     </ClCompile>
-    <ClCompile Include="editorctl\editorctl_set_next_char.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
     <ClCompile Include="editorctl\editorctl_update_caret_pos.c">
       <Filter>editorctl</Filter>
     </ClCompile>
@@ -92,28 +89,10 @@
     <ClCompile Include="editorctl\editorctl_move_cursor.c">
       <Filter>editorctl</Filter>
     </ClCompile>
-    <ClCompile Include="editorctl\editorctl_set_iterator.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
-    <ClCompile Include="editorctl\editorctl_forward.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
-    <ClCompile Include="editorctl\editorctl_backward.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
-    <ClCompile Include="editorctl\editorctl_get_prev_char.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
-    <ClCompile Include="editorctl\editorctl_get_next_char.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
     <ClCompile Include="editorctl\editorctl_rc_to_offset.c">
       <Filter>editorctl</Filter>
     </ClCompile>
     <ClCompile Include="editorctl\editorctl_invalidate_rows.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
-    <ClCompile Include="editorctl\editorctl_update.c">
       <Filter>editorctl</Filter>
     </ClCompile>
     <ClCompile Include="editorctl\editorctl_on_lbuttondown.c">
@@ -232,6 +211,9 @@
     <ClInclude Include="layout\layout.h">
       <Filter>layout</Filter>
     </ClInclude>
+    <ClInclude Include="editor\editor.h">
+      <Filter>editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="CHANGELOG.txt" />
@@ -254,6 +236,9 @@
     </Filter>
     <Filter Include="layout">
       <UniqueIdentifier>{6fe37ae4-aff0-4ebb-9ea2-2bd27482d635}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="editor">
+      <UniqueIdentifier>{cad3a35e-f914-4860-a3df-72b3e9a43b9f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
