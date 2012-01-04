@@ -3,9 +3,8 @@
 
 #include <windows.h>
 
-#include "../utils/utils.h"
-#include "../intlist/intlist.h"
 #include "../text/text.h"
+#include "../layout/layout.h"
 
 #define EDITORCTL_MAX_CHAR_WIDTH 5
 
@@ -32,7 +31,7 @@ typedef enum tagEDITORCTL_MOUSE_SELECT_MODE
     EDITORCTL_MSM_ROW = 2
 } EDITORCTL_MOUSE_SELECT_MODE;
 
-typedef struct tagEDITORCTL_EXTRA
+typedef struct tagEDITORCTL
 {
     HWND hwnd;
     HANDLE heap;
@@ -45,18 +44,11 @@ typedef struct tagEDITORCTL_EXTRA
 
     BOOL overwrite;
 
-    int row_count;
-    int column_count;
-    int line_count;
-
     int caret_offset;
     int caret_column;
 
-    int tab_width;
     char *new_line;
     int new_line_length;
-    int word_wrap_column;
-    int word_wrap_min_column;
 
     int anchor_offset;
 
@@ -66,20 +58,9 @@ typedef struct tagEDITORCTL_EXTRA
     int last_click_x;
     int last_click_y;
 
-    INTLIST row_offsets;
-    INTLIST row_widths;
-    INTLIST line_rows;
-
     TEXT text;
-} EDITORCTL_EXTRA;
-
-typedef struct tagEDITORCTL_TEXT_ITERATOR
-{
-    int offset;
-
-    char *text;
-    int text_length;
-} EDITORCTL_TEXT_ITERATOR;
+    LAYOUT layout;
+} EDITORCTL;
 
 extern LPTSTR EDITORCTL_CLASS_NAME;
 
@@ -101,27 +82,18 @@ LRESULT editorctl_on_lbuttondown (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 LRESULT editorctl_on_mousemove (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT editorctl_on_lbuttonup (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-BOOL editorctl_update (EDITORCTL_EXTRA *extra, int offset, int old_length, int new_length);
+BOOL editorctl_update (EDITORCTL *editorctl, int offset, int old_length, int new_length);
 
-BOOL editorctl_create_whitespace_icons (EDITORCTL_EXTRA *extra);
+BOOL editorctl_create_whitespace_icons (EDITORCTL *editorctl);
 
-BOOL editorctl_update_caret_pos (EDITORCTL_EXTRA *extra);
-BOOL editorctl_scroll_to (EDITORCTL_EXTRA *extra, int x, int y);
-BOOL editorctl_update_scroll_range (EDITORCTL_EXTRA *extra);
-BOOL editorctl_ensure_cell_visible (EDITORCTL_EXTRA *extra, int row, int col);
+BOOL editorctl_update_caret_pos (EDITORCTL *editorctl);
+BOOL editorctl_scroll_to (EDITORCTL *editorctl, int x, int y);
+BOOL editorctl_update_scroll_range (EDITORCTL *editorctl);
+BOOL editorctl_ensure_cell_visible (EDITORCTL *editorctl, int row, int col);
 
-BOOL editorctl_replace_range (EDITORCTL_EXTRA *extra, int offset, int length, const char *buffer, int buffer_length, int new_caret_offset);
-BOOL editorctl_move_cursor (EDITORCTL_EXTRA *extra, int offset, BOOL selecting);
-BOOL editorctl_move_mouse_cursor (EDITORCTL_EXTRA *extra, int x, int y, BOOL selecting);
-BOOL editorctl_invalidate_rows (EDITORCTL_EXTRA *extra, int start_row, int end_row);
-
-BOOL editorctl_offset_to_row (EDITORCTL_EXTRA *extra, int offset, int *row);
-BOOL editorctl_offset_to_rc (EDITORCTL_EXTRA *extra, int offset, int *row, int *col);
-BOOL editorctl_rc_to_offset (EDITORCTL_EXTRA *extra, int row, int column, int *offset, int *real_col);
-
-BOOL editorctl_offset_to_line (EDITORCTL_EXTRA *extra, int offset, int *line);
-BOOL editorctl_row_to_line (EDITORCTL_EXTRA *extra, int row, int *line);
-BOOL editorctl_offset_to_lp (EDITORCTL_EXTRA *extra, int offset, int *line, int *pos);
-BOOL editorctl_lp_to_offset (EDITORCTL_EXTRA *extra, int line, int pos, int *offset);
+BOOL editorctl_replace_range (EDITORCTL *editorctl, int offset, int length, const char *buffer, int buffer_length, int new_caret_offset);
+BOOL editorctl_move_cursor (EDITORCTL *editorctl, int offset, BOOL selecting);
+BOOL editorctl_move_mouse_cursor (EDITORCTL *editorctl, int x, int y, BOOL selecting);
+BOOL editorctl_invalidate_rows (EDITORCTL *editorctl, int start_row, int end_row);
 
 #endif

@@ -224,6 +224,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h" />
+    <ClInclude Include="editor\editor.h" />
     <ClInclude Include="intlist\intlist.h" />
     <ClInclude Include="layout\layout.h" />
     <ClInclude Include="mainwnd\mainwnd.h" />
@@ -233,10 +234,6 @@
   <ItemGroup>
     <ClCompile Include="editorctl\editorctl_create_whitespace_icons.c" />
     <ClCompile Include="editorctl\editorctl_ensure_cell_visible.c" />
-    <ClCompile Include="editorctl\editorctl_forward.c" />
-    <ClCompile Include="editorctl\editorctl_backward.c" />
-    <ClCompile Include="editorctl\editorctl_get_next_char.c" />
-    <ClCompile Include="editorctl\editorctl_get_prev_char.c" />
     <ClCompile Include="editorctl\editorctl_invalidate_rows.c" />
     <ClCompile Include="editorctl\editorctl_move_cursor.c" />
     <ClCompile Include="editorctl\editorctl_move_mouse_cursor.c" />
@@ -262,9 +259,6 @@
     <ClCompile Include="editorctl\editorctl_register_class.c" />
     <ClCompile Include="editorctl\editorctl_replace_range.c" />
     <ClCompile Include="editorctl\editorctl_scroll_to.c" />
-    <ClCompile Include="editorctl\editorctl_set_iterator.c" />
-    <ClCompile Include="editorctl\editorctl_set_next_char.c" />
-    <ClCompile Include="editorctl\editorctl_update.c" />
     <ClCompile Include="editorctl\editorctl_update_caret_pos.c" />
     <ClCompile Include="editorctl\editorctl_update_scroll_range.c" />
     <ClCompile Include="editorctl\editorctl_wnd_proc.c" />
