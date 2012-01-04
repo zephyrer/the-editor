@@ -10,7 +10,7 @@ int layout_offset_to_column (LAYOUT *layout, int offset, int row)
 
     assert (layout != NULL);
     assert (offset >= 0);
-    assert (offset <= layout->text.length);
+    assert (offset <= layout->text->length);
     assert (row >= 0);
     assert (row < layout->row_offsets.length);
     assert (offset >= layout->row_offsets.data [row]);

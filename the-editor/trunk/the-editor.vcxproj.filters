@@ -5,9 +5,6 @@
     <ClCompile Include="editorctl\editorctl_wnd_proc.c">
       <Filter>editorctl</Filter>
     </ClCompile>
-    <ClCompile Include="editorctl\editorctl_offset_to_rc.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
     <ClCompile Include="editorctl\editorctl_on_char.c">
       <Filter>editorctl</Filter>
     </ClCompile>
@@ -44,9 +41,6 @@
     <ClCompile Include="editorctl\editorctl_register_class.c">
       <Filter>editorctl</Filter>
     </ClCompile>
-    <ClCompile Include="editorctl\editorctl_replace_range.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
     <ClCompile Include="editorctl\editorctl_scroll_to.c">
       <Filter>editorctl</Filter>
     </ClCompile>
@@ -54,9 +48,6 @@
       <Filter>editorctl</Filter>
     </ClCompile>
     <ClCompile Include="editorctl\editorctl_update_scroll_range.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
-    <ClCompile Include="editorctl\editorctl_offset_to_row.c">
       <Filter>editorctl</Filter>
     </ClCompile>
     <ClCompile Include="mainwnd\mainwnd_register_class.c">
@@ -86,12 +77,6 @@
     <ClCompile Include="editorctl\editorctl_on_keydown.c">
       <Filter>editorctl</Filter>
     </ClCompile>
-    <ClCompile Include="editorctl\editorctl_move_cursor.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
-    <ClCompile Include="editorctl\editorctl_rc_to_offset.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
     <ClCompile Include="editorctl\editorctl_invalidate_rows.c">
       <Filter>editorctl</Filter>
     </ClCompile>
@@ -108,9 +93,6 @@
       <Filter>editorctl</Filter>
     </ClCompile>
     <ClCompile Include="editorctl\editorctl_ensure_cell_visible.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
-    <ClCompile Include="editorctl\editorctl_offset_to_line.c">
       <Filter>editorctl</Filter>
     </ClCompile>
     <ClCompile Include="utils\utils_bsearch_int.c">
