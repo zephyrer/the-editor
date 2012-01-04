@@ -22,13 +22,16 @@ BOOL text_next_offset (TEXT *text, int *offset);
 BOOL text_prev_position (TEXT *text, int *offset);
 BOOL text_next_position (TEXT *text, int *offset);
 
+BOOL text_next_nonspace (TEXT *text, int *offset);
+
 BOOL text_move_to_column (TEXT *text, int *offset, int *column, int to_column, int tab_width);
 void text_move_to_offset (TEXT *text, int offset, int *column, int to_offset, int tab_width);
-
-BOOL text_is_line_boundary (TEXT *text, int offset);
 
 BOOL text_next_line (TEXT *text, int *offset);
 BOOL text_next_row (TEXT *text, int *offset, int *col, int tab_width);
 BOOL text_next_row_wrap (TEXT *text, int *offset, int *col, int tab_width, int wrap, int min_wrap, BOOL *new_line);
+
+BOOL text_is_word_boundary (TEXT *text, int offset);
+BOOL text_is_line_boundary (TEXT *text, int offset);
 
 #endif

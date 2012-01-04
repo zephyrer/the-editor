@@ -28,5 +28,7 @@ BOOL layout_update (LAYOUT *layout, int offset, int old_length, int new_length, 
 
 int layout_offset_to_row (LAYOUT *layout, int offset);
 int layout_offset_to_line (LAYOUT *layout, int offset);
+int layout_line_to_offset (LAYOUT *layout, int line);
+int layout_line_count (LAYOUT *layout);
 
 #endif

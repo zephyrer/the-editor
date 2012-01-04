@@ -27,8 +27,8 @@ BOOL editor_right (EDITOR *editor, BOOL selecting);
 BOOL editor_left_word (EDITOR *editor, BOOL selecting);
 BOOL editor_right_word (EDITOR *editor, BOOL selecting);
 
-BOOL editor_begin_row (EDITOR *editor, BOOL selecting);
-BOOL editor_end_row (EDITOR *editor, BOOL selecting);
+BOOL editor_begin_line (EDITOR *editor, BOOL selecting);
+BOOL editor_end_line (EDITOR *editor, BOOL selecting);
 
 BOOL editor_begin_text (EDITOR *editor, BOOL selecting);
 BOOL editor_end_text (EDITOR *editor, BOOL selecting);
