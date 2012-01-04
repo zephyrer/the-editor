@@ -5,7 +5,7 @@
 #include "../layout/layout.h"
 #include "editor.h"
 
-BOOL editor_end_line (EDITOR *editor, BOOL selecting)
+void editor_end_line (EDITOR *editor, BOOL selecting)
 {
     int line;
 
@@ -18,8 +18,8 @@ BOOL editor_end_line (EDITOR *editor, BOOL selecting)
 
         offset = layout_line_to_offset (&editor->layout, line + 1);
         assert (text_prev_position (&editor->text, &offset));
-        return editor_move_caret (editor, offset, selecting);
+        editor_move_caret (editor, offset, selecting);
     }
     else
-        return editor_move_caret (editor, editor->text.length, selecting);
+        editor_move_caret (editor, editor->text.length, selecting);
 }

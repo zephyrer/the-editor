@@ -24,7 +24,7 @@ BOOL text_next_position (TEXT *text, int *offset);
 
 BOOL text_next_nonspace (TEXT *text, int *offset);
 
-BOOL text_move_to_column (TEXT *text, int *offset, int *column, int to_column, int tab_width);
+void text_move_to_column (TEXT *text, int *offset, int *column, int to_column, int tab_width);
 void text_move_to_offset (TEXT *text, int offset, int *column, int to_offset, int tab_width);
 
 BOOL text_next_line (TEXT *text, int *offset);

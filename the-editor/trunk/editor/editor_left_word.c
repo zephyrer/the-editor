@@ -4,7 +4,7 @@
 #include "../text/text.h"
 #include "editor.h"
 
-BOOL editor_left_word (EDITOR *editor, BOOL selecting)
+void editor_left_word (EDITOR *editor, BOOL selecting)
 {
     int offset;
 
@@ -16,5 +16,5 @@ BOOL editor_left_word (EDITOR *editor, BOOL selecting)
         if (text_is_word_boundary (&editor->text, offset)) break;
     }
 
-    return editor_move_caret (editor, offset, selecting);
+    editor_move_caret (editor, offset, selecting);
 }
