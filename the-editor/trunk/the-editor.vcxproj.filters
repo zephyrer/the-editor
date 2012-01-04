@@ -191,6 +191,42 @@
     <ClCompile Include="utils\utils_increase_int.c">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="editor\editor_initialize.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_destroy.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_left.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_right.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_left_word.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_is_word_boundary.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_right_word.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_begin_line.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="layout\layout_line_to_offset.c">
+      <Filter>layout</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_next_nonspace.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_end_line.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="layout\layout_line_count.c">
+      <Filter>layout</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">
