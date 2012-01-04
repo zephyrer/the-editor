@@ -2,18 +2,12 @@
 
 #include "editorctl.h"
 
-LRESULT editorctl_on_destroy (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT editorctl_on_destroy (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    EDITORCTL_EXTRA *extra;
-
-    extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0);
-
-    if (extra != NULL)
+    if (editorctl != NULL)
     {
-        if (extra->row_offsets.data != NULL) utils_destroy_int_list (&extra->row_offsets);
-        if (extra->row_widths.data != NULL) utils_destroy_int_list (&extra->row_widths);
-        if (extra->line_rows.data != NULL) utils_destroy_int_list (&extra->line_rows);
-        HeapFree (extra->heap, 0, extra);
+        if (editorctl->editor.heap != NULL) editor_destroy (&editorctl->editor);
+        HeapFree (editorctl->heap, 0, editorctl);
     }
 
     SetWindowLongPtr (hwnd, 0, (LPARAM)NULL);
