@@ -4,9 +4,9 @@
 #include "../text/text.h"
 #include "layout.h"
 
-int layout_row_column_to_offset (LAYOUT *layout, int row, int column)
+int layout_row_column_to_offset (LAYOUT *layout, int row, int column, int *real_column)
 {
-    int offset, c;
+    int offset;
 
     assert (layout != NULL);
     assert (row >= 0);
@@ -14,7 +14,7 @@ int layout_row_column_to_offset (LAYOUT *layout, int row, int column)
     assert (column >= 0);
 
     offset = layout->row_offsets.data [row];
-    column = 0;
-    text_move_to_column (layout->text, &offset, &c, column, layout->tab_width);
-    return c;
+    *real_column = 0;
+    text_move_to_column (layout->text, &offset, real_column, column, layout->tab_width);
+    return offset;
 }

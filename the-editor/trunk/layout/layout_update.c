@@ -83,7 +83,7 @@ static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_l
         }
         else
         {
-            assert (row_after == layout->row_offsets.length);
+            row_after = layout->row_offsets.length;
             break;
         }
     }
@@ -99,12 +99,12 @@ static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_l
 
     utils_increase_int (layout->row_offsets.data + row_after, layout->row_offsets.length - row_after, new_length - old_length);
     if (!intlist_replace_range (
-        &row_offsets, 
+        &layout->row_offsets, 
         start_row + 1, row_after - start_row - 1, 
         row_offsets.length, row_offsets.data)) goto error;
 
     if (!intlist_replace_range (
-        &row_widths,
+        &layout->row_widths,
         start_row, row_after - start_row,
         row_widths.length, row_widths.data)) goto error;
 
@@ -140,5 +140,5 @@ BOOL layout_update (LAYOUT *layout, int offset, int old_length, int new_length, 
     assert (first_dirty_row != NULL);
     assert (dirty_row_count != NULL);
 
-    return layout->wrap == -1 ? update_wrap (layout, offset, old_length, new_length, first_dirty_row, dirty_row_count) : update_nowrap (layout, offset, old_length, new_length, first_dirty_row, dirty_row_count);
+    return layout->wrap == -1 ? update_nowrap (layout, offset, old_length, new_length, first_dirty_row, dirty_row_count) : update_wrap (layout, offset, old_length, new_length, first_dirty_row, dirty_row_count);
 }

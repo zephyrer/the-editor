@@ -126,29 +126,26 @@ error:
     return FALSE;
 }
 
-BOOL editorctl_create_whitespace_icons (HWND hwnd)
+BOOL editorctl_create_whitespace_icons (EDITORCTL *editorctl)
 {
-    EDITORCTL_EXTRA *extra;
     HDC hdc = NULL, mem_dc = NULL;
     RECT r;
     HPEN pen = NULL, old_pen = NULL;
     int w, h;
     HBITMAP old_bitmap;
 
-    if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
-
-    if (extra->whitespace_icons != NULL)
+    if (editorctl->whitespace_icons != NULL)
     {
-        if (!DeleteObject (extra->whitespace_icons)) goto error;
+        if (!DeleteObject (editorctl->whitespace_icons)) goto error;
     }
 
-    w = extra->cell_size.cx;
-    h = extra->cell_size.cy;
+    w = editorctl->cell_size.cx;
+    h = editorctl->cell_size.cy;
 
-    if ((hdc = GetDC (hwnd)) == NULL) goto error;
+    if ((hdc = GetDC (editorctl->hwnd)) == NULL) goto error;
     if ((mem_dc = CreateCompatibleDC (hdc)) == NULL) goto error;
-    if ((extra->whitespace_icons = CreateCompatibleBitmap (hdc, EDITORCTL_WHITESPACE_LAST * w, 2 * h)) == NULL) goto error;
-    if ((old_bitmap = (HBITMAP)SelectObject (mem_dc, extra->whitespace_icons)) == NULL) goto error;
+    if ((editorctl->whitespace_icons = CreateCompatibleBitmap (hdc, EDITORCTL_WHITESPACE_LAST * w, 2 * h)) == NULL) goto error;
+    if ((old_bitmap = (HBITMAP)SelectObject (mem_dc, editorctl->whitespace_icons)) == NULL) goto error;
 
     r.left = 0;
     r.top = 0;
@@ -181,7 +178,7 @@ BOOL editorctl_create_whitespace_icons (HWND hwnd)
     DeleteObject (pen);
     SelectObject (mem_dc, old_bitmap);
     DeleteDC (mem_dc);
-    ReleaseDC (hwnd, hdc);
+    ReleaseDC (editorctl->hwnd, hdc);
 
     return TRUE;
 error:
@@ -192,7 +189,7 @@ error:
         DeleteDC (mem_dc);
 
     if (hdc != NULL)
-        ReleaseDC (hwnd, hdc);
+        ReleaseDC (editorctl->hwnd, hdc);
 
     return FALSE;
 }
