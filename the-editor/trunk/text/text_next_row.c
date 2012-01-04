@@ -38,5 +38,7 @@ BOOL text_next_row (TEXT *text, int *offset, int *col, int tab_width)
         }
     }
 
+    *offset = o;
+    *col = c;
     return FALSE;
 }

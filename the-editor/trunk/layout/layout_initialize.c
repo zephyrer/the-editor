@@ -5,9 +5,10 @@
 #include "../text/text.h"
 #include "layout.h"
 
-BOOL layout_initialize (LAYOUT *layout, TEXT *text, int tab_width, int wrap, int min_wrap)
+BOOL layout_initialize (LAYOUT *layout, HANDLE heap, TEXT *text, int tab_width, int wrap, int min_wrap)
 {
     assert (layout != NULL);
+    assert (heap != NULL);
     assert (text != NULL);
     assert (tab_width > 0);
     assert (wrap == -1 || wrap > 0);
@@ -17,15 +18,16 @@ BOOL layout_initialize (LAYOUT *layout, TEXT *text, int tab_width, int wrap, int
 
     ZeroMemory (layout, sizeof (LAYOUT));
 
-    if (!intlist_initialize (&layout->row_offsets, 16)) goto error;
-    if (!intlist_initialize (&layout->row_widths, 16)) goto error;
-    if (wrap != -1 && !intlist_initialize (&layout->line_rows, 16)) goto error;
+    if (!intlist_initialize (&layout->row_offsets, heap, 16)) goto error;
+    if (!intlist_initialize (&layout->row_widths, heap, 16)) goto error;
+    if (wrap != -1 && !intlist_initialize (&layout->line_rows, heap, 16)) goto error;
 
     layout->max_row_width = 0;
     layout->tab_width = tab_width;
     layout->wrap = wrap;
     layout->min_wrap = min_wrap;
     layout->text = text;
+    layout->heap = heap;
 
     if (!intlist_append (&layout->row_offsets, 0)) goto error;
     if (!intlist_append (&layout->row_widths, 0)) goto error;

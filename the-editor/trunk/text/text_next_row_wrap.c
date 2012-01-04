@@ -69,5 +69,8 @@ BOOL text_next_row_wrap (TEXT *text, int *offset, int *col, int tab_width, int w
         }
     }
 
+    *offset = o;
+    *col = c;
+    *new_line = FALSE;
     return FALSE;
 }
