@@ -36,7 +36,7 @@ BOOL text_move_to_column (TEXT *text, int *offset, int *column, int to_column, i
             return TRUE;
         }
 
-        o++;
+        o += 1;
         c = nc;
 
         if (o >= l || ch == '\n' || (ch == '\r' && (o >= l || text->data [o] != '\n')))

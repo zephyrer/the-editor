@@ -287,7 +287,9 @@
     <ClCompile Include="mainwnd\mainwnd_wnd_proc.c" />
     <ClCompile Include="text\text_destroy.c" />
     <ClCompile Include="text\text_initialize.c" />
+    <ClCompile Include="text\text_is_line_boundary.c" />
     <ClCompile Include="text\text_move_to_column.c" />
+    <ClCompile Include="text\text_move_to_offset.c" />
     <ClCompile Include="text\text_next_line.c" />
     <ClCompile Include="text\text_next_offset.c" />
     <ClCompile Include="text\text_next_position.c" />
@@ -297,6 +299,9 @@
     <ClCompile Include="text\text_prev_position.c" />
     <ClCompile Include="text\text_replace_range.c" />
     <ClCompile Include="utils\utils_bsearch_int.c" />
+    <ClCompile Include="utils\utils_increase_int.c" />
+    <ClCompile Include="utils\utils_max_int.c" />
+    <ClCompile Include="utils\utils_update_max_int.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CHANGELOG.txt" />

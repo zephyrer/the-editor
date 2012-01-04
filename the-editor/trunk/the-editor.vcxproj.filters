@@ -197,6 +197,21 @@
     <ClCompile Include="layout\layout_offset_to_line.c">
       <Filter>layout</Filter>
     </ClCompile>
+    <ClCompile Include="text\text_is_line_boundary.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_move_to_offset.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\utils_max_int.c">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\utils_update_max_int.c">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\utils_increase_int.c">
+      <Filter>utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">

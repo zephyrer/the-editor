@@ -3,15 +3,14 @@
 
 #include "intlist.h"
 
-BOOL intlist_initialize (INTLIST *list, int initial_capacity)
+BOOL intlist_initialize (INTLIST *list, HANDLE heap, int initial_capacity)
 {
-    HANDLE heap = NULL;
     int *data = NULL;
 
     assert (list != NULL);
+    assert (heap != NULL);
     assert (initial_capacity >= 0);
 
-    if ((heap = GetProcessHeap ()) == NULL) goto error;
     if ((data = (int *)HeapAlloc (
         heap, 0, initial_capacity * sizeof (int))) == NULL)
         goto heap_error;
@@ -25,8 +24,6 @@ BOOL intlist_initialize (INTLIST *list, int initial_capacity)
 
 heap_error:
     SetLastError (ERROR_NOT_ENOUGH_MEMORY);
-
-error:
     if (data != NULL)
         HeapFree (heap, 0, data);
 

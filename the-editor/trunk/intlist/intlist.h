@@ -12,7 +12,7 @@ typedef struct tagINTLIST
     int capacity;
 } INTLIST;
 
-BOOL intlist_initialize (INTLIST *list, int initial_capacity);
+BOOL intlist_initialize (INTLIST *list, HANDLE heap, int initial_capacity);
 BOOL intlist_destroy (INTLIST *list);
 BOOL intlist_replace_range (INTLIST *list, int offset, int length, int replacement_length, const int replacement []);
 BOOL intlist_append (INTLIST *list, int value);

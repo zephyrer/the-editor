@@ -8,18 +8,20 @@
 
 typedef struct tagLAYOUT
 {
-    int max_row_width;
+    TEXT *text;
     int tab_width;
     int wrap;
     int min_wrap;
-    TEXT *text;
 
+    int max_row_width;
+
+    HANDLE heap;
     INTLIST row_offsets;
     INTLIST row_widths;
     INTLIST line_rows;
 } LAYOUT;
 
-BOOL layout_initialize (LAYOUT *layout, TEXT *text, int tab_width, int wrap, int min_wrap);
+BOOL layout_initialize (LAYOUT *layout, HANDLE heap, TEXT *text, int tab_width, int wrap, int min_wrap);
 BOOL layout_destroy (LAYOUT *layout);
 
 BOOL layout_update (LAYOUT *layout, int offset, int old_length, int new_length);
