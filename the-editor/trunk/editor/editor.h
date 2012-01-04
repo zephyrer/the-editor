@@ -6,8 +6,6 @@
 #include "../text/text.h"
 #include "../layout/layout.h"
 
-typedef UINT32 EDITOR_CHAR;
-
 typedef struct tagEDITOR
 {
     int anchor_offset;

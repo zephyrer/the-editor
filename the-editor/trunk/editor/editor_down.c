@@ -6,7 +6,7 @@
 
 void editor_down (EDITOR *editor, int rows, BOOL selecting)
 {
-    int row;
+    int row, fake;
 
     assert (editor != NULL);
     assert (rows > 0);
@@ -24,7 +24,7 @@ void editor_down (EDITOR *editor, int rows, BOOL selecting)
             layout_row_column_to_offset (
                 &editor->layout, 
                 min (row + rows, editor->layout.row_offsets.length - 1), 
-                column), 
+                column, &fake), 
             selecting);
         editor->caret_column = column;
     }

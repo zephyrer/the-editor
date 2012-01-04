@@ -39,6 +39,7 @@ BOOL text_replace_range (TEXT *text, int offset, int length, int replacement_len
         offset_ptr,
         replacement,
         replacement_length * sizeof (char));
+    text->length = new_length;
 
     return TRUE;
 

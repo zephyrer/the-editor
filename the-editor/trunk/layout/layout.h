@@ -30,7 +30,7 @@ int layout_offset_to_row (LAYOUT *layout, int offset);
 int layout_offset_to_column (LAYOUT *layout, int offset, int row);
 int layout_offset_to_line (LAYOUT *layout, int offset);
 int layout_line_to_offset (LAYOUT *layout, int line);
-int layout_row_column_to_offset (LAYOUT *layout, int row, int column);
+int layout_row_column_to_offset (LAYOUT *layout, int row, int column, int *real_column);
 
 int layout_line_count (LAYOUT *layout);
 

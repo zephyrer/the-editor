@@ -233,28 +233,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="editorctl\editorctl_create_whitespace_icons.c" />
-    <ClCompile Include="editorctl\editorctl_ensure_cell_visible.c" />
-    <ClCompile Include="editorctl\editorctl_invalidate_rows.c" />
-    <ClCompile Include="editorctl\editorctl_move_mouse_cursor.c" />
-    <ClCompile Include="editorctl\editorctl_on_char.c" />
     <ClCompile Include="editorctl\editorctl_on_create.c" />
     <ClCompile Include="editorctl\editorctl_on_destroy.c" />
-    <ClCompile Include="editorctl\editorctl_on_hscroll.c" />
-    <ClCompile Include="editorctl\editorctl_on_keydown.c" />
-    <ClCompile Include="editorctl\editorctl_on_killfocus.c" />
-    <ClCompile Include="editorctl\editorctl_on_lbuttondown.c" />
-    <ClCompile Include="editorctl\editorctl_on_lbuttonup.c" />
-    <ClCompile Include="editorctl\editorctl_on_mousemove.c" />
-    <ClCompile Include="editorctl\editorctl_on_mousewheel.c" />
     <ClCompile Include="editorctl\editorctl_on_paint.c" />
-    <ClCompile Include="editorctl\editorctl_on_setfocus.c" />
-    <ClCompile Include="editorctl\editorctl_on_setfont.c" />
-    <ClCompile Include="editorctl\editorctl_on_size.c" />
-    <ClCompile Include="editorctl\editorctl_on_vscroll.c" />
     <ClCompile Include="editorctl\editorctl_register_class.c" />
-    <ClCompile Include="editorctl\editorctl_scroll_to.c" />
-    <ClCompile Include="editorctl\editorctl_update_caret_pos.c" />
-    <ClCompile Include="editorctl\editorctl_update_scroll_range.c" />
     <ClCompile Include="editorctl\editorctl_wnd_proc.c" />
     <ClCompile Include="editor\editor_backspace.c" />
     <ClCompile Include="editor\editor_backspace_word.c" />
@@ -301,6 +283,7 @@
     <ClCompile Include="mainwnd\mainwnd_register_class.c" />
     <ClCompile Include="mainwnd\mainwnd_wnd_proc.c" />
     <ClCompile Include="text\text_destroy.c" />
+    <ClCompile Include="text\text_get_char.c" />
     <ClCompile Include="text\text_initialize.c" />
     <ClCompile Include="text\text_is_line_boundary.c" />
     <ClCompile Include="text\text_is_word_boundary.c" />
@@ -314,6 +297,7 @@
     <ClCompile Include="text\text_next_row_wrap.c" />
     <ClCompile Include="text\text_prev_offset.c" />
     <ClCompile Include="text\text_prev_position.c" />
+    <ClCompile Include="text\text_render_row.c" />
     <ClCompile Include="text\text_replace_range.c" />
     <ClCompile Include="utils\utils_bsearch_int.c" />
     <ClCompile Include="utils\utils_increase_int.c" />

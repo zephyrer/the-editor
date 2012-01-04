@@ -39,6 +39,7 @@ BOOL intlist_replace_range (INTLIST *list, int offset, int length, int replaceme
         offset_ptr,
         replacement,
         replacement_length * sizeof (int));
+    list->length = new_length;
 
     return TRUE;
 

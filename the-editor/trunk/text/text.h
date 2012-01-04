@@ -3,6 +3,13 @@
 
 #include <windows.h>
 
+#define TEXT_NONE (-1)
+#define TEXT_WRAP (-2)
+#define TEXT_TAB_BEGIN (-3)
+#define TEXT_TAB_MIDDLE (-4)
+#define TEXT_TAB_END (-5)
+#define TEXT_TAB (-6)
+
 typedef struct tagTEXT
 {
     int length;
@@ -33,5 +40,7 @@ BOOL text_next_row_wrap (TEXT *text, int *offset, int *col, int tab_width, int w
 
 BOOL text_is_word_boundary (TEXT *text, int offset);
 BOOL text_is_line_boundary (TEXT *text, int offset);
+
+void text_render_row (TEXT *text, int offset, int length, int start_column, int column, int buffer_length, int *char_buffer, int *offset_buffer, int tab_width);
 
 #endif
