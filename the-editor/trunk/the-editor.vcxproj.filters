@@ -212,6 +212,54 @@
     <ClCompile Include="editorctl\editorctl_create_whitespace_icons.c">
       <Filter>editorctl</Filter>
     </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_setfont.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_size.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_update_scroll_range.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_scroll_to.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_update_caret_pos.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_setfocus.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_killfocus.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_hscroll.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_vscroll.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_mousewheel.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_lbuttondown.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_lbuttonup.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_on_mousemove.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_move_mouse_cursor.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_prev_word_boundary.c">
+      <Filter>text</Filter>
+    </ClCompile>
+    <ClCompile Include="text\text_next_word_boundary.c">
+      <Filter>text</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">

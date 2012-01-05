@@ -2,15 +2,11 @@
 
 #include "editorctl.h"
 
-LRESULT editorctl_on_lbuttonup (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT editorctl_on_lbuttonup (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    EDITORCTL_EXTRA *extra;
-
-    if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
-
-    extra->last_click_time = GetTickCount64 ();
-    extra->last_click_x = GET_X_LPARAM (lParam);
-    extra->last_click_y = GET_Y_LPARAM (lParam);
+    editorctl->last_click_time = GetTickCount64 ();
+    editorctl->last_click_x = GET_X_LPARAM (lParam);
+    editorctl->last_click_y = GET_Y_LPARAM (lParam);
 
     if (ReleaseCapture ()) goto error;
 

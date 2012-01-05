@@ -86,6 +86,8 @@ static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_l
             row_after = layout->row_offsets.length;
             break;
         }
+
+        c = 0;
     }
 
     layout->max_row_width = utils_update_max_int (

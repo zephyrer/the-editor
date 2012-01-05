@@ -23,7 +23,7 @@ LRESULT editorctl_on_create (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM w
 
     editorctl->editor.heap = NULL;
     if (!editor_initialize (&editorctl->editor, heap)) goto error;
-    if (!editor_replace_range (&editorctl->editor, 0, 0, 17, "Hel\rlo,\r\n Wor\nld!", 0)) goto error;
+    if (!editor_replace_range (&editorctl->editor, 0, 0, 17, "H\tl\tlo,\r\n Wor\nld!", 0)) goto error;
 
     if (!editorctl_create_whitespace_icons (editorctl)) goto error;
 

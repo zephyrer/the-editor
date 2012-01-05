@@ -29,6 +29,9 @@ BOOL text_next_offset (TEXT *text, int *offset);
 BOOL text_prev_position (TEXT *text, int *offset);
 BOOL text_next_position (TEXT *text, int *offset);
 
+BOOL text_prev_word_boundary (TEXT *text, int *offset);
+BOOL text_next_word_boundary (TEXT *text, int *offset);
+
 BOOL text_next_nonspace (TEXT *text, int *offset);
 
 void text_move_to_column (TEXT *text, int *offset, int *column, int to_column, int tab_width);

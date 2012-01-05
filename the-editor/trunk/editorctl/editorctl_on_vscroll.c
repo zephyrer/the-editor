@@ -1,18 +1,15 @@
 #include "editorctl.h"
 
-LRESULT editorctl_on_vscroll (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT editorctl_on_vscroll (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    EDITORCTL_EXTRA *extra;
     SCROLLINFO si;
     RECT r;
     int y, h, height;
 
-    if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
-
-    if (!GetClientRect (hwnd, &r)) goto error;
+    if (!GetClientRect (editorctl->hwnd, &r)) goto error;
 
     h = r.bottom - r.top;
-    height = extra->row_count * extra->cell_size.cy;
+    height = editorctl->editor.layout.row_offsets.length * editorctl->cell_size.cy;
 
     switch (LOWORD (wParam))
     {
@@ -23,16 +20,16 @@ LRESULT editorctl_on_vscroll (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         y = height - h;
         break;
     case SB_LINELEFT:
-        y = extra->scroll_location.y - extra->cell_size.cy;
+        y = editorctl->scroll_location.y - editorctl->cell_size.cy;
         break;
     case SB_LINERIGHT:
-        y = extra->scroll_location.y + extra->cell_size.cy;
+        y = editorctl->scroll_location.y + editorctl->cell_size.cy;
         break;
     case SB_PAGELEFT:
-        y = extra->scroll_location.y - max (extra->cell_size.cy, h);
+        y = editorctl->scroll_location.y - max (editorctl->cell_size.cy, h);
         break;
     case SB_PAGERIGHT:
-        y = extra->scroll_location.y + max (extra->cell_size.cy, h);
+        y = editorctl->scroll_location.y + max (editorctl->cell_size.cy, h);
         break;
     case SB_THUMBPOSITION:
     case SB_THUMBTRACK:
@@ -42,13 +39,13 @@ LRESULT editorctl_on_vscroll (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         y = si.nTrackPos;
         break;
     default:
-        y = extra->scroll_location.y;
+        y = editorctl->scroll_location.y;
     }
 
     y = min (height - h, y);
     y = max (0, y);
 
-    if (!editorctl_scroll_to (hwnd, extra->scroll_location.x, y)) goto error;
+    if (!editorctl_scroll_to (editorctl, editorctl->scroll_location.x, y)) goto error;
 
     return 0;
 error:

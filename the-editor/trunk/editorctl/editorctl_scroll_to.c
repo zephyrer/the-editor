@@ -1,36 +1,32 @@
 #include "editorctl.h"
 
-BOOL editorctl_scroll_to (HWND hwnd, int x, int y)
+BOOL editorctl_scroll_to (EDITORCTL *editroctl, int x, int y)
 {
-    EDITORCTL_EXTRA *extra;
-
-    if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
-
-    if (extra->scroll_location.x != x || extra->scroll_location.y != y)
+    if (editroctl->scroll_location.x != x || editroctl->scroll_location.y != y)
     {
         SCROLLINFO si;
 
-        if (!ScrollWindow (hwnd, extra->scroll_location.x - x, extra->scroll_location.y - y, NULL, NULL)) goto error;
+        if (!ScrollWindow (editroctl->hwnd, editroctl->scroll_location.x - x, editroctl->scroll_location.y - y, NULL, NULL)) goto error;
 
-        if (extra->scroll_location.x != x)
+        if (editroctl->scroll_location.x != x)
         {
             si.cbSize = sizeof (SCROLLINFO);
             si.fMask = SIF_POS;
             si.nPos = x;
-            SetScrollInfo (hwnd, SB_HORZ, &si, TRUE);
-            extra->scroll_location.x = x;
+            SetScrollInfo (editroctl->hwnd, SB_HORZ, &si, TRUE);
+            editroctl->scroll_location.x = x;
         }
 
-        if (extra->scroll_location.y != y)
+        if (editroctl->scroll_location.y != y)
         {
             si.cbSize = sizeof (SCROLLINFO);
             si.fMask = SIF_POS;
             si.nPos = y;
-            SetScrollInfo (hwnd, SB_VERT, &si, TRUE);
-            extra->scroll_location.y = y;
+            SetScrollInfo (editroctl->hwnd, SB_VERT, &si, TRUE);
+            editroctl->scroll_location.y = y;
         }
 
-        if (!editorctl_update_caret_pos (hwnd)) goto error;
+        if (!editorctl_update_caret_pos (editroctl)) goto error;
     }
 
     return TRUE;
