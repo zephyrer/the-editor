@@ -81,4 +81,6 @@ BOOL editorctl_ensure_cell_visible (EDITORCTL *editorctl, int row, int col);
 BOOL editorctl_move_mouse_cursor (EDITORCTL *editorctl, int x, int y, BOOL selecting);
 BOOL editorctl_invalidate_rows (EDITORCTL *editorctl, int start_row, int end_row);
 
+BOOL editorctl_update (EDITORCTL *editorctl);
+
 #endif

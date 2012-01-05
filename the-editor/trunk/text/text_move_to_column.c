@@ -13,7 +13,7 @@ void text_move_to_column (TEXT *text, int *offset, int *column, int to_column, i
     assert (*offset >= 0);
     assert (*offset <= text->length);
     assert (*column >= 0);
-    assert (*column < to_column);
+    assert (*column <= to_column);
     assert (tab_width > 0);
 
     o = *offset;
