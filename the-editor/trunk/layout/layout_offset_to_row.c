@@ -10,7 +10,6 @@ int layout_offset_to_row (LAYOUT *layout, int offset)
 
     assert (layout != NULL);
     assert (offset >= 0);
-    assert (offset <= layout->text->length);
 
     row = utils_bsearch_int (offset, layout->row_offsets.data, layout->row_offsets.length);
     if (row < 0)

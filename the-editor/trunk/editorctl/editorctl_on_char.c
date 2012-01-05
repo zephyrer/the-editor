@@ -1,64 +1,46 @@
 #include "editorctl.h"
 
-static BOOL insert (HWND hwnd, EDITORCTL_EXTRA *extra, char *buffer, int buffer_length, BOOL overwrite)
+LRESULT editorctl_on_char (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    int start_offset;
-    int length;
+    if ((GetKeyState (VK_CONTROL) & 0x8000) == 0 && (GetKeyState (VK_MENU) & 0x8000) == 0 && (wParam >= 0x20 || wParam == '\t') && wParam != 0x7F)
+    {
+        char ch;
 
-    if (extra->anchor_offset != extra->caret_offset)
-    {
-        start_offset = min (extra->anchor_offset, extra->caret_offset);
-        length = abs (extra->anchor_offset - extra->caret_offset);
-    }
-    else
-    {
-        length = 0;
-        start_offset = extra->caret_offset;
-        if (overwrite && start_offset < extra->text_length)
+        ch = (char)wParam;
+
+        if (editorctl->editor.anchor_offset != editorctl->editor.caret_offset)
         {
-            EDITORCTL_TEXT_ITERATOR it;
-
-            if (!editorctl_set_iterator (hwnd, start_offset, &it)) goto error;
-            if (editorctl_forward (&it) && editorctl_get_prev_char (&it) != '\r' && editorctl_get_prev_char (&it) != '\n')
-                length = it.offset - start_offset;
+            editor_replace_selection (&editorctl->editor, 1, &ch);
         }
-    }
-
-    if (!editorctl_replace_range (hwnd, start_offset, length, buffer, buffer_length, start_offset + buffer_length)) goto error;
-
-    return TRUE;
-error:
-    return FALSE;
-}
-
-LRESULT editorctl_on_char (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    EDITORCTL_EXTRA *extra;
-    char buffer [EDITORCTL_MAX_CHAR_WIDTH];
-    char *ptr;
-
-    if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
-
-    if ((GetKeyState (VK_CONTROL) & 0x8000) == 0 && (GetKeyState (VK_MENU) & 0x8000) == 0)
-    {
-        switch (wParam)
+        else
         {
-        case 0x0A: 
-        case 0x0D: 
-            if (!insert (hwnd, extra, extra->new_line, extra->new_line_length, FALSE)) goto error;
-            break;
-        case 0x08: 
-        case 0x1B: 
-        case 0x7F:
-            break;
-        default:
-            ptr = buffer;
-            editorctl_set_next_char (wParam, &ptr);
-            if (!insert (hwnd, extra, buffer, ptr - buffer, extra->overwrite)) goto error;
+            int offset;
+            BOOL overwrite = editorctl->overwrite;
+
+            if (editorctl->editor.anchor_offset == editorctl->editor.caret_offset)
+                overwrite = FALSE;
+
+            if (editorctl->editor.caret_offset == editorctl->editor.text.length)
+                overwrite = FALSE;
+
+            offset = editorctl->editor.caret_offset;
+            if (!text_next_position (&editorctl->editor.text, &offset) || 
+                text_is_line_boundary (&editorctl->editor.text, offset))
+                overwrite = FALSE;
+
+            if (overwrite)
+                editor_overwrite (&editorctl->editor, 1, &ch);
+            else
+                editor_insert (&editorctl->editor, 1, &ch);
         }
+
+        if (!editorctl_update_scroll_range (editorctl)) goto error;
+        if (!editorctl_update (editorctl)) goto error;
+        if (!editorctl_update_caret_pos (editorctl)) goto error;
     }
 
     return 0;
+
 error:
     return -1;
 }

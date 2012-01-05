@@ -27,5 +27,5 @@ int utils_update_max_int (const int list [], int list_length, int offset, int le
     tail_max = offset + length >= list_length ? INT_MIN : utils_max_int (list + offset + length, list_length - offset - length);
     
     m = max (head_max, tail_max);
-    return max (m, original_max);
+    return max (m, replacement_max);
 }

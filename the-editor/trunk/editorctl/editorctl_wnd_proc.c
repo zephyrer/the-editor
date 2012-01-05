@@ -30,9 +30,9 @@ LRESULT CALLBACK editorctl_wnd_proc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             return editorctl_on_mousewheel (editorctl, hwnd, msg, wParam, lParam);
         case WM_SETFONT:
             return editorctl_on_setfont (editorctl, hwnd, msg, wParam, lParam);
-/*        case WM_CHAR:
+        case WM_CHAR:
             return editorctl_on_char (editorctl, hwnd, msg, wParam, lParam);
-        case WM_KEYDOWN:
+/*        case WM_KEYDOWN:
             return editorctl_on_keydown (editorctl, hwnd, msg, wParam, lParam); */
         case WM_LBUTTONDOWN:
             return editorctl_on_lbuttondown (editorctl, hwnd, msg, wParam, lParam);
