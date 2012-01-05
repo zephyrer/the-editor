@@ -62,6 +62,10 @@ static void render_row (EDITORCTL *editorctl, int row, int start_col, int width,
                 chars [i] = EDITORCTL_WHITESPACE_TAB_END;
                 styles [i] = selected ? STYLE_WHITESPACE_SELECTED : STYLE_WHITESPACE;
                 break;
+            case ' ':
+                chars [i] = EDITORCTL_WHITESPACE_SPACE;
+                styles [i] = selected ? STYLE_WHITESPACE_SELECTED : STYLE_WHITESPACE;
+                break;
             case '\r':
                 chars [i] = EDITORCTL_WHITESPACE_CR;
                 styles [i] = selected ? STYLE_WHITESPACE_SELECTED : STYLE_WHITESPACE;
