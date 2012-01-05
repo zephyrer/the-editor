@@ -201,6 +201,7 @@ LRESULT editorctl_on_keydown (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM 
         }
     }
 
+    if (!editorctl_update_scroll_range (editorctl)) goto error;
     if (!editorctl_update (editorctl)) goto error;
     if (!editorctl_update_caret_pos (editorctl)) goto error;
 
