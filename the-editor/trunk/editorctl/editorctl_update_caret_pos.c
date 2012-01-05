@@ -1,17 +1,15 @@
 #include "editorctl.h"
 
-BOOL editorctl_update_caret_pos (HWND hwnd)
+BOOL editorctl_update_caret_pos (EDITORCTL *editorctl)
 {
-    if (GetFocus () == hwnd)
+    if (GetFocus () == editorctl->hwnd)
     {
-        EDITORCTL_EXTRA *extra;
         int row, col;
 
-        if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
+        row = layout_offset_to_row (&editorctl->editor.layout, editorctl->editor.caret_offset);
+        col = layout_offset_to_column (&editorctl->editor.layout, editorctl->editor.caret_offset, row);
 
-        if (!editorctl_offset_to_rc (hwnd, extra->caret_offset, &row, &col)) goto error;
-
-        if (!SetCaretPos (col * extra->cell_size.cx - extra->scroll_location.x, row * extra->cell_size.cy - extra->scroll_location.y)) goto error;
+        if (!SetCaretPos (col * editorctl->cell_size.cx - editorctl->scroll_location.x, row * editorctl->cell_size.cy - editorctl->scroll_location.y)) goto error;
     }
 
     return TRUE;

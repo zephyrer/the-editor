@@ -11,10 +11,6 @@ void editor_left_word (EDITOR *editor, BOOL selecting)
     assert (editor != NULL);
 
     offset = editor->caret_offset;
-    while (text_prev_position (&editor->text, &offset))
-    {
-        if (text_is_word_boundary (&editor->text, offset)) break;
-    }
-
-    editor_move_caret (editor, offset, selecting);
+    if (text_prev_word_boundary (&editor->text, &offset))
+        editor_move_caret (editor, offset, selecting);
 }

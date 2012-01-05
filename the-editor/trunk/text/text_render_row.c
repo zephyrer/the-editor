@@ -24,7 +24,7 @@ void text_render_row (TEXT *text, int offset, int length, int start_column, int 
     c = start_column;
     while (o < eo)
     {
-        ch = text->data [o++];
+        ch = text->data [o];
         if (ch == '\t')
         {
             int n;
@@ -68,6 +68,8 @@ void text_render_row (TEXT *text, int offset, int length, int start_column, int 
             c += 1;
             if (c >= column + buffer_length) return;
         }
+
+        o += 1;
     }
 
     if (eo != text->length && ch != '\r' && ch != '\n')

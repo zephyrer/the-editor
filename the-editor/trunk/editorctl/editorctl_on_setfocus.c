@@ -1,13 +1,10 @@
 #include "editorctl.h"
 
-LRESULT editorctl_on_setfocus (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT editorctl_on_setfocus (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    EDITORCTL_EXTRA *extra;
-
-    if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
-    if (!CreateCaret (hwnd, (HBITMAP) NULL, extra->overwrite ? extra->cell_size.cx : 1, extra->cell_size.cy)) goto error;
-    if (!editorctl_update_caret_pos (hwnd)) goto error;
-    if (!ShowCaret (hwnd)) goto error;
+    if (!CreateCaret (hwnd, (HBITMAP) NULL, editorctl->overwrite ? editorctl->cell_size.cx : 1, editorctl->cell_size.cy)) goto error;
+    if (!editorctl_update_caret_pos (editorctl)) goto error;
+    if (!ShowCaret (editorctl->hwnd)) goto error;
 
     return 0;
 error:

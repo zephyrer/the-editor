@@ -1,18 +1,14 @@
 #include "editorctl.h"
 
-LRESULT editorctl_on_setfont (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT editorctl_on_setfont (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    EDITORCTL_EXTRA *extra;
-
-    if ((extra = (EDITORCTL_EXTRA *)GetWindowLongPtr (hwnd, 0)) == NULL) goto error;
-
-    if (extra->font != (HFONT)wParam)
+    if (editorctl->font != (HFONT)wParam)
     {
-        extra->font = (HFONT)wParam;
+        editorctl->font = (HFONT)wParam;
 
         if (lParam)
         {
-            if (!InvalidateRect (hwnd, NULL, TRUE)) goto error;
+            if (!InvalidateRect (editorctl->hwnd, NULL, TRUE)) goto error;
         }
     }
 
