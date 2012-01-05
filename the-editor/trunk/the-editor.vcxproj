@@ -239,6 +239,7 @@
     <ClCompile Include="editorctl\editorctl_on_create.c" />
     <ClCompile Include="editorctl\editorctl_on_destroy.c" />
     <ClCompile Include="editorctl\editorctl_on_hscroll.c" />
+    <ClCompile Include="editorctl\editorctl_on_keydown.c" />
     <ClCompile Include="editorctl\editorctl_on_killfocus.c" />
     <ClCompile Include="editorctl\editorctl_on_lbuttondown.c" />
     <ClCompile Include="editorctl\editorctl_on_lbuttonup.c" />

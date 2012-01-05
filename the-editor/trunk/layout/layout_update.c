@@ -54,6 +54,8 @@ static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_l
             layout->tab_width);
     }
 
+    if (!intlist_append (&row_offsets, layout->row_offsets.data [start_row])) goto error;
+
     o = offset;
     l = layout->text->length;
     while (TRUE)
@@ -98,9 +100,10 @@ static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_l
         layout->max_row_width);
 
     utils_increase_int (layout->row_offsets.data + row_after, layout->row_offsets.length - row_after, new_length - old_length);
+
     if (!intlist_replace_range (
         &layout->row_offsets, 
-        start_row + 1, row_after - start_row - 1, 
+        start_row, row_after - start_row, 
         row_offsets.length, row_offsets.data)) goto error;
 
     if (!intlist_replace_range (
@@ -110,7 +113,10 @@ static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_l
 
     assert (layout->max_row_width == utils_max_int (layout->row_widths.data, layout->row_widths.length));
 
-    layout_add_dirty_range (layout, start_row, (row_after - start_row <= row_widths.length) ? (start_row + row_widths.length) : row_after);
+    if (row_after - start_row != row_widths.length)
+        layout_add_dirty_range (layout, start_row, row_after - start_row < row_widths.length ? layout->row_offsets.length : layout->row_offsets.length + row_after - start_row - row_widths.length);
+    else
+        layout_add_dirty_range (layout, start_row, row_after);
 
     if (!intlist_destroy (&row_offsets)) goto error;
     row_offsets.data = NULL;
