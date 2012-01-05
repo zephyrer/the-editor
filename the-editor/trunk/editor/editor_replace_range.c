@@ -6,8 +6,6 @@
 
 BOOL editor_replace_range (EDITOR *editor, int offset, int length, int replacement_length, const char replacement [], int caret_offset)
 {
-    int fake;
-
     assert (editor != NULL);
     assert (offset >= 0);
     assert (length >= 0);
@@ -16,7 +14,7 @@ BOOL editor_replace_range (EDITOR *editor, int offset, int length, int replaceme
     assert (replacement_length == 0 || replacement != NULL);
 
     if (!text_replace_range (&editor->text, offset, length, replacement_length, replacement)) goto error;
-    if (!layout_update (&editor->layout, offset, length, replacement_length, &fake, &fake)) goto error;
+    if (!layout_update (&editor->layout, offset, length, replacement_length)) goto error;
     editor_move_caret (editor, caret_offset, FALSE);
 
     return TRUE;

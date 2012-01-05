@@ -260,6 +260,18 @@
     <ClCompile Include="text\text_next_word_boundary.c">
       <Filter>text</Filter>
     </ClCompile>
+    <ClCompile Include="layout\layout_reset_dirty_rows.c">
+      <Filter>layout</Filter>
+    </ClCompile>
+    <ClCompile Include="layout\layout_add_dirty_range.c">
+      <Filter>layout</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_update.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_invalidate_rows.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">

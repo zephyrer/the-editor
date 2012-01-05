@@ -2,7 +2,8 @@
 
 static int prev_word_boundary (EDITORCTL *editorctl, int offset)
 {
-    text_prev_word_boundary (&editorctl->editor.text, &offset);
+    if (!text_is_word_boundary (&editorctl->editor.text, offset))
+        text_prev_word_boundary (&editorctl->editor.text, &offset);
     return offset;
 }
 
@@ -34,6 +35,9 @@ BOOL editorctl_move_mouse_cursor (EDITORCTL *editorctl, int x, int y, BOOL selec
 
     row = (y + editorctl->scroll_location.y) / editorctl->cell_size.cy;
     col = (x + editorctl->scroll_location.x + editorctl->cell_size.cx * 2 / 3) / editorctl->cell_size.cx;
+
+    if (row < 0) row = 0;
+    if (col < 0) col = 0;
 
     if (row >= editorctl->editor.layout.row_offsets.length)
         row = editorctl->editor.layout.row_offsets.length - 1;
@@ -70,5 +74,11 @@ BOOL editorctl_move_mouse_cursor (EDITORCTL *editorctl, int x, int y, BOOL selec
         break;
     }
 
+    if (!editorctl_update (editorctl)) goto error;
+    if (!editorctl_update_caret_pos (editorctl)) goto error;
+
     return TRUE;
+
+error:
+    return FALSE;
 }

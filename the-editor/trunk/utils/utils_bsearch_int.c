@@ -20,13 +20,13 @@ int utils_bsearch_int (int value, const int list [], int length)
         vb = list [b];
 
         if (value < va)
-            return (-a - 1);
+            return -1;
         else if (value == va)
             return a;
         else if (value == vb)
             return b;
         else if (value > vb)
-            return (-b - 1);
+            return (-length - 1);
         else
         {
             while (b - a > 1)
