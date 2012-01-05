@@ -9,7 +9,8 @@ static int prev_word_boundary (EDITORCTL *editorctl, int offset)
 
 static int next_word_boundary (EDITORCTL *editorctl, int offset)
 {
-    text_next_word_boundary (&editorctl->editor.text, &offset);
+    if (!text_is_word_boundary (&editorctl->editor.text, offset))
+        text_next_word_boundary (&editorctl->editor.text, &offset);
     return offset;
 }
 
