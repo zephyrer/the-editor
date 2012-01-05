@@ -7,9 +7,7 @@ static void add_dirty_range (EDITOR *editor, int from, int to)
 {
     assert (editor != NULL);
     assert (from >= 0);
-    assert (from <= editor->text.length);
     assert (to >= 0) ;
-    assert (to <= editor->text.length);
 
     if (from != to)
     {

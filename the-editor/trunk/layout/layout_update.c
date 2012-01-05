@@ -21,8 +21,8 @@ static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_l
     assert (layout->wrap == -1);
     assert (offset >= 0);
     assert (old_length >= 0);
-    assert (offset + old_length <= layout->text->length);
     assert (new_length >= 0);
+    assert (offset + new_length <= layout->text->length);
 
     row_offsets.data = NULL;
     row_widths.data = NULL;
@@ -108,6 +108,8 @@ static BOOL update_nowrap (LAYOUT *layout, int offset, int old_length, int new_l
         start_row, row_after - start_row,
         row_widths.length, row_widths.data)) goto error;
 
+    assert (layout->max_row_width == utils_max_int (layout->row_widths.data, layout->row_widths.length));
+
     layout_add_dirty_range (layout, start_row, (row_after - start_row <= row_widths.length) ? (start_row + row_widths.length) : row_after);
 
     if (!intlist_destroy (&row_offsets)) goto error;
@@ -131,8 +133,8 @@ BOOL layout_update (LAYOUT *layout, int offset, int old_length, int new_length)
     assert (layout != NULL);
     assert (offset >= 0);
     assert (old_length >= 0);
-    assert (offset + old_length <= layout->text->length);
     assert (new_length >= 0);
+    assert (offset + new_length <= layout->text->length);
 
     return 
         layout->wrap == -1 ? 

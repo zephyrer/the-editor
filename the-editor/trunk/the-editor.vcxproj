@@ -235,6 +235,7 @@
     <ClCompile Include="editorctl\editorctl_create_whitespace_icons.c" />
     <ClCompile Include="editorctl\editorctl_invalidate_rows.c" />
     <ClCompile Include="editorctl\editorctl_move_mouse_cursor.c" />
+    <ClCompile Include="editorctl\editorctl_on_char.c" />
     <ClCompile Include="editorctl\editorctl_on_create.c" />
     <ClCompile Include="editorctl\editorctl_on_destroy.c" />
     <ClCompile Include="editorctl\editorctl_on_hscroll.c" />
