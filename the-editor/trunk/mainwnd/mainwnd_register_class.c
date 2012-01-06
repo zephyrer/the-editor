@@ -13,7 +13,7 @@ ATOM mainwnd_register_class (HINSTANCE hInstance)
 
     assert (hInstance != NULL);
 
-    icon = LoadIcon (hInstance, THE_EDITOR_ICON_ID);
+    icon = LoadIcon (hInstance, (LPCWSTR)THE_EDITOR_ICON_ID);
 
     wc.cbSize        = sizeof (WNDCLASSEX);
     wc.style         = 0;
