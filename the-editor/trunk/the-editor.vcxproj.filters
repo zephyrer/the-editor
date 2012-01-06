@@ -310,6 +310,7 @@
     <ClInclude Include="editor\editor.h">
       <Filter>editor</Filter>
     </ClInclude>
+    <ClInclude Include="resources.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CHANGELOG.txt" />
@@ -337,5 +338,8 @@
     <Filter Include="editor">
       <UniqueIdentifier>{cad3a35e-f914-4860-a3df-72b3e9a43b9f}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="the-editor.rc" />
   </ItemGroup>
 </Project>

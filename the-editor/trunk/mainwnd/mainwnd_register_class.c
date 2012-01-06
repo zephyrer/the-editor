@@ -1,3 +1,7 @@
+#include <assert.h>
+#include <windows.h>
+
+#include "../resources.h"
 #include "mainwnd.h"
 
 extern LPTSTR MAINWND_CLASS_NAME = TEXT ("TheEditorMainWindow");
@@ -5,6 +9,11 @@ extern LPTSTR MAINWND_CLASS_NAME = TEXT ("TheEditorMainWindow");
 ATOM mainwnd_register_class (HINSTANCE hInstance)
 {
     WNDCLASSEX wc;
+    HICON icon;
+
+    assert (hInstance != NULL);
+
+    icon = LoadIcon (hInstance, THE_EDITOR_ICON_ID);
 
     wc.cbSize        = sizeof (WNDCLASSEX);
     wc.style         = 0;
@@ -12,12 +21,12 @@ ATOM mainwnd_register_class (HINSTANCE hInstance)
     wc.cbClsExtra    = 0;
     wc.cbWndExtra    = sizeof (LONG_PTR);
     wc.hInstance     = hInstance;
-    wc.hIcon         = LoadIcon (NULL, IDI_APPLICATION);
+    wc.hIcon         = icon;
     wc.hCursor       = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = NULL;
-    wc.lpszMenuName  = NULL;
+    wc.lpszMenuName  = (LPCWSTR)MAIN_MENU_ID;
     wc.lpszClassName = MAINWND_CLASS_NAME;
-    wc.hIconSm       = LoadIcon (NULL, IDI_APPLICATION);
+    wc.hIconSm       = NULL;
 
     return RegisterClassEx(&wc);
 }

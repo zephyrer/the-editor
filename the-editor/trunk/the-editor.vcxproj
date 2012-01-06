@@ -228,6 +228,7 @@
     <ClInclude Include="intlist\intlist.h" />
     <ClInclude Include="layout\layout.h" />
     <ClInclude Include="mainwnd\mainwnd.h" />
+    <ClInclude Include="resources.h" />
     <ClInclude Include="text\text.h" />
     <ClInclude Include="utils\utils.h" />
   </ItemGroup>
@@ -332,6 +333,9 @@
   <ItemGroup>
     <None Include="CHANGELOG.txt" />
     <None Include="TODO.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="the-editor.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
