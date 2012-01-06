@@ -1,0 +1,53 @@
+#include "resources.h"
+
+MAIN_MENU_ID MENU
+{
+    POPUP "&File"
+    {
+        MENUITEM "&New\aCtrl+N", CM_FILE_NEW
+        MENUITEM "&Open...\aCtrl+O", CM_FILE_OPEN
+        MENUITEM "&Save\aCtrl+S", CM_FILE_SAVE
+        MENUITEM "S&ave As...", CM_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Pa&ge Setup...", CM_FILE_PAGE_SETUP
+        MENUITEM "&Print...\aCtrl+P", CM_FILE_PRINT
+        MENUITEM SEPARATOR
+        MENUITEM "Exit\aAlt+F4", CM_FILE_EXIT
+    }
+    POPUP "&Edit"
+    {
+        MENUITEM "&Undo\aCtrl+Z", CM_EDIT_UNDO
+        MENUITEM "&Redo\aCtrl+Y", CM_EDIT_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "&Cut\aCtrl+X", CM_EDIT_CUT
+        MENUITEM "C&opy\aCtrl+C", CM_EDIT_COPY
+        MENUITEM "&Paste\aCtrl+V", CM_EDIT_PASTE
+        MENUITEM "&Delete\aDel", CM_EDIT_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Find...\aCtrl+F", CM_EDIT_FIND
+        MENUITEM "Find &Next\aF3", CM_EDIT_FIND_NEXT
+        MENUITEM "R&eplace...\aCtrl+H", CM_EDIT_REPLACE
+        MENUITEM "&Go To Line...\aCtrl+G", CM_EDIT_GO_TO_LINE
+        MENUITEM SEPARATOR
+        MENUITEM "&Select All\aCtrl+A", CM_EDIT_SELECT_ALL
+    }
+    POPUP "&View"
+    {
+        MENUITEM "&Font...", CM_VIEW_FONT
+        MENUITEM "&Tab Width...", CM_VIEW_TAB_WIDTH
+        MENUITEM SEPARATOR
+        MENUITEM "&Word Wrap", CM_VIEW_WORD_WRAP
+        MENUITEM "&Visible White Space", CM_VIEW_VISIBLE_WHITE_SPACE
+        MENUITEM SEPARATOR
+        MENUITEM "&Status Bar", CM_VIEW_STATUS_BAR
+        MENUITEM "&Line Numbers", CM_VIEW_LINE_NUMBERS
+    }
+    POPUP "&Help"
+    {
+        MENUITEM "&View Help\aF1", CM_HELP_VIEW_HELP
+        MENUITEM SEPARATOR
+        MENUITEM "&About The Editor...", CM_HELP_ABOUT_THE_EDITOR
+    }
+}
+
+THE_EDITOR_ICON_ID ICON "the-editor.ico"
