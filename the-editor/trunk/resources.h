@@ -3,6 +3,7 @@
 
 #define MAIN_MENU_ID 1
 #define THE_EDITOR_ICON_ID 1
+#define ABOUT_THE_EDITOR_DIALOG_ID 1
 
 #define CM_FILE_NEW 100
 #define CM_FILE_OPEN 101

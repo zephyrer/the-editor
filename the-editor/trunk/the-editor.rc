@@ -1,3 +1,5 @@
+#include <windows.h>
+
 #include "resources.h"
 
 MAIN_MENU_ID MENU
@@ -51,3 +53,9 @@ MAIN_MENU_ID MENU
 }
 
 THE_EDITOR_ICON_ID ICON "the-editor.ico"
+
+ABOUT_THE_EDITOR_DIALOG_ID DIALOG 0, 0, 320, 240
+WS_POPUP | WS_BORDER
+CAPTION "About The Editor"
+{
+}
