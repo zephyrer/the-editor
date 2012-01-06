@@ -1,4 +1,3 @@
 - Unde/redo
 - Line/column/offset in status bar
-- Word-wrapping
 - UTF-16 text
