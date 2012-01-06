@@ -233,6 +233,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="editorctl\editorctl_create_whitespace_icons.c" />
+    <ClCompile Include="editorctl\editorctl_ensure_cell_visible.c" />
     <ClCompile Include="editorctl\editorctl_invalidate_rows.c" />
     <ClCompile Include="editorctl\editorctl_move_mouse_cursor.c" />
     <ClCompile Include="editorctl\editorctl_on_char.c" />

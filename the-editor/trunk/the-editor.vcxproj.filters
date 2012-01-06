@@ -260,6 +260,9 @@
     <ClCompile Include="text\text_next_word_boundary.c">
       <Filter>text</Filter>
     </ClCompile>
+    <ClCompile Include="editorctl\editorctl_ensure_cell_visible.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
     <ClCompile Include="layout\layout_reset_dirty_rows.c">
       <Filter>layout</Filter>
     </ClCompile>
