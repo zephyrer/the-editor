@@ -254,13 +254,14 @@
     <ClCompile Include="editorctl\editorctl_register_class.c" />
     <ClCompile Include="editorctl\editorctl_scroll_to.c" />
     <ClCompile Include="editorctl\editorctl_update.c" />
-    <ClCompile Include="editorctl\editorctl_update_caret_pos.c" />
+    <ClCompile Include="editorctl\editorctl_update_caret.c" />
     <ClCompile Include="editorctl\editorctl_update_scroll_range.c" />
     <ClCompile Include="editorctl\editorctl_wnd_proc.c" />
     <ClCompile Include="editor\editor_backspace.c" />
     <ClCompile Include="editor\editor_backspace_word.c" />
     <ClCompile Include="editor\editor_begin_line.c" />
     <ClCompile Include="editor\editor_begin_text.c" />
+    <ClCompile Include="editor\editor_can_overwrite.c" />
     <ClCompile Include="editor\editor_delete.c" />
     <ClCompile Include="editor\editor_delete_selection.c" />
     <ClCompile Include="editor\editor_delete_word.c" />
@@ -329,6 +330,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CHANGELOG.txt" />
+    <None Include="TODO.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

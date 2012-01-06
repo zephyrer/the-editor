@@ -38,6 +38,8 @@ void editor_down (EDITOR *editor, int rows, BOOL selecting);
 void editor_move_caret (EDITOR *editor, int offset, BOOL selecting);
 void editor_set_selection (EDITOR *editor, int anchor_offset, int caret_offset);
 
+BOOL editor_can_overwrite (EDITOR *editor);
+
 BOOL editor_replace_selection (EDITOR *editor, int length, const char data []);
 BOOL editor_insert (EDITOR *editor, int length, const char data []);
 BOOL editor_overwrite (EDITOR *editor, int length, const char data []);

@@ -14,21 +14,7 @@ LRESULT editorctl_on_char (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM wPa
         }
         else
         {
-            int offset;
-            BOOL overwrite = editorctl->overwrite;
-
-            if (editorctl->editor.anchor_offset == editorctl->editor.caret_offset)
-                overwrite = FALSE;
-
-            if (editorctl->editor.caret_offset == editorctl->editor.text.length)
-                overwrite = FALSE;
-
-            offset = editorctl->editor.caret_offset;
-            if (!text_next_position (&editorctl->editor.text, &offset) || 
-                text_is_line_boundary (&editorctl->editor.text, offset))
-                overwrite = FALSE;
-
-            if (overwrite)
+            if (editor_can_overwrite (&editorctl->editor))
                 editor_overwrite (&editorctl->editor, 1, &ch);
             else
                 editor_insert (&editorctl->editor, 1, &ch);
@@ -36,7 +22,7 @@ LRESULT editorctl_on_char (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM wPa
 
         if (!editorctl_update_scroll_range (editorctl)) goto error;
         if (!editorctl_update (editorctl)) goto error;
-        if (!editorctl_update_caret_pos (editorctl, TRUE)) goto error;
+        if (!editorctl_update_caret (editorctl, TRUE)) goto error;
     }
 
     return 0;
