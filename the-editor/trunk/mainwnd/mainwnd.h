@@ -23,5 +23,6 @@ LRESULT mainwnd_on_destroy (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT mainwnd_on_close (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT mainwnd_on_size (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT mainwnd_on_setfocus (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT mainwnd_on_command (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #endif

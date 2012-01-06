@@ -287,6 +287,9 @@
     <ClCompile Include="layout\layout_row_to_line.c">
       <Filter>layout</Filter>
     </ClCompile>
+    <ClCompile Include="mainwnd\mainwnd_on_command.c">
+      <Filter>mainwnd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">
