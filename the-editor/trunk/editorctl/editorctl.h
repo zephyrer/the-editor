@@ -73,7 +73,7 @@ LRESULT editorctl_on_lbuttonup (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARA
 
 BOOL editorctl_create_whitespace_icons (EDITORCTL *editorctl);
 
-BOOL editorctl_update_caret_pos (EDITORCTL *editorctl);
+BOOL editorctl_update_caret_pos (EDITORCTL *editorctl, BOOL ensure_visible);
 BOOL editorctl_scroll_to (EDITORCTL *editorctl, int x, int y);
 BOOL editorctl_update_scroll_range (EDITORCTL *editorctl);
 BOOL editorctl_ensure_cell_visible (EDITORCTL *editorctl, int row, int col);

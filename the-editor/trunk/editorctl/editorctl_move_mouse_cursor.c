@@ -92,7 +92,8 @@ BOOL editorctl_move_mouse_cursor (EDITORCTL *editorctl, int x, int y, BOOL selec
     }
 
     if (!editorctl_update (editorctl)) goto error;
-    if (!editorctl_update_caret_pos (editorctl)) goto error;
+    if (!editorctl_update_caret_pos (editorctl, FALSE)) goto error;
+    if (!editorctl_ensure_cell_visible (editorctl, row, col)) goto error;
 
     return TRUE;
 

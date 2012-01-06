@@ -26,7 +26,7 @@ BOOL editorctl_scroll_to (EDITORCTL *editroctl, int x, int y)
             editroctl->scroll_location.y = y;
         }
 
-        if (!editorctl_update_caret_pos (editroctl)) goto error;
+        if (!editorctl_update_caret_pos (editroctl, FALSE)) goto error;
     }
 
     return TRUE;
