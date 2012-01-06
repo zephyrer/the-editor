@@ -224,9 +224,6 @@
     <ClCompile Include="editorctl\editorctl_scroll_to.c">
       <Filter>editorctl</Filter>
     </ClCompile>
-    <ClCompile Include="editorctl\editorctl_update_caret_pos.c">
-      <Filter>editorctl</Filter>
-    </ClCompile>
     <ClCompile Include="editorctl\editorctl_on_setfocus.c">
       <Filter>editorctl</Filter>
     </ClCompile>
@@ -281,6 +278,12 @@
     <ClCompile Include="editorctl\editorctl_on_keydown.c">
       <Filter>editorctl</Filter>
     </ClCompile>
+    <ClCompile Include="editor\editor_can_overwrite.c">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editorctl\editorctl_update_caret.c">
+      <Filter>editorctl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editorctl\editorctl.h">
@@ -307,6 +310,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CHANGELOG.txt" />
+    <None Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="editorctl">

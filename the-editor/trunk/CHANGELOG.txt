@@ -1,3 +1,1 @@
-- Word wrap support implemented.
-
 - Basic editing implemented (no mouse, no cut and paste).
