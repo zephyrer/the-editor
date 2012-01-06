@@ -44,6 +44,7 @@ BOOL text_replace_range (TEXT *text, int offset, int length, int replacement_len
     return TRUE;
 
 heap_error:
+    assert (FALSE);
     SetLastError (ERROR_NOT_ENOUGH_MEMORY);
     return FALSE;
 }
