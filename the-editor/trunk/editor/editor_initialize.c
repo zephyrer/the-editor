@@ -13,7 +13,7 @@ BOOL editor_initialize (EDITOR *editor, HANDLE heap)
     ZeroMemory (editor, sizeof (EDITOR));
 
     if (!text_initialize (&editor->text, heap, 16)) goto error;
-    if (!layout_initialize (&editor->layout, heap, &editor->text, 8, -1, -1)) goto error;
+    if (!layout_initialize (&editor->layout, heap, &editor->text, 8, 80, 70)) goto error;
 
     editor->heap = heap;
 

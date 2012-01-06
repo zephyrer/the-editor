@@ -14,7 +14,7 @@ LRESULT editorctl_on_char (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM wPa
         }
         else
         {
-            if (editor_can_overwrite (&editorctl->editor))
+            if (editorctl->overwrite && editor_can_overwrite (&editorctl->editor))
                 editor_overwrite (&editorctl->editor, 1, &ch);
             else
                 editor_insert (&editorctl->editor, 1, &ch);
