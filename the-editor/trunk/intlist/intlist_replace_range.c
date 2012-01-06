@@ -44,6 +44,7 @@ BOOL intlist_replace_range (INTLIST *list, int offset, int length, int replaceme
     return TRUE;
 
 heap_error:
+    assert (FALSE);
     SetLastError (ERROR_NOT_ENOUGH_MEMORY);
     return FALSE;
 }
