@@ -295,6 +295,7 @@
     <ClCompile Include="layout\layout_offset_to_row.c" />
     <ClCompile Include="layout\layout_reset_dirty_rows.c" />
     <ClCompile Include="layout\layout_row_column_to_offset.c" />
+    <ClCompile Include="layout\layout_row_to_line.c" />
     <ClCompile Include="layout\layout_update.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="mainwnd\mainwnd_on_close.c" />

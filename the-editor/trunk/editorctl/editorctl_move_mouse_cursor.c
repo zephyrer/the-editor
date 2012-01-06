@@ -35,10 +35,19 @@ static int prev_row_boundary (EDITORCTL *editorctl, int offset)
 
 static int next_row_boundary (EDITORCTL *editorctl, int offset)
 {
-    int row, col;
+    int row;
 
     row = layout_offset_to_row (&editorctl->editor.layout, offset);
-    return layout_row_column_to_offset (&editorctl->editor.layout, row, editorctl->editor.layout.row_widths.data [row], &col);
+    if (row < editorctl->editor.layout.row_offsets.length)
+    {
+        int result = editorctl->editor.layout.row_offsets.data [row + 1];
+        if (text_is_line_boundary (&editorctl->editor.text, result))
+            text_prev_position (&editorctl->editor.text, &result);
+
+        return result;
+    }
+    else
+        return editorctl->editor.text.length;
 }
 
 BOOL editorctl_move_mouse_cursor (EDITORCTL *editorctl, int x, int y, BOOL selecting)
