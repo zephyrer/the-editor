@@ -36,7 +36,7 @@ LRESULT editorctl_on_char (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM wPa
 
         if (!editorctl_update_scroll_range (editorctl)) goto error;
         if (!editorctl_update (editorctl)) goto error;
-        if (!editorctl_update_caret_pos (editorctl)) goto error;
+        if (!editorctl_update_caret_pos (editorctl, TRUE)) goto error;
     }
 
     return 0;

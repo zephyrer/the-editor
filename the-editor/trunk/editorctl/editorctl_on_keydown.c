@@ -8,7 +8,6 @@ static BOOL toggle_insert (EDITORCTL *editorctl)
     {
         if (!DestroyCaret ()) goto error;
         if (!CreateCaret (editorctl->hwnd, (HBITMAP) NULL, editorctl->overwrite ? editorctl->cell_size.cx : 1, editorctl->cell_size.cy)) goto error;
-        if (!editorctl_update_caret_pos (editorctl)) goto error;
         if (!ShowCaret (editorctl->hwnd)) goto error;
     }
 
@@ -203,7 +202,7 @@ LRESULT editorctl_on_keydown (EDITORCTL *editorctl, HWND hwnd, UINT msg, WPARAM 
 
     if (!editorctl_update_scroll_range (editorctl)) goto error;
     if (!editorctl_update (editorctl)) goto error;
-    if (!editorctl_update_caret_pos (editorctl)) goto error;
+    if (!editorctl_update_caret_pos (editorctl, TRUE)) goto error;
 
     return 0;
 error:
